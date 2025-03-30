@@ -10,13 +10,11 @@
 class V6Reader : public TaggedBlockReader {
 public:
     V6Reader(void *data, const size_t data_size)
-        : TaggedBlockReader(data, data_size) {
+        : TaggedBlockReader(data, data_size, V6_HEADER_SIZE) {
     };
 
     bool readHeader() override;
     bool compileTree() override;
-protected:
-    int current_offset = V6_HEADER_SIZE;
 };
 
 #endif //v6_READER_H
