@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(headers)
 
 add_library(lib_rm_lines SHARED src/library.cpp
-        src/v6_reader.cpp)
+        src/reader.cpp
+        src/reader/tagged_block_reader.cpp
+        src/v6/reader.cpp
+        )
 
 set_target_properties(lib_rm_lines PROPERTIES OUTPUT_NAME "rm_lines")

@@ -1,16 +1,32 @@
-#include "v6_reader.h"
+#include "v6/reader.h"
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstring>
+#include <cstddef>
 #include <cstdio>
+#include <library.h>
 
-EXPORT size_t convert_to_svg(int input_fd, size_t input_size, int output_fd) {
+EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
     if (input_size == 0) return 0;
 
     // Map input file
     void* input_map = mmap(NULL, input_size, PROT_READ, MAP_SHARED, input_fd, 0);
     if (input_map == MAP_FAILED) return 0;
+
+    // Initialize reader
+    TaggedBlockReader *reader = new V6Reader(input_map, input_size);
+
+    if (!reader->readHeader()) {
+        // reader = V5Reader(input_map);
+        if (!reader->readHeader()) {
+            munmap(input_map, input_size);
+            return 0;
+        }
+    }
+
+    reader->compileTree();
+
 
     // Dummy SVG content (replace with real conversion later)
     const char* svg_content = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";
