@@ -1,7 +1,11 @@
 #ifndef LIBRARY_H
 #define LIBRARY_H
 
-#define EXPORT extern "C" __attribute__((visibility("default")))
+#ifdef _WIN32
+    #define EXPORT extern "C" __declspec(dllexport)
+#else
+    #define EXPORT extern "C" __attribute__((visibility("default")))
+#endif
 #include <string>
 
 // Logging function pointer type
