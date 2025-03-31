@@ -53,20 +53,21 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
         }
     }
 
-    const auto blockInfo = new BlockInfo();
-    while (reader->readBlockInfo(*blockInfo)) {
-        // logMessage(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", blockInfo->min_version,
-        //                        blockInfo->current_version, blockInfo->offset, blockInfo->size, blockInfo->block_type));
-        uint32_t block_end = blockInfo->offset + blockInfo->size;
-        if (Block *block = nullptr; !reader->readBlock(block, *blockInfo)) {
+    while (reader->readBlockInfo()) {
+        // logMessage(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", reader->currentBlockInfo.min_version,
+        //                        reader->currentBlockInfo.current_version, reader->currentBlockInfo.offset, reader->currentBlockInfo.size, reader->currentBlockInfo.block_type));
+
+        uint32_t block_end = reader->currentBlockInfo.offset + reader->currentBlockInfo.size;
+        if (!reader->readBlock()) {
+            // Skip block
             reader->currentOffset = block_end;
-            logMessage(std::format("Failed to read block type {}", blockInfo->block_type));
+            logMessage(std::format("Failed to read block type {}", reader->currentBlockInfo.block_type));
         } else if (reader->currentOffset < block_end) {
             logMessage(std::format("BLOCK DID NOT FULLY READ {} < {}", reader->currentOffset, block_end));
             reader->currentOffset = block_end;
         }
         else {
-            logMessage(std::format("Read block {}", blockInfo->block_type));
+            logMessage(std::format("Read block {}", reader->currentBlockInfo.block_type));
         }
     }
 

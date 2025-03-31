@@ -5,35 +5,34 @@
 #include <library.h>
 #include <sstream>
 
-bool TaggedBlockReader::readBlockInfo(BlockInfo &blockInfo) {
+bool TaggedBlockReader::readBlockInfo() {
     if (currentOffset + 8 > dataSize_) return false;
     // Ensure enough data (4 + 1 + 1 + 1)
 
-    blockInfo.offset = currentOffset + 8; // Store offset at block data start
-    std::memcpy(&blockInfo.size, data_ + currentOffset, sizeof(uint32_t));
+    currentBlockInfo.offset = currentOffset + 8; // Store offset at block data start
+    std::memcpy(&currentBlockInfo.size, data_ + currentOffset, sizeof(uint32_t));
     currentOffset += 4; // Move past block_size
 
     currentOffset += 1; // Skip 'unknown'
 
-    blockInfo.min_version = data_[currentOffset];
-    blockInfo.current_version = data_[currentOffset + 1];
-    blockInfo.block_type = data_[currentOffset + 2];
+    currentBlockInfo.min_version = data_[currentOffset];
+    currentBlockInfo.current_version = data_[currentOffset + 1];
+    currentBlockInfo.block_type = data_[currentOffset + 2];
 
     currentOffset += 3; // Move forward by 3 bytes
 
     return true;
 }
 
-bool TaggedBlockReader::readBlock(Block *block, BlockInfo &blockInfo) {
-    Block::lookup(block, blockInfo);
-    return block != nullptr ? block->read(this, blockInfo) : false;
+bool TaggedBlockReader::bytesRemainingInBlock() const {
+     return currentOffset < currentBlockInfo.offset + currentBlockInfo.size;
 }
 
-bool TaggedBlockReader::readBlock(Block *block) {
-    const auto blockInfo = new BlockInfo();
-    if (!readBlockInfo(*blockInfo)) return false;
-    return readBlock(block, *blockInfo);
+bool TaggedBlockReader::readBlock() {
+    Block::lookup(currentBlock, currentBlockInfo);
+    return currentBlock != nullptr ? currentBlock->read(this, currentBlockInfo) : false;
 }
+
 
 bool TaggedBlockReader::readSubBlock(const uint8_t index, SubBlockInfo &subBlockInfo) {
     if (!readTag(index, TagType::Length4)) return false;
@@ -99,7 +98,6 @@ bool TaggedBlockReader::readTag(const uint8_t expectedIndex, const TagType expec
     return index == expectedIndex && tagType == expectedTagType;
 }
 
-
 std::pair<uint8_t, TagType> TaggedBlockReader::_readTagValues() {
     uint64_t x;
     if (!readValuint(x)) return {0, TagType::BAD};
@@ -109,6 +107,24 @@ std::pair<uint8_t, TagType> TaggedBlockReader::_readTagValues() {
     return {index, tagType};
 }
 
+bool TaggedBlockReader::readId(const uint8_t index, CrdtId *id) {
+    if (!readTag(index, TagType::ID)) return false;
+    return _readCrdtId(id);
+}
+
+bool TaggedBlockReader::readBool(const uint8_t index, bool *result) {
+    if (!readTag(index, TagType::Byte1)) return false;
+    const uint8_t byte = data_[currentOffset++];
+    if (result == nullptr) return true; // If result is null, just return true
+    *result = (byte != 0);
+    return true;
+}
+
+
+bool TaggedBlockReader::_readCrdtId(CrdtId *id) {
+    id->first = data_[currentOffset++];
+    return readValuint(id->second);
+}
 
 bool TaggedBlockReader::buildTree() {
     return false;

@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <common/blocks.h>
+#include <common/data_types.h>
 
 enum class TagType : uint8_t {
     ID = 0xF,
@@ -28,12 +29,12 @@ public:
 
     virtual bool buildTree() = 0;
 
+    bool bytesRemainingInBlock() const;
+
     // Read the blocks
-    bool readBlockInfo(BlockInfo &blockInfo);
+    bool readBlockInfo();
 
-    bool readBlock(Block *block, BlockInfo &blockInfo);
-
-    bool readBlock(Block *block);
+    bool readBlock();
 
     // Read the sub blocks
     bool readSubBlock(uint8_t index, SubBlockInfo &subBlockInfo);
@@ -46,11 +47,18 @@ public:
 
     bool readTag(const uint8_t expectedIndex, const TagType expectedTagType);
 
+    bool readId(const uint8_t index, CrdtId *id);
+    bool readBool(const uint8_t index, bool *result);
+
+
     uint8_t *data_;
     size_t dataSize_;
     uint32_t currentOffset;
+    Block* currentBlock;
+    BlockInfo currentBlockInfo;
 private:
     std::pair<uint8_t, TagType> _readTagValues();
+    bool _readCrdtId(CrdtId *id);
 };
 
 #endif //TAGGED_BLOCK_READER_H

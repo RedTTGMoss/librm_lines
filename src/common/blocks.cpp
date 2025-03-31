@@ -7,6 +7,9 @@
 
 void Block::lookup(Block *&block, const BlockInfo &info) {
     switch (info.block_type) {
+        case 0:
+            block = new MigrationInfoBlock();
+            break;
         case 9:
             block = new AuthorIdsBlock();
             break;
@@ -46,3 +49,14 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
 
     return true;
 }
+
+bool MigrationInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
+    if (!reader->readId(1, &migrationId)) return false;
+    if (!reader->readBool(2, &isDevice)) return false;
+    if (reader->bytesRemainingInBlock()) {
+        // Read unknown
+        if (!reader->readBool(3, nullptr)) return false;
+    }
+    return true;
+}
+

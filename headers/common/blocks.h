@@ -5,6 +5,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <common/data_types.h>
 
 class TaggedBlockReader;
 
@@ -33,6 +34,12 @@ struct Block {
 
 struct AuthorIdsBlock final : public Block {
     std::map<uint32_t, std::string> author_ids;
+    bool read(TaggedBlockReader *reader, BlockInfo &info) override;
+};
+
+struct MigrationInfoBlock final : public Block {
+    CrdtId migrationId;
+    bool isDevice;
     bool read(TaggedBlockReader *reader, BlockInfo &info) override;
 };
 
