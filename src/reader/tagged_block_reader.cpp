@@ -3,6 +3,7 @@
 #include <format>
 #include <iomanip>
 #include <library.h>
+#include <sstream>
 
 bool TaggedBlockReader::readBlockInfo(BlockInfo &blockInfo) {
     if (currentOffset + 8 > dataSize_) return false;
