@@ -6,7 +6,7 @@
 #include <reader/tagged_block_reader.h>
 
 void Block::lookup(Block *&block, const BlockInfo &info) {
-    switch (info.block_type) {
+    switch (info.blockType) {
         case 0:
             block = new MigrationInfoBlock();
             break;
@@ -15,6 +15,9 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
             break;
         case 10:
             block = new PageInfoBlock();
+            break;
+        case 13:
+            block = new SceneInfoBlock();
             break;
         default:
             block = new UnreadableBlock();
@@ -48,7 +51,7 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
         uint16_t authorId = 0;
         if (!reader->readBytes(sizeof(authorId), &authorId)) return false;
 
-        author_ids[authorId] = uuid;
+        authorIds[authorId] = uuid;
     }
 
     return true;
@@ -65,13 +68,34 @@ bool MigrationInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
 }
 
 bool PageInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
-    if (!reader->readInt(1, &loads_count)) return false;
-    if (!reader->readInt(2, &merges_count)) return false;
-    if (!reader->readInt(3, &text_chars_count)) return false;
-    if (!reader->readInt(4, &text_lines_count)) return false;
+    if (!reader->readInt(1, &loadsCount)) return false;
+    if (!reader->readInt(2, &mergesCount)) return false;
+    if (!reader->readInt(3, &textCharsCount)) return false;
+    if (!reader->readInt(4, &textLinesCount)) return false;
     if (reader->bytesRemainingInBlock()) {
-        // Read type_folio_use_count
-        if (!reader->readInt(5, &type_folio_use_count)) return false;
+        // Read typeFolioUseCount
+        if (!reader->readInt(5, &typeFolioUseCount)) return false;
     }
+    return true;
+}
+
+bool SceneInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
+    if (!reader->readLwwId(1, &currentLayer)) return false;
+    if (reader->bytesRemainingInBlock()) {
+        LwwItem<bool> _backgroundVisible;
+        if (!reader->readLwwBool(2, &_backgroundVisible)) return false;
+        backgroundVisible = _backgroundVisible;
+    }
+    if (reader->bytesRemainingInBlock()) {
+        LwwItem<bool> _rootDocumentVisible;
+        if (!reader->readLwwBool(3, &_rootDocumentVisible)) return false;
+        rootDocumentVisible = _rootDocumentVisible;
+    }
+    if (reader->bytesRemainingInBlock()) {
+        LwwItem<IntPair> _paperSize;
+        if (!reader->readLwwIntPair(5, &_paperSize)) return false;
+        paperSize = _paperSize;
+    }
+
     return true;
 }

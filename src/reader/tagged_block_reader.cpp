@@ -15,9 +15,9 @@ bool TaggedBlockReader::readBlockInfo() {
 
     currentOffset += 1; // Skip 'unknown'
 
-    currentBlockInfo.min_version = data_[currentOffset];
-    currentBlockInfo.current_version = data_[currentOffset + 1];
-    currentBlockInfo.block_type = data_[currentOffset + 2];
+    currentBlockInfo.minVersion = data_[currentOffset];
+    currentBlockInfo.currentVersion = data_[currentOffset + 1];
+    currentBlockInfo.blockType = data_[currentOffset + 2];
 
     currentOffset += 3; // Move forward by 3 bytes
 
@@ -125,11 +125,40 @@ bool TaggedBlockReader::readInt(const uint8_t index, uint32_t *result) {
     return readBytes(sizeof(uint32_t), result);
 }
 
+bool TaggedBlockReader::readLwwId(const uint8_t index, LwwItem<CrdtId> *id) {
+    if (!_readLwwTimestamp<CrdtId>(index, id)) return false;
+    if (!readId(2, &id->value)) return false;
+    return true;
+}
+
+bool TaggedBlockReader::readLwwBool(const uint8_t index, LwwItem<bool> *result) {
+    if (!_readLwwTimestamp<bool>(index, result)) return false;
+    if (!readBool(2, &result->value)) return false;
+    return true;
+}
+
+bool TaggedBlockReader::readLwwIntPair(const uint8_t index, LwwItem<IntPair> *result) {
+    if (!_readLwwTimestamp<IntPair>(index, result)) return false;
+    if (!readBytes(sizeof(IntPair), &result->value)) return false;
+    return true;
+}
+
+
+
+
 
 bool TaggedBlockReader::_readCrdtId(CrdtId *id) {
     id->first = data_[currentOffset++];
     return readValuint(id->second);
 }
+
+template<typename T>
+bool TaggedBlockReader::_readLwwTimestamp(const uint8_t index, LwwItem<T> *id) {
+    if (SubBlockInfo subBlockInfo; !readSubBlock(index, subBlockInfo)) return false;
+    if (!readId(1, &id->timestamp)) return false;
+    return true;
+}
+
 
 bool TaggedBlockReader::buildTree() {
     return false;

@@ -51,6 +51,10 @@ public:
     bool readBool(const uint8_t index, bool *result);
     bool readInt(const uint8_t index, uint32_t *result);
 
+    // LWW values *Timestamped values
+    bool readLwwId(const uint8_t index, LwwItem<CrdtId> *id);
+    bool readLwwBool(const uint8_t index, LwwItem<bool> *result);
+    bool readLwwIntPair(const uint8_t index, LwwItem<IntPair> *result);
 
     uint8_t *data_;
     size_t dataSize_;
@@ -60,6 +64,8 @@ public:
 private:
     std::pair<uint8_t, TagType> _readTagValues();
     bool _readCrdtId(CrdtId *id);
+    template <typename T>
+    bool _readLwwTimestamp(const uint8_t index, LwwItem<T> *id);
 };
 
 #endif //TAGGED_BLOCK_READER_H
