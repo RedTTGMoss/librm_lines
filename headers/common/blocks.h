@@ -43,6 +43,15 @@ struct MigrationInfoBlock final : public Block {
     bool read(TaggedBlockReader *reader, BlockInfo &info) override;
 };
 
+struct PageInfoBlock final : public Block {
+    uint32_t loads_count;
+    uint32_t merges_count;
+    uint32_t text_chars_count;
+    uint32_t text_lines_count;
+    uint32_t type_folio_use_count = 0;
+    bool read(TaggedBlockReader *reader, BlockInfo &info) override;
+};
+
 struct UnreadableBlock final : public Block {
 };
 

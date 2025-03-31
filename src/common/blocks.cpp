@@ -13,8 +13,12 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
         case 9:
             block = new AuthorIdsBlock();
             break;
+        case 10:
+            block = new PageInfoBlock();
+            break;
         default:
             block = new UnreadableBlock();
+            break;
     }
 }
 
@@ -60,3 +64,14 @@ bool MigrationInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
     return true;
 }
 
+bool PageInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
+    if (!reader->readInt(1, &loads_count)) return false;
+    if (!reader->readInt(2, &merges_count)) return false;
+    if (!reader->readInt(3, &text_chars_count)) return false;
+    if (!reader->readInt(4, &text_lines_count)) return false;
+    if (reader->bytesRemainingInBlock()) {
+        // Read type_folio_use_count
+        if (!reader->readInt(5, &type_folio_use_count)) return false;
+    }
+    return true;
+}

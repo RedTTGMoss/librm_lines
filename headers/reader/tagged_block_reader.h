@@ -49,6 +49,7 @@ public:
 
     bool readId(const uint8_t index, CrdtId *id);
     bool readBool(const uint8_t index, bool *result);
+    bool readInt(const uint8_t index, uint32_t *result);
 
 
     uint8_t *data_;

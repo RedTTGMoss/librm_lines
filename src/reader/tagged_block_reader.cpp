@@ -120,6 +120,11 @@ bool TaggedBlockReader::readBool(const uint8_t index, bool *result) {
     return true;
 }
 
+bool TaggedBlockReader::readInt(const uint8_t index, uint32_t *result) {
+    if (!readTag(index, TagType::Byte4)) return false;
+    return readBytes(sizeof(uint32_t), result);
+}
+
 
 bool TaggedBlockReader::_readCrdtId(CrdtId *id) {
     id->first = data_[currentOffset++];
