@@ -4,7 +4,6 @@
 #include <library.h>
 #include <common/blocks.h>
 #include <reader/tagged_block_reader.h>
-#include <uuid/uuid.h>
 
 void Block::lookup(Block *&block, const BlockInfo &info) {
     switch (info.block_type) {
