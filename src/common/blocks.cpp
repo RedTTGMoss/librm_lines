@@ -32,11 +32,11 @@ Block::~Block() {
 }
 
 
-bool Block::read(TaggedBlockReader *reader, BlockInfo &info) {
+bool Block::read(TaggedBlockReader *reader) {
     return false;
 }
 
-bool AuthorIdsBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
+bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
     uint64_t subBlocks = 0;
     if (!reader->readValuint(subBlocks)) return false;
 
@@ -57,7 +57,7 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
     return true;
 }
 
-bool MigrationInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
+bool MigrationInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &migrationId)) return false;
     if (!reader->readBool(2, &isDevice)) return false;
     if (reader->bytesRemainingInBlock()) {
@@ -67,7 +67,7 @@ bool MigrationInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
     return true;
 }
 
-bool PageInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
+bool PageInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readInt(1, &loadsCount)) return false;
     if (!reader->readInt(2, &mergesCount)) return false;
     if (!reader->readInt(3, &textCharsCount)) return false;
@@ -79,7 +79,7 @@ bool PageInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
     return true;
 }
 
-bool SceneInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
+bool SceneInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readLwwId(1, &currentLayer)) return false;
     if (reader->bytesRemainingInBlock()) {
         LwwItem<bool> _backgroundVisible;
@@ -98,4 +98,8 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader, BlockInfo &info) {
     }
 
     return true;
+}
+
+bool SceneTreeBlock::read(TaggedBlockReader *reader) {
+    
 }

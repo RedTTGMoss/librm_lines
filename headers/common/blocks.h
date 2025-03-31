@@ -28,20 +28,20 @@ struct Block {
 
     virtual ~Block();
 
-    virtual bool read(TaggedBlockReader *reader, BlockInfo &info);
+    virtual bool read(TaggedBlockReader *reader);
 
     static void lookup(Block *&block, const BlockInfo &info);
 };
 
 struct AuthorIdsBlock final : public Block {
     std::map<uint32_t, std::string> authorIds;
-    bool read(TaggedBlockReader *reader, BlockInfo &info) override;
+    bool read(TaggedBlockReader *reader) override;
 };
 
 struct MigrationInfoBlock final : public Block {
     CrdtId migrationId;
     bool isDevice;
-    bool read(TaggedBlockReader *reader, BlockInfo &info) override;
+    bool read(TaggedBlockReader *reader) override;
 };
 
 struct PageInfoBlock final : public Block {
@@ -50,7 +50,7 @@ struct PageInfoBlock final : public Block {
     uint32_t textCharsCount;
     uint32_t textLinesCount;
     uint32_t typeFolioUseCount = 0;
-    bool read(TaggedBlockReader *reader, BlockInfo &info) override;
+    bool read(TaggedBlockReader *reader) override;
 };
 
 struct SceneInfoBlock final : public Block {
@@ -58,7 +58,11 @@ struct SceneInfoBlock final : public Block {
     std::optional<LwwItem<bool>> backgroundVisible;
     std::optional<LwwItem<bool>> rootDocumentVisible;
     std::optional<LwwItem<IntPair>> paperSize;
-    bool read(TaggedBlockReader *reader, BlockInfo &info) override;
+    bool read(TaggedBlockReader *reader) override;
+};
+
+struct SceneTreeBlock final : public Block {
+    bool read(TaggedBlockReader *reader) override;
 };
 
 struct UnreadableBlock final : public Block {
