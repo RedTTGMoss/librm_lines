@@ -72,6 +72,11 @@ struct SceneTreeBlock final : public Block {
     bool read(TaggedBlockReader *reader) override;
 };
 
+struct TreeNodeBlock final : public Block {
+    Group group;
+    bool read(TaggedBlockReader *reader) override;
+};
+
 struct UnreadableBlock final : public Block {
 };
 

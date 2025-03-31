@@ -25,7 +25,7 @@ bool TaggedBlockReader::readBlockInfo() {
 }
 
 bool TaggedBlockReader::bytesRemainingInBlock() const {
-     return currentOffset < currentBlockInfo.offset + currentBlockInfo.size;
+    return currentOffset < currentBlockInfo.offset + currentBlockInfo.size;
 }
 
 bool TaggedBlockReader::readBlock() {
@@ -58,15 +58,15 @@ bool TaggedBlockReader::readValuint(uint64_t &result) {
     return false; // Error: Truncated or invalid data
 }
 
-bool TaggedBlockReader::readUUID(std::string& uuid, const uint32_t length) {
+bool TaggedBlockReader::readUUID(std::string &uuid, const uint32_t length) {
     if (currentOffset + length > dataSize_) return false;
 
     // Read the UUID bytes (of variable length)
     std::vector<uint8_t> uuid_bytes(length);
     for (size_t i = 0; i < length; ++i) {
-        uuid_bytes[i] = data_[currentOffset + i];  // Read data directly into the uuid_bytes vector
+        uuid_bytes[i] = data_[currentOffset + i]; // Read data directly into the uuid_bytes vector
     }
-    currentOffset += length;  // Move the currentOffset forward by length (in bytes)
+    currentOffset += length; // Move the currentOffset forward by length (in bytes)
 
     // Convert bytes to hexadecimal string without modifying byte order (little-endian)
     std::stringstream ss;
@@ -77,7 +77,6 @@ bool TaggedBlockReader::readUUID(std::string& uuid, const uint32_t length) {
 
     uuid = ss.str();
     return true;
-
 }
 
 bool TaggedBlockReader::readBytes(size_t size, void *dest) {
@@ -107,6 +106,8 @@ std::pair<uint8_t, TagType> TaggedBlockReader::_readTagValues() {
     return {index, tagType};
 }
 
+// Read the values
+
 bool TaggedBlockReader::readId(const uint8_t index, CrdtId *id) {
     if (!readTag(index, TagType::ID)) return false;
     return _readCrdtId(id);
@@ -120,10 +121,56 @@ bool TaggedBlockReader::readBool(const uint8_t index, bool *result) {
     return true;
 }
 
+bool TaggedBlockReader::_readBool(bool *result) {
+    if (currentOffset >= dataSize_) return false;
+    const uint8_t byte = data_[currentOffset++];
+    if (result == nullptr) return true; // If result is null, just return true
+    *result = (byte != 0);
+    return true;
+}
+
 bool TaggedBlockReader::readInt(const uint8_t index, uint32_t *result) {
     if (!readTag(index, TagType::Byte4)) return false;
     return readBytes(sizeof(uint32_t), result);
 }
+
+bool TaggedBlockReader::readFloat(const uint8_t index, float *result) {
+    if (!readTag(index, TagType::Byte4)) return false;
+    return readBytes(sizeof(float), result);
+}
+
+bool TaggedBlockReader::readByte(const uint8_t index, uint8_t *result) {
+    if (!readTag(index, TagType::Byte1)) return false;
+    return readBytes(sizeof(uint8_t), result);
+}
+
+bool TaggedBlockReader::readString(const uint8_t index, std::string *result) {
+    uint64_t stringLength;
+    bool isAscii;
+    if (SubBlockInfo subBlockInfo; !readSubBlock(index, subBlockInfo)) return false;
+
+    if (!readValuint(stringLength)) return false;
+    if (!_readBool(&isAscii)) return false;
+
+    auto stringData = new uint8_t[stringLength];
+    if (!readBytes(stringLength, stringData)) {
+        delete[] stringData;
+        return false;
+    }
+
+    // Parse ascii or utf8
+    if (isAscii) {
+        result->assign(reinterpret_cast<char *>(stringData), stringLength);
+    } else {
+        // UTF-8 parsing
+        const std::string utf8String(reinterpret_cast<char *>(stringData), stringLength);
+        result->assign(utf8String);
+    }
+    delete[] stringData;
+    return true;
+}
+
+// Lww
 
 bool TaggedBlockReader::readLwwId(const uint8_t index, LwwItem<CrdtId> *id) {
     if (!_readLwwTimestamp<CrdtId>(index, id)) return false;
@@ -143,8 +190,23 @@ bool TaggedBlockReader::readLwwIntPair(const uint8_t index, LwwItem<IntPair> *re
     return true;
 }
 
+bool TaggedBlockReader::readLwwFloat(const uint8_t index, LwwItem<float> *result) {
+    if (!_readLwwTimestamp<float>(index, result)) return false;
+    if (!readFloat(2, &result->value)) return false;
+    return true;
+}
 
+bool TaggedBlockReader::readLwwByte(const uint8_t index, LwwItem<uint8_t> *result) {
+    if (!_readLwwTimestamp<uint8_t>(index, result)) return false;
+    if (!readByte(2, &result->value)) return false;
+    return true;
+}
 
+bool TaggedBlockReader::readLwwString(const uint8_t index, LwwItem<std::string> *result) {
+    if (!_readLwwTimestamp<std::string>(index, result)) return false;
+    if (!readString(2, &result->value)) return false;
+    return true;
+}
 
 
 bool TaggedBlockReader::_readCrdtId(CrdtId *id) {

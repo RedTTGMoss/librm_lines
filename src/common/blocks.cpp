@@ -13,6 +13,9 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
         case 1:
             block = new SceneTreeBlock();
             break;
+        case 2:
+            block = new TreeNodeBlock();
+            break;
         case 9:
             block = new AuthorIdsBlock();
             break;
@@ -109,6 +112,28 @@ bool SceneTreeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readBool(3, &isUpdate)) return false;
     if (SubBlockInfo subBlockInfo; !reader->readSubBlock(4, subBlockInfo)) return false;
     if (!reader->readId(1, &parentId)) return false;
+
+    return true;
+}
+
+bool TreeNodeBlock::read(TaggedBlockReader *reader) {
+    if (!reader->readId(1, &group.nodeId)) return false;
+    if (!reader->readLwwString(2, &group.label)) return false;
+    if (!reader->readLwwBool(3, &group.visible)) return false;
+    if (reader->bytesRemainingInBlock()) {
+        LwwItem<CrdtId> _anchorId;
+        if (!reader->readLwwId(7, &_anchorId)) return false;
+        group.anchorId = _anchorId;
+        LwwItem<uint8_t> _anchorType;
+        if (!reader->readLwwByte(8, &_anchorType)) return false;
+        group.anchorType = _anchorType;
+        LwwItem<float> _anchorThreshold;
+        if (!reader->readLwwFloat(9, &_anchorThreshold)) return false;
+        group.anchorThreshold = _anchorThreshold;
+        LwwItem<float> _anchorOriginX;
+        if (!reader->readLwwFloat(10, &_anchorOriginX)) return false;
+        group.anchorOriginX = _anchorOriginX;
+    }
 
     return true;
 }
