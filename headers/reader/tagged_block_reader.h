@@ -4,7 +4,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <common/blocks.h>
-#include <uuid/uuid.h>
 
 enum class TagType : uint8_t {
     ID = 0xF,
