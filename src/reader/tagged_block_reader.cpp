@@ -1,12 +1,13 @@
 #include <reader/tagged_block_reader.h>
-#include <common/blocks.h>
 #include <cstring>
+#include <format>
+#include <library.h>
 
-bool TaggedBlockReader::readBlock(BlockInfo &block_info) {
+bool TaggedBlockReader::readBlockInfo(BlockInfo &block_info) {
     if (current_offset + 8 > data_size_) return false;
     // Ensure enough data (4 + 1 + 1 + 1)
 
-    block_info.offset = current_offset; // Store offset at block start
+    block_info.offset = current_offset + 8; // Store offset at block data start
     std::memcpy(&block_info.size, data_ + current_offset, sizeof(uint32_t));
     current_offset += 4; // Move past block_size
 
@@ -21,6 +22,12 @@ bool TaggedBlockReader::readBlock(BlockInfo &block_info) {
     return true;
 }
 
-void TaggedBlockReader::skipBytes(const uint32_t bytes) {
-    current_offset += bytes;
+bool TaggedBlockReader::readBlock(Block *block, BlockInfo &block_info) {
+    Block::lookup(block, block_info);
+    return block ? block->read(this, block_info) : false;
 }
+
+bool TaggedBlockReader::buildTree() {
+    return false;
+}
+

@@ -11,7 +11,7 @@ bool V6Reader::readHeader() {
     return false;
 }
 
-bool V6Reader::compileTree() {
+bool V6Reader::buildTree() {
     // Dummy implementation
     return false;
 }

@@ -53,12 +53,16 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
         }
     }
 
-    auto *block = new BlockInfo();
-    while (reader->readBlock(*block)) {
-        logMessage(std::format(
-            "Block min_version: {}, current_version: {}, block_type: {}",
-            block->min_version, block->current_version, block->block_type));
-        reader->skipBytes(block->size);
+    const auto blockInfo = new BlockInfo();
+    while (reader->readBlockInfo(*blockInfo)) {
+        // logMessage(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", blockInfo->min_version,
+        //                        blockInfo->current_version, blockInfo->offset, blockInfo->size, blockInfo->block_type));
+        if (Block *block = nullptr; !reader->readBlock(block, *blockInfo)) {
+            reader->current_offset = blockInfo->offset + blockInfo->size;
+            logMessage(std::format("Failed to read block type {}", blockInfo->block_type));
+        } else {
+            logMessage(std::format("Read block {}", blockInfo->block_type));
+        }
     }
 
     // Dummy SVG content (replace with real conversion later)
