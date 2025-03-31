@@ -3,6 +3,9 @@ project(lib_rm_lines)
 
 set(CMAKE_CXX_STANDARD 20)
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(UUID REQUIRED uuid)
+
 include_directories(headers)
 
 add_library(lib_rm_lines SHARED src/library.cpp

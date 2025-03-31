@@ -1,33 +1,114 @@
 #include <reader/tagged_block_reader.h>
 #include <cstring>
 #include <format>
+#include <iomanip>
 #include <library.h>
 
-bool TaggedBlockReader::readBlockInfo(BlockInfo &block_info) {
-    if (current_offset + 8 > data_size_) return false;
+bool TaggedBlockReader::readBlockInfo(BlockInfo &blockInfo) {
+    if (currentOffset + 8 > dataSize_) return false;
     // Ensure enough data (4 + 1 + 1 + 1)
 
-    block_info.offset = current_offset + 8; // Store offset at block data start
-    std::memcpy(&block_info.size, data_ + current_offset, sizeof(uint32_t));
-    current_offset += 4; // Move past block_size
+    blockInfo.offset = currentOffset + 8; // Store offset at block data start
+    std::memcpy(&blockInfo.size, data_ + currentOffset, sizeof(uint32_t));
+    currentOffset += 4; // Move past block_size
 
-    current_offset += 1; // Skip 'unknown'
+    currentOffset += 1; // Skip 'unknown'
 
-    block_info.min_version = data_[current_offset];
-    block_info.current_version = data_[current_offset + 1];
-    block_info.block_type = data_[current_offset + 2];
+    blockInfo.min_version = data_[currentOffset];
+    blockInfo.current_version = data_[currentOffset + 1];
+    blockInfo.block_type = data_[currentOffset + 2];
 
-    current_offset += 3; // Move forward by 3 bytes
+    currentOffset += 3; // Move forward by 3 bytes
 
     return true;
 }
 
-bool TaggedBlockReader::readBlock(Block *block, BlockInfo &block_info) {
-    Block::lookup(block, block_info);
-    return block ? block->read(this, block_info) : false;
+bool TaggedBlockReader::readBlock(Block *block, BlockInfo &blockInfo) {
+    Block::lookup(block, blockInfo);
+    return block != nullptr ? block->read(this, blockInfo) : false;
 }
+
+bool TaggedBlockReader::readBlock(Block *block) {
+    const auto blockInfo = new BlockInfo();
+    if (!readBlockInfo(*blockInfo)) return false;
+    return readBlock(block, *blockInfo);
+}
+
+bool TaggedBlockReader::readSubBlock(const uint8_t index, SubBlockInfo &subBlockInfo) {
+    if (!readTag(index, TagType::Length4)) return false;
+    uint32_t subBlockLength;
+    memcpy(&subBlockLength, data_ + currentOffset, sizeof(uint32_t));
+    currentOffset += 4; // Move past subBlockLength
+    subBlockInfo.offset = currentOffset;
+    subBlockInfo.size = subBlockLength;
+    return true;
+}
+
+bool TaggedBlockReader::readValuint(uint64_t &result) {
+    result = 0;
+    uint8_t shift = 0;
+
+    while (currentOffset < dataSize_) {
+        uint8_t byte = data_[currentOffset++];
+        result |= static_cast<uint64_t>(byte & 0x7F) << shift;
+        if ((byte & 0x80) == 0) return true;
+        shift += 7;
+        if (shift >= 64) break; // Prevent overflow
+    }
+    return false; // Error: Truncated or invalid data
+}
+
+bool TaggedBlockReader::readUUID(std::string& uuid, const uint32_t length) {
+    if (currentOffset + length > dataSize_) return false;
+
+    // Read the UUID bytes (of variable length)
+    std::vector<uint8_t> uuid_bytes(length);
+    for (size_t i = 0; i < length; ++i) {
+        uuid_bytes[i] = data_[currentOffset + i];  // Read data directly into the uuid_bytes vector
+    }
+    currentOffset += length;  // Move the currentOffset forward by length (in bytes)
+
+    // Convert bytes to hexadecimal string without modifying byte order (little-endian)
+    std::stringstream ss;
+    for (size_t i = 0; i < length; ++i) {
+        ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(uuid_bytes[i]);
+        if (i == 3 || i == 5 || i == 7 || i == 9) ss << "-"; // Add dashes at appropriate places
+    }
+
+    uuid = ss.str();
+    return true;
+
+}
+
+bool TaggedBlockReader::readBytes(size_t size, void *dest) {
+    if (currentOffset + size > dataSize_) return false;
+
+    // Read the bytes directly into the destination buffer
+    std::memcpy(dest, &data_[currentOffset], size);
+
+    // Update the current offset
+    currentOffset += size;
+
+    return true;
+}
+
+
+bool TaggedBlockReader::readTag(const uint8_t expectedIndex, const TagType expectedTagType) {
+    const auto [index, tagType] = _readTagValues();
+    return index == expectedIndex && tagType == expectedTagType;
+}
+
+
+std::pair<uint8_t, TagType> TaggedBlockReader::_readTagValues() {
+    uint64_t x;
+    if (!readValuint(x)) return {0, TagType::BAD};
+
+    uint8_t index = x >> 4;
+    auto tagType = static_cast<TagType>(x & 0xF);
+    return {index, tagType};
+}
+
 
 bool TaggedBlockReader::buildTree() {
     return false;
 }
-
