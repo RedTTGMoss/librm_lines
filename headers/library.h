@@ -8,6 +8,8 @@
 #endif
 #include <string>
 
+#define PI 3.14159265358979323846
+
 // Logging function pointer type
 typedef void (*LogFunc)(const char*);
 

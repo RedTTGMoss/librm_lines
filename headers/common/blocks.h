@@ -8,6 +8,8 @@
 #include <common/data_types.h>
 #include <optional>
 
+#include "common/scene_items.h"
+
 class TaggedBlockReader;
 
 struct BlockInfo {
@@ -100,6 +102,15 @@ private:
 struct SceneGroupItemBlock final : public SceneItemBlock {
     SceneGroupItemBlock() : SceneItemBlock(0x02) {}
     std::optional<CrdtId> value;
+
+    bool readValue(TaggedBlockReader *reader) override;
+};
+
+struct SceneLineItemBlock final : public SceneItemBlock {
+    SceneLineItemBlock() : SceneItemBlock(0x03) {}
+
+    uint8_t version;
+    std::optional<Line> value;
 
     bool readValue(TaggedBlockReader *reader) override;
 };

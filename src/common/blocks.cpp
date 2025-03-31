@@ -4,6 +4,7 @@
 #include <library.h>
 #include <common/blocks.h>
 #include <reader/tagged_block_reader.h>
+#include <common/scene_items.h>
 
 void Block::lookup(Block *&block, const BlockInfo &info) {
     switch (info.blockType) {
@@ -18,6 +19,9 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
             break;
         case 4:
             block = new SceneGroupItemBlock();
+            break;
+        case 5:
+            block = new SceneLineItemBlock();
             break;
         case 9:
             block = new AuthorIdsBlock();
@@ -167,6 +171,13 @@ bool SceneGroupItemBlock::readValue(TaggedBlockReader *reader) {
     if (!reader->readId(2, &_value)) return false;
     value = _value;
     return true;
+}
+
+bool SceneLineItemBlock::readValue(TaggedBlockReader *reader) {
+    version = reader->currentBlockInfo.currentVersion;
+
+    value = std::make_optional<Line>();
+    return value.value().read(reader, version);
 }
 
 

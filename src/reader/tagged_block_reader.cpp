@@ -28,6 +28,10 @@ bool TaggedBlockReader::bytesRemainingInBlock() const {
     return currentOffset < currentBlockInfo.offset + currentBlockInfo.size;
 }
 
+size_t TaggedBlockReader::remainingBytes() const {
+    return currentBlockInfo.offset + currentBlockInfo.size - currentOffset;
+}
+
 bool TaggedBlockReader::readBlock() {
     Block::lookup(currentBlock, currentBlockInfo);
     return currentBlock != nullptr ? currentBlock->read(this) : false;
@@ -137,7 +141,7 @@ bool TaggedBlockReader::readBool(const uint8_t index, bool *result) {
     return true;
 }
 
-bool TaggedBlockReader::_readBool(bool *result) {
+bool TaggedBlockReader::readBool(bool *result) {
     if (currentOffset >= dataSize_) return false;
     const uint8_t byte = data_[currentOffset++];
     if (result == nullptr) return true; // If result is null, just return true
@@ -152,7 +156,15 @@ bool TaggedBlockReader::readInt(const uint8_t index, uint32_t *result) {
 
 bool TaggedBlockReader::readFloat(const uint8_t index, float *result) {
     if (!readTag(index, TagType::Byte4)) return false;
+    return readFloat(result);
+}
+bool TaggedBlockReader::readFloat(float *result) {
     return readBytes(sizeof(float), result);
+}
+
+bool TaggedBlockReader::readDouble(uint8_t index, double *result) {
+    if (!readTag(index, TagType::Byte8)) return false;
+    return readBytes(sizeof(double), result);
 }
 
 bool TaggedBlockReader::readByte(const uint8_t index, uint8_t *result) {
@@ -166,7 +178,7 @@ bool TaggedBlockReader::readString(const uint8_t index, std::string *result) {
     if (SubBlockInfo subBlockInfo; !readSubBlock(index, subBlockInfo)) return false;
 
     if (!readValuint(stringLength)) return false;
-    if (!_readBool(&isAscii)) return false;
+    if (!readBool(&isAscii)) return false;
 
     auto stringData = new uint8_t[stringLength];
     if (!readBytes(stringLength, stringData)) {
