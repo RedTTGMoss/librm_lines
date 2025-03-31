@@ -62,6 +62,13 @@ struct SceneInfoBlock final : public Block {
 };
 
 struct SceneTreeBlock final : public Block {
+    CrdtId sceneId;
+    CrdtId nodeId;
+    bool isUpdate;
+
+    // In subblock
+    CrdtId parentId;
+
     bool read(TaggedBlockReader *reader) override;
 };
 

@@ -10,6 +10,9 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
         case 0:
             block = new MigrationInfoBlock();
             break;
+        case 1:
+            block = new SceneTreeBlock();
+            break;
         case 9:
             block = new AuthorIdsBlock();
             break;
@@ -101,5 +104,11 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
 }
 
 bool SceneTreeBlock::read(TaggedBlockReader *reader) {
-    
+    if (!reader->readId(1, &sceneId)) return false;
+    if (!reader->readId(2, &nodeId)) return false;
+    if (!reader->readBool(3, &isUpdate)) return false;
+    if (SubBlockInfo subBlockInfo; !reader->readSubBlock(4, subBlockInfo)) return false;
+    if (!reader->readId(1, &parentId)) return false;
+
+    return true;
 }

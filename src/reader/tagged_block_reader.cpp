@@ -30,7 +30,7 @@ bool TaggedBlockReader::bytesRemainingInBlock() const {
 
 bool TaggedBlockReader::readBlock() {
     Block::lookup(currentBlock, currentBlockInfo);
-    return currentBlock != nullptr ? currentBlock->read(this, currentBlockInfo) : false;
+    return currentBlock != nullptr ? currentBlock->read(this) : false;
 }
 
 
