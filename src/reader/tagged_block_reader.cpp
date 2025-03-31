@@ -44,6 +44,22 @@ bool TaggedBlockReader::readSubBlock(const uint8_t index, SubBlockInfo &subBlock
     return true;
 }
 
+bool TaggedBlockReader::checkSubBlock(const uint8_t index, bool *result) {
+    const uint32_t previousPosition = currentOffset;
+    if (!bytesRemainingInBlock()) {
+        if (result != nullptr) {
+            *result = false;
+        }
+        return true;
+    }
+    const bool subBlockPresent = readTag(index, TagType::Length4);
+    currentOffset = previousPosition;
+    if (result != nullptr) {
+        *result = subBlockPresent;
+    }
+    return true;
+}
+
 bool TaggedBlockReader::readValuint(uint64_t &result) {
     result = 0;
     uint8_t shift = 0;

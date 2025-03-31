@@ -33,6 +33,11 @@ struct Block {
     static void lookup(Block *&block, const BlockInfo &info);
 };
 
+struct UnreadableBlock final : public Block {
+    // Represents an unreadable block
+};
+
+
 struct AuthorIdsBlock final : public Block {
     std::map<uint32_t, std::string> authorIds;
     bool read(TaggedBlockReader *reader) override;
@@ -77,7 +82,26 @@ struct TreeNodeBlock final : public Block {
     bool read(TaggedBlockReader *reader) override;
 };
 
-struct UnreadableBlock final : public Block {
+struct SceneItemBlock : public Block {
+    SceneItemBlock(uint8_t itemType = 0) : _itemType(itemType) {}
+    CrdtId parentId;
+    CrdtId itemId;
+    CrdtId leftId;
+    CrdtId rightId;
+    uint32_t deletedLength;
+
+    // In subblock
+    bool read(TaggedBlockReader *reader) override;
+private:
+    uint8_t _itemType;
+    virtual bool readValue(TaggedBlockReader *reader) = 0;
+};
+
+struct SceneGroupItemBlock final : public SceneItemBlock {
+    SceneGroupItemBlock() : SceneItemBlock(0x02) {}
+    std::optional<CrdtId> value;
+
+    bool readValue(TaggedBlockReader *reader) override;
 };
 
 #endif //BLOCKS_H

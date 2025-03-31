@@ -16,6 +16,9 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
         case 2:
             block = new TreeNodeBlock();
             break;
+        case 4:
+            block = new SceneGroupItemBlock();
+            break;
         case 9:
             block = new AuthorIdsBlock();
             break;
@@ -137,3 +140,33 @@ bool TreeNodeBlock::read(TaggedBlockReader *reader) {
 
     return true;
 }
+
+bool SceneItemBlock::read(TaggedBlockReader *reader) {
+    if (!reader->readId(1, &parentId)) return false;
+    if (!reader->readId(2, &itemId)) return false;
+    if (!reader->readId(3, &leftId)) return false;
+    if (!reader->readId(4, &rightId)) return false;
+    if (!reader->readInt(5, &deletedLength)) return false;
+    bool hasSubBlock;
+    if (!reader->checkSubBlock(6, &hasSubBlock)) return false;
+    if (hasSubBlock) {
+        if (SubBlockInfo subBlockInfo; !reader->readSubBlock(6, subBlockInfo)) return false;
+        uint8_t itemType;
+        if (!reader->readBytes(sizeof(itemType), &itemType)) return false;
+        if (itemType != _itemType) {
+            logMessage(std::format("Item type mismatch: {} != {}", itemType, _itemType));
+            return false;
+        }
+        return readValue(reader);
+    }
+    return true;
+}
+
+bool SceneGroupItemBlock::readValue(TaggedBlockReader *reader) {
+    CrdtId _value;
+    if (!reader->readId(2, &_value)) return false;
+    value = _value;
+    return true;
+}
+
+
