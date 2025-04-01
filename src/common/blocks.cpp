@@ -29,9 +29,9 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
         // case 6:  // TODO
         //     block = new SceneTextItemBlock();
         //     break;
-        // case 7:  // TODO
-        //     block = new RootTextBlock();
-        //     break;
+        case 7:
+            block = new RootTextBlock();
+            break;
         // case 8: // TODO
         //     block = new SceneTombstoneItemBlock();
         //     break;
@@ -65,14 +65,16 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
     uint64_t subBlocks = 0;
     if (!reader->readValuint(subBlocks)) return false;
 
-    const auto subBlockInfo = new SubBlockInfo();
-
     for (uint64_t i = 0; i < subBlocks; i++) {
-        if (!reader->readSubBlock(0, *subBlockInfo)) return false;
+        // Read into subblock
+        if (!reader->readSubBlock(0)) return false;
+
         uint64_t uuidLength = 0;
         if (!reader->readValuint(uuidLength)) return false;
+
         std::string uuid;
         if (!reader->readUUID(uuid, uuidLength)) return false;
+
         uint16_t authorId = 0;
         if (!reader->readBytes(sizeof(authorId), &authorId)) return false;
 
@@ -129,7 +131,8 @@ bool SceneTreeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &sceneId)) return false;
     if (!reader->readId(2, &nodeId)) return false;
     if (!reader->readBool(3, &isUpdate)) return false;
-    if (SubBlockInfo subBlockInfo; !reader->readSubBlock(4, subBlockInfo)) return false;
+
+    if (!reader->readSubBlock(4)) return false;
     if (!reader->readId(1, &parentId)) return false;
 
     return true;
@@ -159,14 +162,14 @@ bool TreeNodeBlock::read(TaggedBlockReader *reader) {
 
 bool SceneItemBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &parentId)) return false;
-    if (!reader->readId(2, &itemId)) return false;
-    if (!reader->readId(3, &leftId)) return false;
-    if (!reader->readId(4, &rightId)) return false;
-    if (!reader->readInt(5, &deletedLength)) return false;
+    if (!reader->readId(2, &item.itemId)) return false;
+    if (!reader->readId(3, &item.leftId)) return false;
+    if (!reader->readId(4, &item.rightId)) return false;
+    if (!reader->readInt(5, &item.deletedLength)) return false;
     bool hasSubBlock;
     if (!reader->checkSubBlock(6, &hasSubBlock)) return false;
     if (hasSubBlock) {
-        if (SubBlockInfo subBlockInfo; !reader->readSubBlock(6, subBlockInfo)) return false;
+        if (!reader->readSubBlock(6)) return false;
         uint8_t itemType;
         if (!reader->readBytes(sizeof(itemType), &itemType)) return false;
         if (itemType != _itemType) {
@@ -181,15 +184,51 @@ bool SceneItemBlock::read(TaggedBlockReader *reader) {
 bool SceneGroupItemBlock::readValue(TaggedBlockReader *reader) {
     CrdtId _value;
     if (!reader->readId(2, &_value)) return false;
-    value = _value;
+    item.value = _value;
     return true;
 }
 
 bool SceneLineItemBlock::readValue(TaggedBlockReader *reader) {
     version = reader->currentBlockInfo.currentVersion;
 
-    value = std::make_optional<Line>();
-    return value.value().read(reader, version);
+    item.value = std::make_optional<Line>();
+    return item.value.value().read(reader, version);
 }
 
+bool RootTextBlock::read(TaggedBlockReader *reader) {
+    if (!reader->readId(1, &blockId)) return false;
+    if (blockId != CrdtId(0, 0)) return false;
 
+    if (!reader->readSubBlock(2)) return false; // Section one
+    for (int i = 1; i <= 2; i++) if (!reader->readSubBlock(1)) return false; // Text items
+
+    uint64_t numberOfItems;
+    if (!reader->readValuint(numberOfItems)) return false;
+
+    TextItem textItem;
+    for (uint64_t i = 0; i < numberOfItems; i++) {
+        textItem = TextItem(); // Reset textItem
+        if (!reader->readTextItem(&textItem)) return false;
+        value.items.add(textItem);
+    }
+
+    for (int i = 2; i >= 1; i--) if (!reader->readSubBlock(i)) return false; // Formatting
+
+    if (!reader->readValuint(numberOfItems)) return false;
+
+    value.styles = std::vector<TextFormat>(numberOfItems);
+
+    for (uint64_t i = 0; i < numberOfItems; i++) {
+        if (!reader->readTextFormat(&value.styles[i])) return false;
+        logError(std::format("TextFormat {}: {}", i, static_cast<int>(value.styles[i].second.value)));
+    }
+
+    if (!reader->readSubBlock(3)) return false; // last section
+
+    if (!reader->readDouble(&value.posX)) return false;
+    if (!reader->readDouble(&value.posY)) return false;
+
+    if (!reader->readFloat(4, &value.width)) return false;
+
+    return true;
+}

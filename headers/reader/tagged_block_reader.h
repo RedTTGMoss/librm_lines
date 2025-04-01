@@ -39,6 +39,8 @@ public:
     // Read the sub blocks
     bool readSubBlock(uint8_t index, SubBlockInfo &subBlockInfo);
 
+    bool readSubBlock(uint8_t index);
+
     bool checkSubBlock(uint8_t index, bool* result);
 
     bool readValuint(uint64_t& result);
@@ -50,14 +52,18 @@ public:
     bool readTag(uint8_t expectedIndex, TagType expectedTagType);
 
     bool readId(uint8_t index, CrdtId *id);
+    bool readId(CrdtId *id);
     bool readBool(uint8_t index, bool *result);
     bool readBool(bool *result);
     bool readInt(uint8_t index, uint32_t *result);
     bool readFloat(uint8_t index, float *result);
     bool readFloat(float *result);
     bool readDouble(uint8_t index, double *result);
+    bool readDouble(double *result);
     bool readByte(uint8_t index, uint8_t *result);
+    bool readByte(uint8_t *result);
     bool readString(uint8_t index, std::string *result);
+    bool readString(std::string *result);
 
     // LWW values *Timestamped values
     bool readLwwId(uint8_t index, LwwItem<CrdtId> *id);
@@ -67,6 +73,11 @@ public:
     bool readLwwByte(uint8_t index, LwwItem<uint8_t> *result);
     bool readLwwString(uint8_t index, LwwItem<std::string> *result);
 
+    // Special
+    bool readStringWithFormat(uint8_t index, StringWithFormat *result);
+    bool readTextItem(TextItem *textItem);
+    bool readTextFormat(TextFormat *textFormat);
+
     uint8_t *data_;
     size_t dataSize_;
     uint32_t currentOffset;
@@ -74,7 +85,6 @@ public:
     BlockInfo currentBlockInfo;
 private:
     std::pair<uint8_t, TagType> _readTagValues();
-    bool _readCrdtId(CrdtId *id);
     template <typename T>
     bool _readLwwTimestamp(uint8_t index, LwwItem<T> *id);
 };

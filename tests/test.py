@@ -3,11 +3,20 @@ import os
 import ctypes
 import time
 
+import colorama
+from colorama import Fore
+
 os.makedirs('output', exist_ok=True)
+
+colorama.init()
 
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_logger(msg):
     print(msg.decode())
+
+@ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+def python_error_logger(msg):
+    print(f"{Fore.RED}{msg.decode()}{Fore.RESET}")
 
 lib = ctypes.CDLL("../cmake-build-debug/librm_lines.so")
 
@@ -17,6 +26,7 @@ lib.convertToSvg.restype = ctypes.c_size_t
 
 
 lib.setLogger(python_logger)
+lib.setErrorLogger(python_error_logger)
 
 for file in os.listdir("files"):
     output_path = os.path.join('output', file.replace('.rm', '.svg'))

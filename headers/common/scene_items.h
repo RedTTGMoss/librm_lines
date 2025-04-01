@@ -59,6 +59,13 @@ struct Line {
     bool read(TaggedBlockReader *reader, uint8_t version);
 };
 
+struct Text {
+    CrdtSequence<TextItem> items;
+    std::vector<TextFormat> styles;
+    double posX;
+    double posY;
+    float width;
+};
 
 
 #endif //LINE_H

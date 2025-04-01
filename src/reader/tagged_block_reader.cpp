@@ -48,6 +48,14 @@ bool TaggedBlockReader::readSubBlock(const uint8_t index, SubBlockInfo &subBlock
     return true;
 }
 
+bool TaggedBlockReader::readSubBlock(const uint8_t index) {
+    if (!readTag(index, TagType::Length4)) return false;
+    uint32_t subBlockLength;
+    memcpy(&subBlockLength, data_ + currentOffset, sizeof(uint32_t));
+    currentOffset += 4; // Move past subBlockLength
+    return true;
+}
+
 bool TaggedBlockReader::checkSubBlock(const uint8_t index, bool *result) {
     const uint32_t previousPosition = currentOffset;
     if (!bytesRemainingInBlock()) {
@@ -130,7 +138,12 @@ std::pair<uint8_t, TagType> TaggedBlockReader::_readTagValues() {
 
 bool TaggedBlockReader::readId(const uint8_t index, CrdtId *id) {
     if (!readTag(index, TagType::ID)) return false;
-    return _readCrdtId(id);
+    return readId(id);
+}
+
+bool TaggedBlockReader::readId(CrdtId *id) {
+    id->first = data_[currentOffset++];
+    return readValuint(id->second);
 }
 
 bool TaggedBlockReader::readBool(const uint8_t index, bool *result) {
@@ -164,19 +177,31 @@ bool TaggedBlockReader::readFloat(float *result) {
 
 bool TaggedBlockReader::readDouble(uint8_t index, double *result) {
     if (!readTag(index, TagType::Byte8)) return false;
+    return readDouble(result);
+}
+
+bool TaggedBlockReader::readDouble(double *result) {
     return readBytes(sizeof(double), result);
 }
 
 bool TaggedBlockReader::readByte(const uint8_t index, uint8_t *result) {
     if (!readTag(index, TagType::Byte1)) return false;
+    return readByte(result);
+}
+bool TaggedBlockReader::readByte(uint8_t *result) {
     return readBytes(sizeof(uint8_t), result);
 }
 
+
 bool TaggedBlockReader::readString(const uint8_t index, std::string *result) {
+    if (!readSubBlock(index)) return false;
+
+    return readString(result);
+}
+
+bool TaggedBlockReader::readString(std::string *result) {
     uint64_t stringLength;
     bool isAscii;
-    if (SubBlockInfo subBlockInfo; !readSubBlock(index, subBlockInfo)) return false;
-
     if (!readValuint(stringLength)) return false;
     if (!readBool(&isAscii)) return false;
 
@@ -236,15 +261,67 @@ bool TaggedBlockReader::readLwwString(const uint8_t index, LwwItem<std::string> 
     return true;
 }
 
+// Special
 
-bool TaggedBlockReader::_readCrdtId(CrdtId *id) {
-    id->first = data_[currentOffset++];
-    return readValuint(id->second);
+bool TaggedBlockReader::readStringWithFormat(uint8_t index, StringWithFormat *result) {
+    if (!readSubBlock(index)) return false;
+    if (!readString(&result->first)) return false;
+    const uint32_t previousOffset = currentOffset;
+    if (readTag(2, TagType::Byte4)) {
+        uint32_t _format;
+        if (!readInt(2, &_format)) return false;
+        result->second = _format;
+    } else {
+        currentOffset = previousOffset;
+    }
+    return true;
+}
+
+bool TaggedBlockReader::readTextItem(TextItem *textItem) {
+    if (!readSubBlock(0)) return false; // Read into text item subblock
+    if (!readId(2, &textItem->itemId)) return false;
+    if (!readId(3, &textItem->leftId)) return false;
+    if (!readId(4, &textItem->rightId)) return false;
+    if (!readInt(5, &textItem->deletedLength)) return false;
+
+    bool hasSubBlock;
+    if (!checkSubBlock(6, &hasSubBlock)) return false;
+    if (hasSubBlock) {
+        StringWithFormat stringWithFormat;
+        if (!readStringWithFormat(6, &stringWithFormat)) return false;
+        if (stringWithFormat.second.has_value()) {
+            textItem->value = stringWithFormat.second.value();
+        } else {
+            textItem->value = stringWithFormat.first;
+        }
+    } else {
+        textItem->value = "";
+    }
+    return true;
+}
+
+bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
+    if (!readId(&textFormat->first)) return false;
+    if (!readId(1, &textFormat->second.timestamp)) return false;
+
+    if (!readSubBlock(2)) return false;
+
+    uint8_t unknown;
+    if (!readByte(&unknown)) return false;
+    if (unknown != 17) return false;
+
+    uint8_t format;
+    if (!readByte(&format)) return false;
+
+
+    textFormat->second.value = static_cast<ParagraphStyle>(format);
+
+    return true;
 }
 
 template<typename T>
 bool TaggedBlockReader::_readLwwTimestamp(const uint8_t index, LwwItem<T> *id) {
-    if (SubBlockInfo subBlockInfo; !readSubBlock(index, subBlockInfo)) return false;
+    if (!readSubBlock(index)) return false;
     if (!readId(1, &id->timestamp)) return false;
     return true;
 }

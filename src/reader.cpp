@@ -63,10 +63,10 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
             reader->currentOffset = block_end;
             logError(std::format("Failed to read block type {}", reader->currentBlockInfo.blockType));
         } else if (reader->currentOffset < block_end) {
-            logError(std::format("BLOCK DID NOT FULLY READ {} < {}", reader->currentOffset, block_end));
+            logError(std::format("BLOCK {} DID NOT FULLY READ {} < {}", reader->currentBlockInfo.blockType,
+                                 reader->currentOffset, block_end));
             reader->currentOffset = block_end;
-        }
-        else {
+        } else {
             logMessage(std::format("Read block {}", reader->currentBlockInfo.blockType));
         }
     }

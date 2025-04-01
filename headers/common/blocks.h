@@ -87,10 +87,7 @@ struct TreeNodeBlock final : public Block {
 struct SceneItemBlock : public Block {
     SceneItemBlock(uint8_t itemType = 0) : _itemType(itemType) {}
     CrdtId parentId;
-    CrdtId itemId;
-    CrdtId leftId;
-    CrdtId rightId;
-    uint32_t deletedLength;
+    CrdtSequenceItem<> item;
 
     // In subblock
     bool read(TaggedBlockReader *reader) override;
@@ -101,7 +98,7 @@ private:
 
 struct SceneGroupItemBlock final : public SceneItemBlock {
     SceneGroupItemBlock() : SceneItemBlock(0x02) {}
-    std::optional<CrdtId> value;
+    CrdtSequenceItem<CrdtId> item;
 
     bool readValue(TaggedBlockReader *reader) override;
 };
@@ -110,9 +107,16 @@ struct SceneLineItemBlock final : public SceneItemBlock {
     SceneLineItemBlock() : SceneItemBlock(0x03) {}
 
     uint8_t version;
-    std::optional<Line> value;
+    CrdtSequenceItem<Line> item;
 
     bool readValue(TaggedBlockReader *reader) override;
+};
+
+struct RootTextBlock final : public Block {
+    CrdtId blockId;
+    Text value;
+
+    bool read(TaggedBlockReader *reader) override;
 };
 
 #endif //BLOCKS_H

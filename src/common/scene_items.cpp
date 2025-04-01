@@ -99,3 +99,4 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
     }
     return true;
 }
+
