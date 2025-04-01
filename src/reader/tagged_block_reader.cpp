@@ -167,6 +167,15 @@ bool TaggedBlockReader::readInt(const uint8_t index, uint32_t *result) {
     return readBytes(sizeof(uint32_t), result);
 }
 
+bool TaggedBlockReader::readIntPair(uint8_t index, IntPair *result) {
+    if (!readSubBlock(index)) return false;
+    return readIntPair(result);
+}
+
+bool TaggedBlockReader::readIntPair(IntPair *result) {
+    return readBytes(sizeof(IntPair), result);
+}
+
 bool TaggedBlockReader::readFloat(const uint8_t index, float *result) {
     if (!readTag(index, TagType::Byte4)) return false;
     return readFloat(result);
@@ -243,12 +252,6 @@ bool TaggedBlockReader::readLwwId(const uint8_t index, LwwItem<CrdtId> *id) {
 bool TaggedBlockReader::readLwwBool(const uint8_t index, LwwItem<bool> *result) {
     if (!_readLwwTimestamp<bool>(index, result)) return false;
     if (!readBool(2, &result->value)) return false;
-    return true;
-}
-
-bool TaggedBlockReader::readLwwIntPair(const uint8_t index, LwwItem<IntPair> *result) {
-    if (!_readLwwTimestamp<IntPair>(index, result)) return false;
-    if (!readBytes(sizeof(IntPair), &result->value)) return false;
     return true;
 }
 

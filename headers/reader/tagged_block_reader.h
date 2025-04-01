@@ -56,6 +56,8 @@ public:
     bool readBool(uint8_t index, bool *result);
     bool readBool(bool *result);
     bool readInt(uint8_t index, uint32_t *result);
+    bool readIntPair(uint8_t index, IntPair *result);
+    bool readIntPair(IntPair *result);
     bool readFloat(uint8_t index, float *result);
     bool readFloat(float *result);
     bool readDouble(uint8_t index, double *result);
@@ -70,7 +72,6 @@ public:
     // LWW values *Timestamped values
     bool readLwwId(uint8_t index, LwwItem<CrdtId> *id);
     bool readLwwBool(uint8_t index, LwwItem<bool> *result);
-    bool readLwwIntPair(uint8_t index, LwwItem<IntPair> *result);
     bool readLwwFloat(uint8_t index, LwwItem<float> *result);
     bool readLwwByte(uint8_t index, LwwItem<uint8_t> *result);
     bool readLwwString(uint8_t index, LwwItem<std::string> *result);

@@ -108,6 +108,7 @@ bool PageInfoBlock::read(TaggedBlockReader *reader) {
 
 bool SceneInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readLwwId(1, &currentLayer)) return false;
+
     if (reader->hasBytesRemaining()) {
         LwwItem<bool> _backgroundVisible;
         if (!reader->readLwwBool(2, &_backgroundVisible)) return false;
@@ -119,8 +120,8 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
         rootDocumentVisible = _rootDocumentVisible;
     }
     if (reader->hasBytesRemaining()) {
-        LwwItem<IntPair> _paperSize;
-        if (!reader->readLwwIntPair(5, &_paperSize)) return false;
+        IntPair _paperSize;
+        if (!reader->readIntPair(5, &_paperSize)) return false;
         paperSize = _paperSize;
     }
 

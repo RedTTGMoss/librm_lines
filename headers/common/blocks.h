@@ -64,7 +64,7 @@ struct SceneInfoBlock final : public Block {
     LwwItem<CrdtId> currentLayer;
     std::optional<LwwItem<bool>> backgroundVisible;
     std::optional<LwwItem<bool>> rootDocumentVisible;
-    std::optional<LwwItem<IntPair>> paperSize;
+    std::optional<IntPair> paperSize;
     bool read(TaggedBlockReader *reader) override;
 };
 
