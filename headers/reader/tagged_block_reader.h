@@ -51,12 +51,14 @@ public:
 
     bool checkTag(uint8_t expectedIndex, TagType expectedTagType);
     bool readTag(uint8_t expectedIndex, TagType expectedTagType);
+    bool readRequiredTag(uint8_t expectedIndex, TagType expectedTagType);
 
     bool readId(uint8_t index, CrdtId *id);
     bool readId(CrdtId *id);
     bool readBool(uint8_t index, bool *result);
     bool readBool(bool *result);
     bool readInt(uint8_t index, uint32_t *result);
+    bool readInt(uint32_t *result);
     bool readIntPair(uint8_t index, IntPair *result);
     bool readIntPair(IntPair *result);
     bool readFloat(uint8_t index, float *result);

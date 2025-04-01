@@ -199,7 +199,9 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     if (blockId != CrdtId(0, 0)) return false;
 
     if (!reader->readSubBlock(2)) return false; // Section one
-    for (int i = 1; i <= 2; i++) if (!reader->readSubBlock(1)) return false; // Text items
+    for (int i = 1; i <= 2; i++) {
+        if (!reader->readSubBlock(1)) return false; // Text items
+    }
 
     uint64_t numberOfItems;
     if (!reader->readValuint(numberOfItems)) return false;
