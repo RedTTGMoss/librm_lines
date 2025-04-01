@@ -87,7 +87,7 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
 bool MigrationInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &migrationId)) return false;
     if (!reader->readBool(2, &isDevice)) return false;
-    if (reader->bytesRemainingInBlock()) {
+    if (reader->hasBytesRemaining()) {
         // Read unknown
         if (!reader->readBool(3, nullptr)) return false;
     }
@@ -99,7 +99,7 @@ bool PageInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readInt(2, &mergesCount)) return false;
     if (!reader->readInt(3, &textCharsCount)) return false;
     if (!reader->readInt(4, &textLinesCount)) return false;
-    if (reader->bytesRemainingInBlock()) {
+    if (reader->hasBytesRemaining()) {
         // Read typeFolioUseCount
         if (!reader->readInt(5, &typeFolioUseCount)) return false;
     }
@@ -108,17 +108,17 @@ bool PageInfoBlock::read(TaggedBlockReader *reader) {
 
 bool SceneInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readLwwId(1, &currentLayer)) return false;
-    if (reader->bytesRemainingInBlock()) {
+    if (reader->hasBytesRemaining()) {
         LwwItem<bool> _backgroundVisible;
         if (!reader->readLwwBool(2, &_backgroundVisible)) return false;
         backgroundVisible = _backgroundVisible;
     }
-    if (reader->bytesRemainingInBlock()) {
+    if (reader->hasBytesRemaining()) {
         LwwItem<bool> _rootDocumentVisible;
         if (!reader->readLwwBool(3, &_rootDocumentVisible)) return false;
         rootDocumentVisible = _rootDocumentVisible;
     }
-    if (reader->bytesRemainingInBlock()) {
+    if (reader->hasBytesRemaining()) {
         LwwItem<IntPair> _paperSize;
         if (!reader->readLwwIntPair(5, &_paperSize)) return false;
         paperSize = _paperSize;
@@ -142,7 +142,7 @@ bool TreeNodeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &group.nodeId)) return false;
     if (!reader->readLwwString(2, &group.label)) return false;
     if (!reader->readLwwBool(3, &group.visible)) return false;
-    if (reader->bytesRemainingInBlock()) {
+    if (reader->hasBytesRemaining()) {
         LwwItem<CrdtId> _anchorId;
         if (!reader->readLwwId(7, &_anchorId)) return false;
         group.anchorId = _anchorId;

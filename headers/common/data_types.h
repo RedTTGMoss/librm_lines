@@ -73,4 +73,11 @@ typedef std::pair<CrdtId, LwwItem<ParagraphStyle>> TextFormat;
 
 std::string formatTextItem(TextItem textItem);
 
+struct Color {
+    uint8_t alpha;
+    uint8_t red;
+    uint8_t green;
+    uint8_t blue;
+};
+
 #endif //DATA_TYPES_H

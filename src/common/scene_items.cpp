@@ -45,10 +45,16 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
 
     if (!reader->readId(6, &timestamp)) return false;
 
-    if (reader->remainingBytes() > 3) {
+    if (reader->remainingBytes() >= 3) {
         CrdtId _moveId;
         if (!reader->readId(7, &_moveId)) return false;
         moveId = _moveId;
+    }
+
+    if (color == HIGHLIGHT && reader->hasBytesRemaining()) { // TODO: check typical byte range for ARGB color
+        Color _argbColor;
+        if (!reader->readColor(8, &_argbColor)) return false;
+        argbColor = _argbColor;
     }
 
     return true;

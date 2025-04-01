@@ -24,7 +24,7 @@ bool TaggedBlockReader::readBlockInfo() {
     return true;
 }
 
-bool TaggedBlockReader::bytesRemainingInBlock() const {
+bool TaggedBlockReader::hasBytesRemaining() const {
     return currentOffset < currentBlockInfo.offset + currentBlockInfo.size;
 }
 
@@ -58,7 +58,7 @@ bool TaggedBlockReader::readSubBlock(const uint8_t index) {
 
 bool TaggedBlockReader::checkSubBlock(const uint8_t index, bool *result) {
     const uint32_t previousPosition = currentOffset;
-    if (!bytesRemainingInBlock()) {
+    if (!hasBytesRemaining()) {
         if (result != nullptr) {
             *result = false;
         }
@@ -221,6 +221,15 @@ bool TaggedBlockReader::readString(std::string *result) {
     }
     delete[] stringData;
     return true;
+}
+
+bool TaggedBlockReader::readColor(uint8_t index, Color *result) {
+    if (!readTag(index, TagType::Byte4)) return false;
+    return readColor(result);
+}
+
+bool TaggedBlockReader::readColor(Color *result) {
+    return readBytes(4, result);
 }
 
 // Lww

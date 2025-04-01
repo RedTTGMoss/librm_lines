@@ -28,7 +28,7 @@ public:
 
     virtual bool buildTree() = 0;
 
-    bool bytesRemainingInBlock() const;
+    bool hasBytesRemaining() const;
     size_t remainingBytes() const;
 
     // Read the blocks
@@ -64,6 +64,8 @@ public:
     bool readByte(uint8_t *result);
     bool readString(uint8_t index, std::string *result);
     bool readString(std::string *result);
+    bool readColor(uint8_t index, Color *result);
+    bool readColor(Color *result);
 
     // LWW values *Timestamped values
     bool readLwwId(uint8_t index, LwwItem<CrdtId> *id);

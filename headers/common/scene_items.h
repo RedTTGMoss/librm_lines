@@ -55,6 +55,8 @@ struct Line {
     std::vector<Point> points;
     CrdtId timestamp;
     std::optional<CrdtId> moveId;
+    std::optional<Color> argbColor;
+
 
     bool read(TaggedBlockReader *reader, uint8_t version);
 };
