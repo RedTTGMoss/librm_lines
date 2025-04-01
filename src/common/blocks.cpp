@@ -170,7 +170,7 @@ bool SceneItemBlock::read(TaggedBlockReader *reader) {
         uint8_t itemType;
         if (!reader->readBytes(sizeof(itemType), &itemType)) return false;
         if (itemType != _itemType) {
-            logMessage(std::format("Item type mismatch: {} != {}", itemType, _itemType));
+            logError(std::format("Item type mismatch: {} != {}", itemType, _itemType));
             return false;
         }
         return readValue(reader);

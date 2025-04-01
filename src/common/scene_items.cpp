@@ -11,7 +11,7 @@ size_t getPointSizeSerialized(uint8_t version) {
         case 2:
             return 0x0E;
         default:
-            logMessage(std::format("Unknown line version {}", version));
+            logError(std::format("Unknown line version {}", version));
             return -1;
     }
 }
@@ -27,7 +27,7 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     if (!reader->readSubBlock(5, subBlockInfo)) return false;
     size_t pointSizeSerialized = getPointSizeSerialized(version);
     if (subBlockInfo.size % pointSizeSerialized != 0) {
-        logMessage(std::format("Point data size mismatch: {} is not multiple of {}", subBlockInfo.size,
+        logError(std::format("Point data size mismatch: {} is not multiple of {}", subBlockInfo.size,
                                pointSizeSerialized));
         return false;
     }
@@ -38,7 +38,7 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     for (int i = 0; i < pointCount; i++) {
         Point &point = points[i];
         if (!point.read(reader, version)) {
-            logMessage(std::format("Failed to read point {}", i));
+            logError(std::format("Failed to read point {}", i));
             return false;
         }
     }
@@ -94,7 +94,7 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
         // ReSharper disable once CppLocalVariableMightNotBeInitialized
         pressure = _pressure;
     } else {
-        logMessage(std::format("Unknown line version {}", version));
+        logError(std::format("Unknown line version {}", version));
         return false;
     }
     return true;

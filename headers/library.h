@@ -14,10 +14,20 @@
 typedef void (*LogFunc)(const char*);
 
 // Global log function (can be set externally)
-static LogFunc global_logger = nullptr;
+static LogFunc globalLogger = nullptr;
 
 EXPORT void setLogger(LogFunc logger);
 
 void logMessage(const std::string& msg);
+
+// Logging function pointer type
+typedef void (*ErrorFunc)(const char*);
+
+// Global log function (can be set externally)
+static ErrorFunc globalErrorLogger = nullptr;
+
+EXPORT void setErrorLogger(ErrorFunc errorLogger);
+
+void logError(const std::string& msg);
 
 #endif //LIBRARY_H
