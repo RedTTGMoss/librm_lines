@@ -50,26 +50,18 @@ bool TaggedBlockReader::readSubBlock(const uint8_t index, SubBlockInfo &subBlock
 
 bool TaggedBlockReader::readSubBlock(const uint8_t index) {
     if (!readTag(index, TagType::Length4)) return false;
-    uint32_t subBlockLength;
-    memcpy(&subBlockLength, data_ + currentOffset, sizeof(uint32_t));
     currentOffset += 4; // Move past subBlockLength
     return true;
 }
 
-bool TaggedBlockReader::checkSubBlock(const uint8_t index, bool *result) {
+bool TaggedBlockReader::checkSubBlock(const uint8_t index) {
     const uint32_t previousPosition = currentOffset;
     if (!hasBytesRemaining()) {
-        if (result != nullptr) {
-            *result = false;
-        }
-        return true;
+        return false;
     }
-    const bool subBlockPresent = readTag(index, TagType::Length4);
+    const bool subBlockPresent = checkTag(index, TagType::Length4);
     currentOffset = previousPosition;
-    if (result != nullptr) {
-        *result = subBlockPresent;
-    }
-    return true;
+    return subBlockPresent;
 }
 
 bool TaggedBlockReader::readValuint(uint64_t &result) {
@@ -119,10 +111,21 @@ bool TaggedBlockReader::readBytes(size_t size, void *dest) {
     return true;
 }
 
+bool TaggedBlockReader::checkTag(uint8_t expectedIndex, TagType expectedTagType) {
+    const auto [index, tagType] = _readTagValues();
+    return index == expectedIndex && tagType == expectedTagType;
+}
+
 
 bool TaggedBlockReader::readTag(const uint8_t expectedIndex, const TagType expectedTagType) {
     const auto [index, tagType] = _readTagValues();
-    return index == expectedIndex && tagType == expectedTagType;
+    if (index == expectedIndex && tagType == expectedTagType) {
+        return true;
+    } else {
+        logError(std::format("Expected tag index {} and type {}, but got index {} and type {}", expectedIndex,
+                             static_cast<int>(expectedTagType), index, static_cast<int>(tagType)));
+        return false;
+    }
 }
 
 std::pair<uint8_t, TagType> TaggedBlockReader::_readTagValues() {
@@ -180,6 +183,7 @@ bool TaggedBlockReader::readFloat(const uint8_t index, float *result) {
     if (!readTag(index, TagType::Byte4)) return false;
     return readFloat(result);
 }
+
 bool TaggedBlockReader::readFloat(float *result) {
     return readBytes(sizeof(float), result);
 }
@@ -197,6 +201,7 @@ bool TaggedBlockReader::readByte(const uint8_t index, uint8_t *result) {
     if (!readTag(index, TagType::Byte1)) return false;
     return readByte(result);
 }
+
 bool TaggedBlockReader::readByte(uint8_t *result) {
     return readBytes(sizeof(uint8_t), result);
 }
@@ -279,7 +284,7 @@ bool TaggedBlockReader::readStringWithFormat(uint8_t index, StringWithFormat *re
     if (!readSubBlock(index)) return false;
     if (!readString(&result->first)) return false;
     const uint32_t previousOffset = currentOffset;
-    if (readTag(2, TagType::Byte4)) {
+    if (checkTag(2, TagType::Byte4)) {
         uint32_t _format;
         if (!readInt(2, &_format)) return false;
         result->second = _format;
@@ -296,11 +301,10 @@ bool TaggedBlockReader::readTextItem(TextItem *textItem) {
     if (!readId(4, &textItem->rightId)) return false;
     if (!readInt(5, &textItem->deletedLength)) return false;
 
-    bool hasSubBlock;
-    if (!checkSubBlock(6, &hasSubBlock)) return false;
-    if (hasSubBlock) {
+    if (checkSubBlock(6)) {
         StringWithFormat stringWithFormat;
         if (!readStringWithFormat(6, &stringWithFormat)) return false;
+
         if (stringWithFormat.second.has_value()) {
             textItem->value = stringWithFormat.second.value();
         } else {

@@ -129,7 +129,7 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
 }
 
 bool SceneTreeBlock::read(TaggedBlockReader *reader) {
-    if (!reader->readId(1, &sceneId)) return false;
+    if (!reader->readId(1, &treeId)) return false;
     if (!reader->readId(2, &nodeId)) return false;
     if (!reader->readBool(3, &isUpdate)) return false;
 
@@ -167,9 +167,7 @@ bool SceneItemBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(3, &item.leftId)) return false;
     if (!reader->readId(4, &item.rightId)) return false;
     if (!reader->readInt(5, &item.deletedLength)) return false;
-    bool hasSubBlock;
-    if (!reader->checkSubBlock(6, &hasSubBlock)) return false;
-    if (hasSubBlock) {
+    if (reader->checkSubBlock(6)) {
         if (!reader->readSubBlock(6)) return false;
         uint8_t itemType;
         if (!reader->readBytes(sizeof(itemType), &itemType)) return false;

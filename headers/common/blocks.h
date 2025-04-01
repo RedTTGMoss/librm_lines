@@ -69,7 +69,7 @@ struct SceneInfoBlock final : public Block {
 };
 
 struct SceneTreeBlock final : public Block {
-    CrdtId sceneId;
+    CrdtId treeId;
     CrdtId nodeId;
     bool isUpdate;
 

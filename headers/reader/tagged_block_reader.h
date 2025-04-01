@@ -41,7 +41,7 @@ public:
 
     bool readSubBlock(uint8_t index);
 
-    bool checkSubBlock(uint8_t index, bool* result);
+    bool checkSubBlock(uint8_t index);
 
     bool readValuint(uint64_t& result);
 
@@ -49,6 +49,7 @@ public:
 
     bool readBytes(size_t size, void* result);
 
+    bool checkTag(uint8_t expectedIndex, TagType expectedTagType);
     bool readTag(uint8_t expectedIndex, TagType expectedTagType);
 
     bool readId(uint8_t index, CrdtId *id);
