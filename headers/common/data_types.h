@@ -40,6 +40,13 @@ struct IntPair {
     uint32_t second;
 };
 
+struct Rect {
+    double x;
+    double y;
+    double w;
+    double h;
+};
+
 template <typename T>
 struct LwwItem {
     CrdtId timestamp;

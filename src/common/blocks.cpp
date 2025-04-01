@@ -17,9 +17,9 @@ void Block::lookup(Block *&block, const BlockInfo &info) {
         case 2:
             block = new TreeNodeBlock();
             break;
-        // case 3:  // TODO
-        //     block = new SceneGlyphItemBlock();
-        //     break;
+        case 3:
+            block = new SceneGlyphItemBlock();
+            break;
         case 4:
             block = new SceneGroupItemBlock();
             break;
@@ -230,4 +230,8 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     if (!reader->readFloat(4, &value.width)) return false;
 
     return true;
+}
+
+bool SceneGlyphItemBlock::readValue(TaggedBlockReader *reader) {
+    return value.read(reader);
 }

@@ -108,3 +108,55 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
     return true;
 }
 
+bool GlyphRange::read(TaggedBlockReader *reader) {
+    // Optionally read start
+    if (reader->checkTag(2, TagType::Byte4)) {
+        uint32_t _start;
+        if (!reader->readInt(2, &_start)) return false;
+        start = _start;
+    }
+
+    // Optionally read length
+    if (reader->checkTag(3, TagType::Byte4)) {
+        uint32_t _length;
+        if (!reader->readInt(3, &_length)) return false;
+        length = _length;
+    }
+
+    uint32_t colorId;
+    if (!reader->readInt(4, &colorId)) return false;
+    color = static_cast<PenColor>(colorId);
+
+    if (!reader->readString(5, &text)) return false;
+
+    // If we didn't get the length, set it to the length of the text
+    if (!length.has_value()) {
+        length = text.length();
+    }
+
+    if (!reader->readSubBlock(6)) return false; // Rects
+
+    uint64_t numberOfRects;
+    if (!reader->readValuint(numberOfRects)) return false;
+
+    rects = std::vector<Rect>(numberOfRects);
+
+    for (uint64_t i = 0; i < numberOfRects; i++) {
+        if (!reader->readBytes(sizeof(Rect), &rects[i])) return false;
+    }
+
+    // Optionally read argbColor, this is only for new highlighters
+    if (color == HIGHLIGHT && reader->remainingBytes() >= 5 && reader->checkTag(8, TagType::Byte4)) {
+        Color _argbColor;
+        if (!reader->readColor(8, &_argbColor)) return false;
+        argbColor = _argbColor;
+    }
+    if (reader->hasBytesRemaining()) {
+        // TODO: Read unknown
+        logError("Unknown bytes remaining in GlyphRange");
+        // Skip for now...
+        reader->currentOffset = reader->currentBlockInfo.offset + reader->currentBlockInfo.size;
+    }
+
+    return true;
+}

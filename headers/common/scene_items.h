@@ -69,5 +69,17 @@ struct Text {
     float width;
 };
 
+struct GlyphRange {
+    std::optional<uint32_t> start;
+    std::optional<uint32_t> length;
+
+    PenColor color;
+    Color argbColor;
+    std::string text;
+    std::vector<Rect> rects;
+
+    bool read(TaggedBlockReader *reader);
+};
+
 
 #endif //LINE_H

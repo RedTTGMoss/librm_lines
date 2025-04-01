@@ -119,4 +119,12 @@ struct RootTextBlock final : public Block {
     bool read(TaggedBlockReader *reader) override;
 };
 
+struct SceneGlyphItemBlock final : public SceneItemBlock {
+    SceneGlyphItemBlock() : SceneItemBlock(0x01) {}
+
+    GlyphRange value;
+
+    bool readValue(TaggedBlockReader *reader) override;
+};
+
 #endif //BLOCKS_H
