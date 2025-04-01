@@ -36,8 +36,8 @@ struct CrdtSequence {
 };
 
 struct IntPair {
-    uint64_t first;
-    uint64_t second;
+    uint32_t first;
+    uint32_t second;
 };
 
 template <typename T>

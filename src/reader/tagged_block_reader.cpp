@@ -25,11 +25,15 @@ bool TaggedBlockReader::readBlockInfo() {
 }
 
 bool TaggedBlockReader::hasBytesRemaining() const {
-    return currentOffset < currentBlockInfo.offset + currentBlockInfo.size;
+    return remainingBytes() > 0;
 }
 
-size_t TaggedBlockReader::remainingBytes() const {
-    return currentBlockInfo.offset + currentBlockInfo.size - currentOffset;
+uint32_t TaggedBlockReader::remainingBytes() const {
+    const uint32_t blockEnd = currentBlockInfo.offset + currentBlockInfo.size;
+    if (currentOffset >= blockEnd) {
+        return 0;
+    }
+    return blockEnd - currentOffset;
 }
 
 bool TaggedBlockReader::readBlock() {
@@ -99,7 +103,7 @@ bool TaggedBlockReader::readUUID(std::string &uuid, const uint32_t length) {
     return true;
 }
 
-bool TaggedBlockReader::readBytes(size_t size, void *dest) {
+bool TaggedBlockReader::readBytes(uint32_t size, void *dest) {
     if (currentOffset + size > dataSize_) return false;
 
     // Read the bytes directly into the destination buffer

@@ -29,7 +29,7 @@ public:
     virtual bool buildTree() = 0;
 
     bool hasBytesRemaining() const;
-    size_t remainingBytes() const;
+    uint32_t remainingBytes() const;
 
     // Read the blocks
     bool readBlockInfo();
@@ -47,7 +47,7 @@ public:
 
     bool readUUID(std::string& uuid, uint32_t length);
 
-    bool readBytes(size_t size, void* result);
+    bool readBytes(uint32_t size, void* result);
 
     bool checkTag(uint8_t expectedIndex, TagType expectedTagType);
     bool readTag(uint8_t expectedIndex, TagType expectedTagType);
