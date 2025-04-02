@@ -1,29 +1,30 @@
+import colorama
+import ctypes
 import mmap
 import os
-import ctypes
 import time
-
-import colorama
 from colorama import Fore
 
 os.makedirs('output', exist_ok=True)
 
 colorama.init()
 
+
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_logger(msg):
     print(msg.decode())
 
+
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_error_logger(msg):
     print(f"{Fore.RED}{msg.decode()}{Fore.RESET}")
+
 
 lib = ctypes.CDLL("../cmake-build-debug/librm_lines.so")
 
 # Function signature: (int, size_t, int) -> size_t
 lib.convertToSvg.argtypes = [ctypes.c_int, ctypes.c_size_t, ctypes.c_int]
 lib.convertToSvg.restype = ctypes.c_size_t
-
 
 lib.setLogger(python_logger)
 lib.setErrorLogger(python_error_logger)
@@ -33,7 +34,7 @@ for file in os.listdir("files"):
     with open(output_path, 'w') as f:
         pass
     print("Processing file:", file)
-    with open(os.path.join("files", file),"r+b") as fin, open(output_path, "r+b") as fout:
+    with open(os.path.join("files", file), "r+b") as fin, open(output_path, "r+b") as fout:
         # Memory-map the input file
         input_mm = mmap.mmap(fin.fileno(), 0, access=mmap.ACCESS_READ)
 
@@ -45,10 +46,7 @@ for file in os.listdir("files"):
         # Re-open and remap output since its size changed
         fout.close()
         with open(output_path, "r+b") as fout:
-            output_mm = mmap.mmap(fout.fileno(), 0, access=mmap.ACCESS_READ)
-
-            # Read back the result
-            result_svg = output_mm.read(written_size).decode()
-
-# Print the result
-print("Received SVG:", result_svg)
+            try:
+                output_mm = mmap.mmap(fout.fileno(), 0, access=mmap.ACCESS_READ)
+            except ValueError:
+                pass

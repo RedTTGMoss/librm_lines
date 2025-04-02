@@ -1,3 +1,4 @@
+#include "v5/reader.h"
 #include "v6/reader.h"
 #ifdef _WIN32
 #include <windows.h>
@@ -41,7 +42,7 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
     TaggedBlockReader *reader = new V6Reader(input_map, input_size);
 
     if (!reader->readHeader()) {
-        // reader = V5Reader(input_map);
+        reader = new V5Reader(input_map, input_size);
         if (!reader->readHeader()) {
 #ifdef _WIN32
             UnmapViewOfFile(input_map);
@@ -54,8 +55,9 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
     }
 
     while (reader->readBlockInfo()) {
-        // logMessage(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", reader->currentBlockInfo.minVersion,
-        //                        reader->currentBlockInfo.currentVersion, reader->currentBlockInfo.offset, reader->currentBlockInfo.size, reader->currentBlockInfo.blockType));
+        logMessage(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", reader->currentBlockInfo.minVersion,
+                               reader->currentBlockInfo.currentVersion, reader->currentBlockInfo.offset,
+                               reader->currentBlockInfo.size, reader->currentBlockInfo.blockType));
 
         uint32_t block_end = reader->currentBlockInfo.offset + reader->currentBlockInfo.size;
         if (!reader->readBlock()) {
@@ -66,8 +68,7 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
             logError(std::format("BLOCK {} DID NOT FULLY READ {} < {}", reader->currentBlockInfo.blockType,
                                  reader->currentOffset, block_end));
             reader->currentOffset = block_end;
-        }
-        else if (reader->currentOffset > block_end) {
+        } else if (reader->currentOffset > block_end) {
             logError(std::format("BLOCK {} OVER READ {} > {}", reader->currentBlockInfo.blockType,
                                  reader->currentOffset, block_end));
             reader->currentOffset = block_end;

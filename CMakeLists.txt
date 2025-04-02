@@ -8,6 +8,7 @@ include_directories(headers)
 add_library(lib_rm_lines SHARED src/library.cpp
         src/reader.cpp
         src/reader/tagged_block_reader.cpp
+        src/v5/reader.cpp
         src/v6/reader.cpp
         src/common/blocks.cpp
         src/common/scene_items.cpp

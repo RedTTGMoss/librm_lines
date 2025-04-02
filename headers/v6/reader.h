@@ -1,5 +1,5 @@
-#ifndef v6_READER_H
-#define v6_READER_H
+#ifndef V6_READER_H
+#define V6_READER_H
 
 #include <library.h>
 
@@ -17,4 +17,4 @@ public:
     bool buildTree() override;
 };
 
-#endif //v6_READER_H
+#endif //V6_READER_H
