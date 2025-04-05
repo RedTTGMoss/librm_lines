@@ -14,8 +14,3 @@ bool V5Reader::readHeader() {
 bool V5Reader::readBlockInfo() {
     return false; // Not implemented
 }
-
-bool V5Reader::buildTree() {
-    // Dummy implementation
-    return false;
-}

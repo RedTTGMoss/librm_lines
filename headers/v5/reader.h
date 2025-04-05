@@ -15,7 +15,6 @@ public:
 
     bool readHeader() override;
     bool readBlockInfo() override;
-    bool buildTree() override;
 };
 
 #endif //V5_READER_H

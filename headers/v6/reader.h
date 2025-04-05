@@ -14,7 +14,7 @@ public:
     };
 
     bool readHeader() override;
-    bool buildTree() override;
+    bool buildTree();
 };
 
 #endif //V6_READER_H
