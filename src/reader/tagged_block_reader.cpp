@@ -358,6 +358,32 @@ bool TaggedBlockReader::_readLwwTimestamp(const uint8_t index, LwwItem<T> *id) {
 }
 
 
-bool TaggedBlockReader::buildTree() {
+bool TaggedBlockReader::buildTree(SceneTree *tree) {
+    while (readBlockInfo()) {
+        logMessage(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", currentBlockInfo.minVersion,
+                               currentBlockInfo.currentVersion, currentBlockInfo.offset,
+                               currentBlockInfo.size, currentBlockInfo.blockType));
+
+        uint32_t block_end = currentBlockInfo.offset + currentBlockInfo.size;
+        if (!readBlock()) {
+            // Skip block
+            currentOffset = block_end;
+            logError(std::format("Failed to read block type {}", currentBlockInfo.blockType));
+            continue;
+        } else if (currentOffset < block_end) {
+            logError(std::format("BLOCK {} DID NOT FULLY READ {} < {}", currentBlockInfo.blockType,
+                                 currentOffset, block_end));
+            currentOffset = block_end;
+        } else if (currentOffset > block_end) {
+            logError(std::format("BLOCK {} OVER READ {} > {}", currentBlockInfo.blockType,
+                                 currentOffset, block_end));
+            currentOffset = block_end;
+            continue;
+        } else {
+            logMessage(std::format("Read block {}", currentBlockInfo.blockType));
+        }
+
+        // Handle the block into the tree
+    }
     return false;
 }

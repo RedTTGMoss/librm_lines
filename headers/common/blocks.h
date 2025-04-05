@@ -10,6 +10,21 @@
 
 #include "common/scene_items.h"
 
+enum BlockTypes {
+    MIGRATION_INFO_BLOCK = 0,
+    SCENE_TREE_BLOCK = 1,
+    TREE_NODE_BLOCK = 2,
+    SCENE_GLYPH_ITEM_BLOCK = 3,
+    SCENE_GROUP_ITEM_BLOCK = 4,
+    SCENE_LINE_ITEM_BLOCK = 5,
+    SCENE_TEXT_ITEM_BLOCK = 6,
+    ROOT_TEXT_BLOCK = 7,
+    SCENE_TOMBSTONE_ITEM_BLOCK = 8,
+    AUTHOR_IDS_BLOCK = 9,
+    PAGE_INFO_BLOCK = 10,
+    SCENE_INFO_BLOCK = 13,
+};
+
 class TaggedBlockReader;
 
 struct BlockInfo {
@@ -18,6 +33,8 @@ struct BlockInfo {
     uint8_t minVersion;
     uint8_t currentVersion;
     uint8_t blockType;
+
+    BlockTypes getBlockType() const;
 };
 
 struct SubBlockInfo {

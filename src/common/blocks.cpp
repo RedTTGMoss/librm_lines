@@ -6,42 +6,47 @@
 #include <reader/tagged_block_reader.h>
 #include <common/scene_items.h>
 
+BlockTypes BlockInfo::getBlockType() const {
+     return static_cast<BlockTypes>(blockType);
+}
+
+
 void Block::lookup(Block *&block, const BlockInfo &info) {
-    switch (info.blockType) {
-        case 0:
+    switch (info.getBlockType()) {
+        case MIGRATION_INFO_BLOCK:
             block = new MigrationInfoBlock();
             break;
-        case 1:
+        case SCENE_TREE_BLOCK:
             block = new SceneTreeBlock();
             break;
-        case 2:
+        case TREE_NODE_BLOCK:
             block = new TreeNodeBlock();
             break;
-        case 3:
+        case SCENE_GLYPH_ITEM_BLOCK:
             block = new SceneGlyphItemBlock();
             break;
-        case 4:
+        case SCENE_GROUP_ITEM_BLOCK:
             block = new SceneGroupItemBlock();
             break;
-        case 5:
+        case SCENE_LINE_ITEM_BLOCK:
             block = new SceneLineItemBlock();
             break;
-        // case 6:  // TODO
+        // case SCENE_TEXT_ITEM_BLOCK:  // TODO
         //     block = new SceneTextItemBlock();
         //     break;
-        case 7:
+        case ROOT_TEXT_BLOCK:
             block = new RootTextBlock();
             break;
-        // case 8: // TODO
+        // case SCENE_TOMBSTONE_ITEM_BLOCK: // TODO
         //     block = new SceneTombstoneItemBlock();
         //     break;
-        case 9:
+        case AUTHOR_IDS_BLOCK:
             block = new AuthorIdsBlock();
             break;
-        case 10:
+        case PAGE_INFO_BLOCK:
             block = new PageInfoBlock();
             break;
-        case 13:
+        case SCENE_INFO_BLOCK:
             block = new SceneInfoBlock();
             break;
         default:

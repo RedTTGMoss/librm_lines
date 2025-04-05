@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <common/blocks.h>
+#include <common/scene_tree.h>
 
 enum class TagType : uint8_t {
     ID = 0xF,
@@ -26,7 +27,7 @@ public:
 
     virtual bool readHeader() = 0;
 
-    virtual bool buildTree() = 0;
+    bool buildTree(SceneTree *tree);
 
     bool hasBytesRemaining() const;
     uint32_t remainingBytes() const;
