@@ -32,7 +32,7 @@ public:
     uint32_t remainingBytes() const;
 
     // Read the blocks
-    bool readBlockInfo();
+    virtual bool readBlockInfo();
 
     bool readBlock();
 

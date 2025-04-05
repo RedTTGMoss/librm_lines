@@ -14,6 +14,7 @@ public:
     };
 
     bool readHeader() override;
+    bool readBlockInfo() override;
     bool buildTree() override;
 };
 
