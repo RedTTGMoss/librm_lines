@@ -14,9 +14,7 @@ public:
     std::optional<T> value = std::nullopt;
     void applyTreeValue(SceneTree &tree){
         auto node = tree.getNode(value.value());
-        logDebug("Apply tree value");
         _treeValue = *node;
-        logDebug("Apply tree value done");
     }
     [[nodiscard]] std::optional<std::reference_wrapper<Group>> getTreeValue() const {
         return _treeValue;

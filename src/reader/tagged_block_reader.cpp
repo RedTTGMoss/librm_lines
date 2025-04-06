@@ -382,7 +382,6 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
             case SCENE_TREE_BLOCK: {
                 // Add the scene tree as a tree node
                 const auto sceneTreeBlock = dynamic_cast<SceneTreeBlock *>(currentBlock.get());
-                logDebug("Add scene tree block as tree node");
                 tree.addNode(sceneTreeBlock->treeId, sceneTreeBlock->parentId);
                 break;
             }
