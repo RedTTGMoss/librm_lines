@@ -57,7 +57,12 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
     }
 
     const auto tree = std::make_unique<SceneTree>();
-    reader->buildTree(tree.get());
+
+    try {
+        reader->buildTree(*tree.get());
+    } catch (const std::exception &e) {
+        logError(std::format("Failed to build tree: {}", e.what()));
+    }
 
     // Dummy SVG content (replace with real conversion later)
     const char *svg_content = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";

@@ -1,5 +1,8 @@
 #include "common/data_types.h"
 
+#include <memory>
+#include <common/crdt_sequence_item.h>
+
 std::string formatTextItem(TextItem textItem) {
     if (textItem.value.has_value()) {
         if (std::holds_alternative<std::string>(textItem.value.value())) {
@@ -11,3 +14,13 @@ std::string formatTextItem(TextItem textItem) {
     }
     return "TextItem has no value";
 }
+
+std::string CrdtId::repr() const {
+    return std::format("CrdtId[{}:{}]", first, second);
+}
+
+Group::Group(const CrdtId nodeId)
+    : nodeId(nodeId),
+      label(LwwItem<std::string>(CrdtId(0, 0), "")),
+      visible(LwwItem<bool>(CrdtId(0, 0), true))
+{}

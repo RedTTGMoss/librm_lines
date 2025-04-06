@@ -1,3 +1,4 @@
+// ReSharper disable CppTooWideScopeInitStatement
 #include <reader/tagged_block_reader.h>
 #include <cstring>
 #include <format>
@@ -353,11 +354,11 @@ bool TaggedBlockReader::_readLwwTimestamp(const uint8_t index, LwwItem<T> *id) {
 }
 
 
-bool TaggedBlockReader::buildTree(SceneTree *tree) {
+bool TaggedBlockReader::buildTree(SceneTree &tree) {
     while (readBlockInfo()) {
-        logDebug(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", currentBlockInfo.minVersion,
-                               currentBlockInfo.currentVersion, currentBlockInfo.offset,
-                               currentBlockInfo.size, currentBlockInfo.blockType));
+        logDebug(std::format("Read block info header m{}/c{} OF: {} SB: {} BT: {}", currentBlockInfo.minVersion,
+                             currentBlockInfo.currentVersion, currentBlockInfo.offset,
+                             currentBlockInfo.size, currentBlockInfo.blockType));
 
         uint32_t block_end = currentBlockInfo.offset + currentBlockInfo.size;
         if (!readBlock()) {
@@ -377,6 +378,40 @@ bool TaggedBlockReader::buildTree(SceneTree *tree) {
         }
 
         // Handle the block into the tree
+        switch (currentBlockInfo.getBlockType()) {
+            case SCENE_TREE_BLOCK: {
+                // Add the scene tree as a tree node
+                const auto sceneTreeBlock = dynamic_cast<SceneTreeBlock *>(currentBlock.get());
+                logDebug("Add scene tree block as tree node");
+                tree.addNode(sceneTreeBlock->treeId, sceneTreeBlock->parentId);
+                break;
+            }
+            case TREE_NODE_BLOCK: {
+                // Update the node with its information
+                // This node should already exist
+
+                const auto treeNodeBlock = dynamic_cast<TreeNodeBlock *>(currentBlock.get());
+                Group* node = tree.getNode(treeNodeBlock->group.nodeId);
+
+                node->label = treeNodeBlock->group.label;
+                node->visible = treeNodeBlock->group.visible;
+                node->anchorId = treeNodeBlock->group.anchorId;
+                node->anchorType = treeNodeBlock->group.anchorType;
+                node->anchorOriginX = treeNodeBlock->group.anchorOriginX;
+                node->anchorThreshold = treeNodeBlock->group.anchorThreshold;
+                break;
+            }
+            case SCENE_GROUP_ITEM_BLOCK: {
+                // Add this node to its parent
+
+                const auto groupItemBlock = dynamic_cast<SceneGroupItemBlock *>(currentBlock.get());
+                groupItemBlock->item.applyTreeValue(tree);
+                // if (!tree.addItem());
+                break;
+            }
+            default: break;
+        }
     }
+
     return false;
 }

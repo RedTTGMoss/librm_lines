@@ -6,6 +6,7 @@
 #include <memory>
 #include <common/blocks.h>
 #include <common/scene_tree.h>
+#include <common/crdt_sequence_item.h>
 
 enum class TagType : uint8_t {
     ID = 0xF,
@@ -28,7 +29,7 @@ public:
 
     virtual bool readHeader() = 0;
 
-    bool buildTree(SceneTree* tree);
+    bool buildTree(SceneTree &tree);
 
     bool hasBytesRemaining() const;
     uint32_t remainingBytes() const;

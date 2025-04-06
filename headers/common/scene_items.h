@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <common/data_types.h>
+#include <common/crdt_sequence_item.h>
 
 class TaggedBlockReader;
 

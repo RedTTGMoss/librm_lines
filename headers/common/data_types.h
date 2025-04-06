@@ -7,29 +7,33 @@
 #include <string>
 #include <variant>
 #include <format>
+#include <library.h>
 
 struct CrdtId {
     uint8_t first;
     uint64_t second;
 
-    bool operator==(const CrdtId & crdt_id) const = default;
-    bool operator<(const CrdtId& other) const {
+    bool operator==(const CrdtId &crdt_id) const = default;
+
+    bool operator<(const CrdtId &other) const {
         return std::tie(first, second) < std::tie(other.first, other.second);
+    }
+
+    std::string repr() const;
+};
+
+template<>
+struct std::hash<CrdtId> {
+    size_t operator()(const CrdtId &crdtId) const noexcept {
+        // Combine the hashes of 'first' and 'second' using std::hash
+        return std::hash<uint8_t>{}(crdtId.first) ^ (std::hash<uint64_t>{}(crdtId.second) << 1);
     }
 };
 
-template <typename T = std::monostate>
-struct CrdtSequenceItem {
-    CrdtId itemId;
-    CrdtId leftId;
-    CrdtId rightId;
-    uint32_t deletedLength;
-    std::optional<T> value = std::nullopt;
-};
-
-template <typename T>
+template<typename T>
 struct CrdtSequence {
     std::map<CrdtId, T> sequence;
+
     void add(T &item) {
         sequence[item.itemId] = item;
     }
@@ -47,20 +51,25 @@ struct Rect {
     double h;
 };
 
-template <typename T>
+template<typename T>
 struct LwwItem {
     CrdtId timestamp;
     T value;
 };
 
-struct Group {
+class Group {
+public:
+    explicit Group(CrdtId nodeId);
+
+    Group() = default;
+
     CrdtId nodeId;
     LwwItem<std::string> label;
     LwwItem<bool> visible;
-    std::optional<LwwItem<CrdtId>> anchorId;
-    std::optional<LwwItem<uint8_t>> anchorType;
-    std::optional<LwwItem<float>> anchorThreshold;
-    std::optional<LwwItem<float>> anchorOriginX;
+    std::optional<LwwItem<CrdtId> > anchorId;
+    std::optional<LwwItem<uint8_t> > anchorType;
+    std::optional<LwwItem<float> > anchorThreshold;
+    std::optional<LwwItem<float> > anchorOriginX;
 };
 
 enum ParagraphStyle {
@@ -74,11 +83,8 @@ enum ParagraphStyle {
     CHECKBOX_CHECKED = 7
 };
 
-typedef CrdtSequenceItem<std::variant<std::string, uint32_t>> TextItem;
-typedef std::pair<std::string, std::optional<uint32_t>> StringWithFormat;
-typedef std::pair<CrdtId, LwwItem<ParagraphStyle>> TextFormat;
-
-std::string formatTextItem(TextItem textItem);
+typedef std::pair<std::string, std::optional<uint32_t> > StringWithFormat;
+typedef std::pair<CrdtId, LwwItem<ParagraphStyle> > TextFormat;
 
 struct Color {
     uint8_t alpha;

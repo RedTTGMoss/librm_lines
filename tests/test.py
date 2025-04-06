@@ -19,6 +19,10 @@ def python_logger(msg):
 def python_error_logger(msg):
     print(f"{Fore.RED}{msg.decode()}{Fore.RESET}")
 
+@ctypes.CFUNCTYPE(None, ctypes.c_char_p)
+def python_debug_logger(msg):
+    print(f"{Fore.LIGHTYELLOW_EX}{msg.decode()}{Fore.RESET}")
+
 
 lib = ctypes.CDLL("../cmake-build-debug/librm_lines.so")
 
@@ -28,6 +32,7 @@ lib.convertToSvg.restype = ctypes.c_size_t
 
 lib.setLogger(python_logger)
 lib.setErrorLogger(python_error_logger)
+lib.setDebugLogger(python_debug_logger)
 
 for file in os.listdir("files"):
     output_path = os.path.join('output', file.replace('.rm', '.svg'))
