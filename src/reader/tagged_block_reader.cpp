@@ -237,22 +237,13 @@ bool TaggedBlockReader::readString(std::string *result) {
     bool isAscii;
     if (!readValuint(stringLength)) return false;
     if (!readBool(&isAscii)) return false;
+    if (!isAscii) return false;
 
-    auto stringData = new uint8_t[stringLength];
-    if (!readBytes(stringLength, stringData)) {
-        delete[] stringData;
-        return false;
-    }
+    const auto stringData = std::make_unique<uint8_t[]>(stringLength);
+    if (!readBytes(stringLength, stringData.get())) return false;
 
-    // Parse ascii or utf8
-    if (isAscii) {
-        result->assign(reinterpret_cast<char *>(stringData), stringLength);
-    } else {
-        // UTF-8 parsing
-        const std::string utf8String(reinterpret_cast<char *>(stringData), stringLength);
-        result->assign(utf8String);
-    }
-    delete[] stringData;
+    // Assign the string data to the result
+    result->assign(reinterpret_cast<char *>(stringData.get()), stringLength);
     return true;
 }
 
