@@ -1,6 +1,7 @@
 // ReSharper disable CppDFAUnusedValue
 #include <cstring>
 #include <format>
+#include <memory>
 #include <library.h>
 #include <common/blocks.h>
 #include <reader/tagged_block_reader.h>
@@ -11,48 +12,50 @@ BlockTypes BlockInfo::getBlockType() const {
 }
 
 
-void Block::lookup(Block *&block, const BlockInfo &info) {
+std::unique_ptr<Block> Block::lookup(const BlockInfo &info) {
+    std::unique_ptr<Block> block;
     switch (info.getBlockType()) {
         case MIGRATION_INFO_BLOCK:
-            block = new MigrationInfoBlock();
+            block = std::make_unique<MigrationInfoBlock>();
             break;
         case SCENE_TREE_BLOCK:
-            block = new SceneTreeBlock();
+            block = std::make_unique<SceneTreeBlock>();
             break;
         case TREE_NODE_BLOCK:
-            block = new TreeNodeBlock();
+            block = std::make_unique<TreeNodeBlock>();
             break;
         case SCENE_GLYPH_ITEM_BLOCK:
-            block = new SceneGlyphItemBlock();
+            block = std::make_unique<SceneGlyphItemBlock>();
             break;
         case SCENE_GROUP_ITEM_BLOCK:
-            block = new SceneGroupItemBlock();
+            block = std::make_unique<SceneGroupItemBlock>();
             break;
         case SCENE_LINE_ITEM_BLOCK:
-            block = new SceneLineItemBlock();
+            block = std::make_unique<SceneLineItemBlock>();
             break;
         // case SCENE_TEXT_ITEM_BLOCK:  // TODO
-        //     block = new SceneTextItemBlock();
+        //     block = std::make_unique<SceneTextItemBlock>();
         //     break;
         case ROOT_TEXT_BLOCK:
-            block = new RootTextBlock();
+            block = std::make_unique<RootTextBlock>();
             break;
         // case SCENE_TOMBSTONE_ITEM_BLOCK: // TODO
-        //     block = new SceneTombstoneItemBlock();
+        //     block = std::make_unique<SceneTombstoneItemBlock>();
         //     break;
         case AUTHOR_IDS_BLOCK:
-            block = new AuthorIdsBlock();
+            block = std::make_unique<AuthorIdsBlock>();
             break;
         case PAGE_INFO_BLOCK:
-            block = new PageInfoBlock();
+            block = std::make_unique<PageInfoBlock>();
             break;
         case SCENE_INFO_BLOCK:
-            block = new SceneInfoBlock();
+            block = std::make_unique<SceneInfoBlock>();
             break;
         default:
-            block = new UnreadableBlock();
+            block = std::make_unique<UnreadableBlock>();
             break;
     }
+    return block;
 }
 
 Block::Block() {

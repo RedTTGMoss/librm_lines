@@ -13,6 +13,8 @@
 #include <cstdio>
 #include <format>
 #include <library.h>
+#include <memory>
+#include <reader/tagged_block_reader.h>
 
 EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
     if (input_size == 0) return 0;
@@ -39,10 +41,10 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
 #endif
 
     // Initialize reader
-    TaggedBlockReader *reader = new V6Reader(input_map, input_size);
+    std::shared_ptr<TaggedBlockReader> reader = std::make_shared<V6Reader>(input_map, input_size);
 
     if (!reader->readHeader()) {
-        reader = new V5Reader(input_map, input_size);
+        reader = std::make_shared<V5Reader>(input_map, input_size);
         if (!reader->readHeader()) {
 #ifdef _WIN32
             UnmapViewOfFile(input_map);
@@ -54,8 +56,8 @@ EXPORT size_t convertToSvg(int input_fd, size_t input_size, int output_fd) {
         }
     }
 
-    const auto tree = new SceneTree();
-    reader->buildTree(tree);
+    const auto tree = std::make_unique<SceneTree>();
+    reader->buildTree(tree.get());
 
     // Dummy SVG content (replace with real conversion later)
     const char *svg_content = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";

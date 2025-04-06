@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <memory>
 #include <common/blocks.h>
 #include <common/scene_tree.h>
 
@@ -27,7 +28,7 @@ public:
 
     virtual bool readHeader() = 0;
 
-    bool buildTree(SceneTree *tree);
+    bool buildTree(SceneTree* tree);
 
     bool hasBytesRemaining() const;
     uint32_t remainingBytes() const;
@@ -88,7 +89,7 @@ public:
     uint8_t *data_;
     size_t dataSize_;
     uint32_t currentOffset;
-    Block* currentBlock;
+    std::unique_ptr<Block> currentBlock;
     BlockInfo currentBlockInfo;
 private:
     std::pair<uint8_t, TagType> _readTagValues();

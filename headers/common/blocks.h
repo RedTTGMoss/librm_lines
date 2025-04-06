@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 #include <common/data_types.h>
@@ -49,7 +50,7 @@ struct Block {
 
     virtual bool read(TaggedBlockReader *reader);
 
-    static void lookup(Block *&block, const BlockInfo &info);
+    static std::unique_ptr<Block> lookup(const BlockInfo &info);
 };
 
 struct UnreadableBlock final : public Block {

@@ -5,6 +5,10 @@
 #include <library.h>
 #include <sstream>
 
+TaggedBlockReader::~TaggedBlockReader() {
+}
+
+
 bool TaggedBlockReader::readBlockInfo() {
     if (currentOffset + 8 > dataSize_) return false;
     // Ensure enough data (4 + 1 + 1 + 1)
@@ -37,8 +41,8 @@ uint32_t TaggedBlockReader::remainingBytes() const {
 }
 
 bool TaggedBlockReader::readBlock() {
-    Block::lookup(currentBlock, currentBlockInfo);
-    return currentBlock != nullptr ? currentBlock->read(this) : false;
+    currentBlock = Block::lookup(currentBlockInfo);
+    return currentBlock ? currentBlock->read(this) : false;
 }
 
 
@@ -360,7 +364,7 @@ bool TaggedBlockReader::_readLwwTimestamp(const uint8_t index, LwwItem<T> *id) {
 
 bool TaggedBlockReader::buildTree(SceneTree *tree) {
     while (readBlockInfo()) {
-        logMessage(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", currentBlockInfo.minVersion,
+        logDebug(std::format("Read block info header {}:{} OF: {} S: {} BT: {}", currentBlockInfo.minVersion,
                                currentBlockInfo.currentVersion, currentBlockInfo.offset,
                                currentBlockInfo.size, currentBlockInfo.blockType));
 
@@ -371,16 +375,14 @@ bool TaggedBlockReader::buildTree(SceneTree *tree) {
             logError(std::format("Failed to read block type {}", currentBlockInfo.blockType));
             continue;
         } else if (currentOffset < block_end) {
-            logError(std::format("BLOCK {} DID NOT FULLY READ {} < {}", currentBlockInfo.blockType,
+            logError(std::format("BLOCK type: {} under-read: {} offset < {} block end", currentBlockInfo.blockType,
                                  currentOffset, block_end));
             currentOffset = block_end;
         } else if (currentOffset > block_end) {
-            logError(std::format("BLOCK {} OVER READ {} > {}", currentBlockInfo.blockType,
+            logError(std::format("BLOCK type: {} over-read : {} offset > {} block end", currentBlockInfo.blockType,
                                  currentOffset, block_end));
             currentOffset = block_end;
             continue;
-        } else {
-            logMessage(std::format("Read block {}", currentBlockInfo.blockType));
         }
 
         // Handle the block into the tree
