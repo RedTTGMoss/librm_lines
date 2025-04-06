@@ -4,10 +4,9 @@
 
 bool V5Reader::readHeader() {
     if (memcmp(data_, V5_HEADER, V5_HEADER_SIZE) == 0) {
-        logMessage("Found V5 header");
+        logDebug("Found V5 header");
         return true;
     }
-    logMessage("Couldn't find V5 header");
     return false;
 }
 
