@@ -23,8 +23,14 @@ def python_error_logger(msg):
 def python_debug_logger(msg):
     print(f"{Fore.LIGHTYELLOW_EX}{msg.decode()}{Fore.RESET}")
 
+script_folder = os.path.dirname(os.path.abspath(__file__))
 
-lib = ctypes.CDLL("../build/librm_lines.so")
+if os.name == 'nt':
+    # Windows-specific code
+    lib = ctypes.WinDLL(os.path.join(script_folder, '..', 'build', 'Debug',  'rm_lines.dll'))
+else:
+    # Unix-specific code (Linux, macOS)
+    lib = ctypes.CDLL(os.path.join(script_folder, '..', 'build', 'librm_lines.so'))
 
 # Function signature: (int, size_t, int) -> size_t
 lib.convertToSvg.argtypes = [ctypes.c_int, ctypes.c_size_t, ctypes.c_int]
