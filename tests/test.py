@@ -24,7 +24,7 @@ def python_debug_logger(msg):
     print(f"{Fore.LIGHTYELLOW_EX}{msg.decode()}{Fore.RESET}")
 
 
-lib = ctypes.CDLL("../cmake-build-debug/librm_lines.so")
+lib = ctypes.CDLL("../build/librm_lines.so")
 
 # Function signature: (int, size_t, int) -> size_t
 lib.convertToSvg.argtypes = [ctypes.c_int, ctypes.c_size_t, ctypes.c_int]
