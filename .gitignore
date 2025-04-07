@@ -4,3 +4,4 @@ build/
 .idea/
 /tests/output.svg
 /tests/output/
+__pycache__/
