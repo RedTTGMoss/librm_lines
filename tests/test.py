@@ -27,10 +27,10 @@ script_folder = os.path.dirname(os.path.abspath(__file__))
 
 if os.name == 'nt':
     # Windows-specific code
-    lib = ctypes.WinDLL(os.path.join(script_folder, '..', 'build', 'Debug',  'rm_lines.dll'))
+    lib = ctypes.WinDLL(os.path.join(script_folder, 'build', 'Debug',  'rm_lines.dll'))
 else:
     # Unix-specific code (Linux, macOS)
-    lib = ctypes.CDLL(os.path.join(script_folder, '..', 'build', 'librm_lines.so'))
+    lib = ctypes.CDLL(os.path.join(script_folder, '..', 'cmake-build-debug', 'librm_lines.so'))
 
 # Function signature: (int, size_t, int) -> size_t
 lib.convertToSvg.argtypes = [ctypes.c_int, ctypes.c_size_t, ctypes.c_int]
