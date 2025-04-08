@@ -1,8 +1,8 @@
-#ifndef V6_READER_H
-#define V6_READER_H
+#ifndef READER_H
+#define READER_H
 
 #include "library.h"
 
-EXPORT size_t convert_to_svg(int input_fd, size_t input_size, int output_fd);
+EXPORT bool convertToSvg(int inputFD, int outputFD);
 
-#endif //V6_READER_H
+#endif //READER_H

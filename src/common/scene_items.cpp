@@ -24,6 +24,7 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     if (!reader->readFloat(4, &startingLength)) return false;
 
     SubBlockInfo subBlockInfo;
+    reader->getTag();
     if (!reader->readSubBlock(5, subBlockInfo)) return false;
     size_t pointSizeSerialized = getPointSizeSerialized(version);
     if (subBlockInfo.size % pointSizeSerialized != 0) {
@@ -46,16 +47,21 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     if (!reader->readId(6, &timestamp)) return false;
 
     // Optionally read moveId
-    if (reader->remainingBytes() >= 3 && reader->checkTag(7, TagType::ID)) {
+    if (reader->remainingBytes() < 3) return true; // No more data to read
+    reader->getTag();
+    if (reader->checkTag(7, TagType::ID)) {
         CrdtId _moveId;
-        if (!reader->readId(7, &_moveId)) return false;
+        if (!reader->readId(&_moveId)) return false;
         moveId = _moveId;
     }
 
+    if (reader->remainingBytes() < 4) return true; // No more data to read
+    reader->getTag();
+
     // Optionally read argbColor, this is only for new highlighters
-    if (color == HIGHLIGHT && reader->remainingBytes() >= 5 && reader->checkTag(8, TagType::Byte4)) {
+    if (color == HIGHLIGHT && reader->checkTag(8, TagType::Byte4)) {
         Color _argbColor;
-        if (!reader->readColor(8, &_argbColor)) return false;
+        if (!reader->readColor(&_argbColor)) return false;
         argbColor = _argbColor;
     }
 
@@ -110,16 +116,20 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
 
 bool GlyphRange::read(TaggedBlockReader *reader) {
     // Optionally read start
+    reader->getTag();
     if (reader->checkTag(2, TagType::Byte4)) {
+        reader->claimTag();
         uint32_t _start;
-        if (!reader->readInt(2, &_start)) return false;
+        if (!reader->readInt(&_start)) return false;
         start = _start;
     }
 
     // Optionally read length
+    reader->getTag();
     if (reader->checkTag(3, TagType::Byte4)) {
+        reader->claimTag();
         uint32_t _length;
-        if (!reader->readInt(3, &_length)) return false;
+        if (!reader->readInt(&_length)) return false;
         length = _length;
     }
 
@@ -134,6 +144,7 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
         length = text.length();
     }
 
+    reader->getTag();
     if (!reader->readSubBlock(6)) return false; // Rects
 
     uint64_t numberOfRects;
@@ -146,7 +157,8 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
     }
 
     // Optionally read argbColor, this is only for new highlighters
-    if (color == HIGHLIGHT && reader->remainingBytes() >= 5 && reader->checkTag(8, TagType::Byte4)) {
+    reader->getTag();
+    if (color == HIGHLIGHT && reader->checkTag(8, TagType::Byte4)) {
         Color _argbColor;
         if (!reader->readColor(8, &_argbColor)) return false;
         argbColor = _argbColor;
@@ -155,7 +167,7 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
         // TODO: Read unknown
         logError("Unknown bytes remaining in GlyphRange");
         // Skip for now...
-        reader->currentOffset = reader->currentBlockInfo.offset + reader->currentBlockInfo.size;
+        reader->seekTo(reader->currentBlockInfo.offset + reader->currentBlockInfo.size);
     }
 
     return true;

@@ -3,7 +3,10 @@
 #include <cstring>
 
 bool V5Reader::readHeader() {
-    if (memcmp(data_, V5_HEADER, V5_HEADER_SIZE) == 0) {
+    char header[V5_HEADER_SIZE];
+    read(fd, header, V5_HEADER_SIZE);
+
+    if (memcmp(header, V5_HEADER, V5_HEADER_SIZE) == 0) {
         logDebug("Found V5 header");
         return true;
     }

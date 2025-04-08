@@ -3,7 +3,10 @@
 #include <cstring>
 
 bool V6Reader::readHeader() {
-    if (memcmp(data_, V6_HEADER, V6_HEADER_SIZE) == 0) {
+    char header[V6_HEADER_SIZE];
+    read(fd, header, V6_HEADER_SIZE);
+    
+    if (memcmp(header, V6_HEADER, V6_HEADER_SIZE) == 0) {
         logDebug("Found V6 header");
         return true;
     }

@@ -15,13 +15,19 @@ enum class TagType : uint8_t {
     Byte4 = 0x4,
     Byte2 = 0x2,
     Byte1 = 0x1,
-    BAD = 0x0,
+    BAD_LENGTH = 0x0,
+    BAD_VALUINT = 0xFF,
+};
+
+struct Tag {
+    uint8_t index;
+    TagType type;
 };
 
 class TaggedBlockReader {
 public:
-    TaggedBlockReader(void *data, const size_t dataSize,
-                      const int headerOffset) : data_(static_cast<uint8_t *>(data)),
+    TaggedBlockReader(const int fd, const size_t dataSize,
+                      const int headerOffset) : fd(fd),
                                                  dataSize_(dataSize), currentOffset(headerOffset) {
     };
 
@@ -51,10 +57,15 @@ public:
     bool readUUID(std::string& uuid, uint32_t length);
 
     bool readBytes(uint32_t size, void* result);
+    void readBytesOrError(uint32_t size, void* result);
 
-    bool checkTag(uint8_t expectedIndex, TagType expectedTagType);
-    bool readTag(uint8_t expectedIndex, TagType expectedTagType);
-    bool readRequiredTag(uint8_t expectedIndex, TagType expectedTagType);
+    void skipBytes(uint32_t size);
+    void seekTo(uint32_t offset);
+
+    bool checkTag(uint8_t expectedIndex, TagType expectedTagType) const;
+    bool checkRequiredTag(uint8_t expectedIndex, TagType expectedTagType);
+    void getTag();
+    void claimTag();
 
     bool readId(uint8_t index, CrdtId *id);
     bool readId(CrdtId *id);
@@ -87,7 +98,7 @@ public:
     bool readTextItem(TextItem *textItem);
     bool readTextFormat(TextFormat *textFormat);
 
-    uint8_t *data_;
+    int fd;
     size_t dataSize_;
     uint32_t currentOffset;
     std::unique_ptr<Block> currentBlock;
@@ -96,6 +107,8 @@ private:
     std::pair<uint8_t, TagType> _readTagValues();
     template <typename T>
     bool _readLwwTimestamp(uint8_t index, LwwItem<T> *id);
+    Tag tag;
+    bool tagClaimed = true;
 };
 
 #endif //TAGGED_BLOCK_READER_H

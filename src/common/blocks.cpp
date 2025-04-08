@@ -75,6 +75,7 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
 
     for (uint64_t i = 0; i < subBlocks; i++) {
         // Read into subblock
+        reader->getTag();
         if (!reader->readSubBlock(0)) return false;
 
         uint64_t uuidLength = 0;
@@ -140,7 +141,7 @@ bool SceneTreeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &treeId)) return false;
     if (!reader->readId(2, &nodeId)) return false;
     if (!reader->readBool(3, &isUpdate)) return false;
-
+    reader->getTag();
     if (!reader->readSubBlock(4)) return false;
     if (!reader->readId(1, &parentId)) return false;
 
@@ -175,6 +176,7 @@ bool SceneItemBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(3, &item.leftId)) return false;
     if (!reader->readId(4, &item.rightId)) return false;
     if (!reader->readInt(5, &item.deletedLength)) return false;
+    reader->getTag();
     if (reader->checkSubBlock(6)) {
         if (!reader->readSubBlock(6)) return false;
         uint8_t itemType;
@@ -205,9 +207,11 @@ bool SceneLineItemBlock::readValue(TaggedBlockReader *reader) {
 bool RootTextBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &blockId)) return false;
     if (blockId != CrdtId(0, 0)) return false;
-
+    reader->getTag();
     if (!reader->readSubBlock(2)) return false; // Section one
+
     for (int i = 1; i <= 2; i++) {
+        reader->getTag();
         if (!reader->readSubBlock(1)) return false; // Text items
     }
 
@@ -221,15 +225,20 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
         value.items.add(textItem);
     }
 
-    for (int i = 2; i >= 1; i--) if (!reader->readSubBlock(i)) return false; // Formatting
+    for (int i = 2; i >= 1; i--) {
+        reader->getTag();
+        if (!reader->readSubBlock(i)) return false; // Formatting
+    }
 
     if (!reader->readValuint(numberOfItems)) return false;
+
 
     value.styles = std::vector<TextFormat>(numberOfItems);
 
     for (uint64_t i = 0; i < numberOfItems; i++)
         if (!reader->readTextFormat(&value.styles[i])) return false;
 
+    reader->getTag();
     if (!reader->readSubBlock(3)) return false; // last section
 
     if (!reader->readDouble(&value.posX)) return false;

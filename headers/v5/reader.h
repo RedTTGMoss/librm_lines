@@ -9,8 +9,8 @@
 
 class V5Reader : public TaggedBlockReader {
 public:
-    V5Reader(void *data, const size_t data_size)
-        : TaggedBlockReader(data, data_size, V5_HEADER_SIZE) {
+    V5Reader(const int fd, const size_t data_size)
+        : TaggedBlockReader(fd, data_size, V5_HEADER_SIZE) {
     };
 
     bool readHeader() override;

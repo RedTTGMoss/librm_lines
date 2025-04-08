@@ -14,7 +14,7 @@ void SceneTree::addNode(const CrdtId &nodeId, const CrdtId &parentId) {
 }
 
 Group* SceneTree::getNode(const CrdtId& id) {
-    logDebug(std::format("Get node {}", id.repr()));
+    // logDebug(std::format("Get node {}", id.repr()));
     const auto it = _nodeIds.find(id);
 
     if (it == _nodeIds.end()) {

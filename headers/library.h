@@ -3,8 +3,13 @@
 
 #ifdef _WIN32
     #define EXPORT extern "C" __declspec(dllexport)
+    # define read _read
+    # define write _write
+    # define fstat _fstat
+    # define lseek _lseek
 #else
 #define EXPORT extern "C" __attribute__((visibility("default")))
+#include <sys/stat.h>
 #endif
 #include <string>
 
@@ -30,5 +35,7 @@ static LogFunc globalDebugLogger = nullptr;
 EXPORT void setDebugLogger(LogFunc debugLogger);
 
 void logDebug(const std::string &msg);
+
+off_t getFileSize(int fd);
 
 #endif //LIBRARY_H
