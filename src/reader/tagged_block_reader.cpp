@@ -90,8 +90,8 @@ bool TaggedBlockReader::readUUID(std::string &uuid, const uint32_t length) {
     if (currentOffset + length > dataSize_) return false;
 
     // Read the UUID bytes (of variable length)
-    uint8_t uuid_bytes[length];
-    readBytesOrError(length, uuid_bytes); // Read the uuid data
+    std::vector<uint8_t> uuid_bytes(length);
+    readBytesOrError(length, uuid_bytes.data()); // Read the uuid data
 
     // Convert bytes to hexadecimal string without modifying byte order (little-endian)
     std::stringstream ss;

@@ -2,6 +2,7 @@
 #define LIBRARY_H
 
 #ifdef _WIN32
+    <io.h>
     #define EXPORT extern "C" __declspec(dllexport)
     # define read _read
     # define write _write
