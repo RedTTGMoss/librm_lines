@@ -40,6 +40,7 @@ lib.setLogger(python_logger)
 lib.setErrorLogger(python_error_logger)
 lib.setDebugLogger(python_debug_logger)
 
+begin_all = time.time()
 for file in os.listdir("files"):
     output_path = os.path.join('output', file.replace('.rm', '.svg'))
     with open(output_path, 'w') as f:
@@ -50,3 +51,4 @@ for file in os.listdir("files"):
         begin = time.time()
         success = lib.convertToSvg(fin.fileno(), fout.fileno())
         print(f"[{success}] Time taken:", time.time() - begin)
+print("All files processed in:", time.time() - begin_all)
