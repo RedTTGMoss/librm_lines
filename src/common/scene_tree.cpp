@@ -7,13 +7,17 @@ SceneTree::SceneTree() {
 
 void SceneTree::addNode(const CrdtId &nodeId, const CrdtId &parentId) {
     if (_nodeIds.contains(nodeId)) {
-      throw std::invalid_argument(std::format("Node {} already exists in the tree", nodeId.repr()));
+        throw std::invalid_argument(std::format("Node {} already exists in the tree", nodeId.repr()));
     }
     logDebug(std::format("Add node {}, with parent {}", nodeId.repr(), parentId.repr()));
     _nodeIds[nodeId] = std::make_unique<Group>(nodeId);
 }
 
-Group* SceneTree::getNode(const CrdtId& id) {
+void SceneTree::addItem(const SceneItemVariant &item, const CrdtId &parentId) {
+    _groupChildren[parentId].push_back(item);
+}
+
+Group *SceneTree::getNode(const CrdtId &id) {
     // logDebug(std::format("Get node {}", id.repr()));
     const auto it = _nodeIds.find(id);
 

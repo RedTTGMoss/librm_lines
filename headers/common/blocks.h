@@ -62,12 +62,14 @@ struct UnreadableBlock final : public Block {
 
 struct AuthorIdsBlock final : public Block {
     std::map<uint32_t, std::string> authorIds;
+
     bool read(TaggedBlockReader *reader) override;
 };
 
 struct MigrationInfoBlock final : public Block {
     CrdtId migrationId;
     bool isDevice;
+
     bool read(TaggedBlockReader *reader) override;
 };
 
@@ -77,14 +79,16 @@ struct PageInfoBlock final : public Block {
     uint32_t textCharsCount;
     uint32_t textLinesCount;
     uint32_t typeFolioUseCount = 0;
+
     bool read(TaggedBlockReader *reader) override;
 };
 
 struct SceneInfoBlock final : public Block {
     LwwItem<CrdtId> currentLayer;
-    std::optional<LwwItem<bool>> backgroundVisible;
-    std::optional<LwwItem<bool>> rootDocumentVisible;
+    std::optional<LwwItem<bool> > backgroundVisible;
+    std::optional<LwwItem<bool> > rootDocumentVisible;
     std::optional<IntPair> paperSize;
+
     bool read(TaggedBlockReader *reader) override;
 };
 
@@ -101,30 +105,38 @@ struct SceneTreeBlock final : public Block {
 
 struct TreeNodeBlock final : public Block {
     Group group;
+
     bool read(TaggedBlockReader *reader) override;
 };
 
 struct SceneItemBlock : public Block {
-    SceneItemBlock(uint8_t itemType = 0) : _itemType(itemType) {}
+    SceneItemBlock(uint8_t itemType = 0) : _itemType(itemType) {
+    }
+
     CrdtId parentId;
     CrdtSequenceItem<> item;
 
     // In subblock
     bool read(TaggedBlockReader *reader) override;
+
 private:
     uint8_t _itemType;
+
     virtual bool readValue(TaggedBlockReader *reader) = 0;
 };
 
 struct SceneGroupItemBlock final : public SceneItemBlock {
-    SceneGroupItemBlock() : SceneItemBlock(0x02) {}
+    SceneGroupItemBlock() : SceneItemBlock(0x02) {
+    }
+
     CrdtSequenceItem<CrdtId> item;
 
     bool readValue(TaggedBlockReader *reader) override;
 };
 
 struct SceneLineItemBlock final : public SceneItemBlock {
-    SceneLineItemBlock() : SceneItemBlock(0x03) {}
+    SceneLineItemBlock() : SceneItemBlock(0x03) {
+    }
 
     uint8_t version;
     CrdtSequenceItem<Line> item;
@@ -140,7 +152,8 @@ struct RootTextBlock final : public Block {
 };
 
 struct SceneGlyphItemBlock final : public SceneItemBlock {
-    SceneGlyphItemBlock() : SceneItemBlock(0x01) {}
+    SceneGlyphItemBlock() : SceneItemBlock(0x01) {
+    }
 
     GlyphRange value;
 

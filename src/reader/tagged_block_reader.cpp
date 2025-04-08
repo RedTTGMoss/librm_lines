@@ -108,7 +108,7 @@ bool TaggedBlockReader::readBytes(const uint32_t size, void *result) {
     if (currentOffset + size > dataSize_) return false;
 
     // Read the bytes directly into the destination buffer
-    if(read(fd, result, size) != size) return false; // Error: Failed to read the expected number of bytes
+    if (read(fd, result, size) != size) return false; // Error: Failed to read the expected number of bytes
 
     // Update the current offset
     currentOffset += size;
@@ -434,7 +434,7 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 // This node should already exist
 
                 const auto treeNodeBlock = dynamic_cast<TreeNodeBlock *>(currentBlock.get());
-                Group* node = tree.getNode(treeNodeBlock->group.nodeId);
+                Group *node = tree.getNode(treeNodeBlock->group.nodeId);
 
                 node->label = treeNodeBlock->group.label;
                 node->visible = treeNodeBlock->group.visible;
@@ -448,10 +448,11 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 // Add this node to its parent
 
                 const auto groupItemBlock = dynamic_cast<SceneGroupItemBlock *>(currentBlock.get());
-                groupItemBlock->item.applyTreeValue(tree);
-                // if (!tree.addItem());
+                groupItemBlock->item.applyTreeValue(tree, groupItemBlock->item.value.value());
+                tree.addItem(groupItemBlock->item, groupItemBlock->parentId);
                 break;
             }
+            case
             default: break;
         }
     }
