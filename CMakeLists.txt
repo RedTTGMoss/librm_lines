@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 20)
 include_directories(rm_lines/headers)
 
 add_library(rm_lines SHARED rm_lines/src/library.cpp
-        rm_lines/src/reader.cpp
+        rm_lines/src/rm_lines.cpp
         rm_lines/src/reader/tagged_block_reader.cpp
         rm_lines/src/v5/reader.cpp
         rm_lines/src/v6/reader.cpp
