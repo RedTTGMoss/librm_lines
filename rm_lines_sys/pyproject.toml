@@ -1,0 +1,25 @@
+[project]
+name = "rm_lines_sys"
+version = "0.0.1"
+description = "This project holds the dynamic library and bindings for python."
+authors = [
+    { name = "RedTTG", email = "red@redttg.com" }
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+
+]
+
+[tool.poetry]
+packages = [{ include = "rm_lines_sys", from = "src" }]
+include = [
+    "src/rm_lines_sys/*.dll",
+    "src/rm_lines_sys/*.so",
+    "src/rm_lines_sys/*.dylib"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
