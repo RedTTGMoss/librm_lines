@@ -463,9 +463,13 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 break;
             }
             case SCENE_INFO_BLOCK: {
-                // const auto sceneInfoBlock = dynamic_cast<SceneInfoBlock *>(currentBlock.get());
-                //
-                // tree.sceneInfo =
+                const auto sceneInfoBlock = dynamic_cast<SceneInfoBlock *>(currentBlock.get());
+                tree.sceneInfo = *sceneInfoBlock;
+                break;
+            }
+            case ROOT_TEXT_BLOCK: {
+                const auto rootTextBlock = dynamic_cast<RootTextBlock *>(currentBlock.get());
+                tree.rootText = rootTextBlock->value;
                 break;
             }
             default: break;

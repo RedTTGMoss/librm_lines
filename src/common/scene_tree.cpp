@@ -17,9 +17,9 @@ void SceneTree::addItem(const SceneItemVariant &item, const CrdtId &parentId) {
     _groupChildren[parentId].push_back(item);
 }
 
-Group *SceneTree::getNode(const CrdtId &id) {
+Group *SceneTree::getNode(const CrdtId &nodeId) {
     // logDebug(std::format("Get node {}", id.repr()));
-    const auto it = _nodeIds.find(id);
+    const auto it = _nodeIds.find(nodeId);
 
     if (it == _nodeIds.end()) {
         throw std::out_of_range("Node not found in the tree");

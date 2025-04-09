@@ -10,7 +10,6 @@
 #include <common/crdt_sequence_item.h>
 #include <optional>
 
-#include "scene_tree.h"
 #include "common/scene_items.h"
 
 enum BlockTypes {

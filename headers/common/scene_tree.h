@@ -11,6 +11,8 @@
 #include <common/crdt_sequence_item.h>
 #include <common/scene_items.h>
 
+#include "blocks.h"
+
 using SceneItemVariant = std::variant<
     CrdtSequenceItem<Group>,
     CrdtSequenceItem<CrdtId>,
@@ -22,6 +24,9 @@ using SceneItemVariant = std::variant<
 class SceneTree {
 public:
     SceneTree();
+
+    std::optional<SceneInfoBlock> sceneInfo;
+    std::optional<Text> rootText;
 
     void addNode(const CrdtId &nodeId, const CrdtId &parentId);
 
