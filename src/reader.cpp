@@ -28,7 +28,7 @@ EXPORT bool convertToSvg(const int inputFD, const int outputFD) {
     try {
         reader->buildTree(*tree.get());
     } catch (const std::exception &e) {
-        logError(std::format("Failed to build tree: {}", e.what()));
+        logError(std::format("{}\nFailed to build tree: {}", getStackTrace(), e.what()));
     }
 
     // Dummy SVG content (replace with real conversion later)

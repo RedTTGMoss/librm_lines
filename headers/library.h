@@ -10,8 +10,8 @@
     # define stat _stat
     # define lseek _lseek
 #else
-    #define EXPORT extern "C" __attribute__((visibility("default")))
-    #include <sys/stat.h>
+#define EXPORT extern "C" __attribute__((visibility("default")))
+#include <sys/stat.h>
 #endif
 #include <string>
 
@@ -39,5 +39,7 @@ EXPORT void setDebugLogger(LogFunc debugLogger);
 void logDebug(const std::string &msg);
 
 off_t getFileSize(int fd);
+
+std::string getStackTrace();
 
 #endif //LIBRARY_H
