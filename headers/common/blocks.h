@@ -110,11 +110,11 @@ struct TreeNodeBlock final : public Block {
 };
 
 struct SceneItemBlock : public Block {
-    SceneItemBlock(uint8_t itemType = 0) : _itemType(itemType) {
+    explicit SceneItemBlock(const uint8_t itemType = 0) : _itemType(itemType) {
     }
 
-    CrdtId parentId;
-    CrdtSequenceItem<> item;
+    CrdtId parentId = {};
+    CrdtSequenceItem<> item = {};
 
     // In subblock
     bool read(TaggedBlockReader *reader) override;
@@ -129,7 +129,7 @@ struct SceneGroupItemBlock final : public SceneItemBlock {
     SceneGroupItemBlock() : SceneItemBlock(0x02) {
     }
 
-    CrdtSequenceItem<CrdtId> item;
+    CrdtSequenceItem<CrdtId> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
 };
@@ -139,7 +139,7 @@ struct SceneLineItemBlock final : public SceneItemBlock {
     }
 
     uint8_t version;
-    CrdtSequenceItem<Line> item;
+    CrdtSequenceItem<Line> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
 };
@@ -155,7 +155,7 @@ struct SceneGlyphItemBlock final : public SceneItemBlock {
     SceneGlyphItemBlock() : SceneItemBlock(0x01) {
     }
 
-    GlyphRange value;
+    CrdtSequenceItem<GlyphRange> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
 };

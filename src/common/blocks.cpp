@@ -8,7 +8,7 @@
 #include <common/scene_items.h>
 
 BlockTypes BlockInfo::getBlockType() const {
-     return static_cast<BlockTypes>(blockType);
+    return static_cast<BlockTypes>(blockType);
 }
 
 
@@ -250,5 +250,6 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
 }
 
 bool SceneGlyphItemBlock::readValue(TaggedBlockReader *reader) {
-    return value.read(reader);
+    item.value = std::make_optional<GlyphRange>();
+    return item.value.value().read(reader);
 }

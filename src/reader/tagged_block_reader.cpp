@@ -452,7 +452,22 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 tree.addItem(groupItemBlock->item, groupItemBlock->parentId);
                 break;
             }
-            case
+            case SCENE_LINE_ITEM_BLOCK: {
+                const auto lineItemBlock = dynamic_cast<SceneLineItemBlock *>(currentBlock.get());
+                tree.addItem(lineItemBlock->item, lineItemBlock->parentId);
+                break;
+            }
+            case SCENE_GLYPH_ITEM_BLOCK: {
+                const auto glyphItemBlock = dynamic_cast<SceneGlyphItemBlock *>(currentBlock.get());
+                tree.addItem(glyphItemBlock->item, glyphItemBlock->parentId);
+                break;
+            }
+            case SCENE_INFO_BLOCK: {
+                // const auto sceneInfoBlock = dynamic_cast<SceneInfoBlock *>(currentBlock.get());
+                //
+                // tree.sceneInfo =
+                break;
+            }
             default: break;
         }
     }
