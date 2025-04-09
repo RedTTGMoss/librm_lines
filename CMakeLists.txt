@@ -1,20 +1,20 @@
 cmake_minimum_required(VERSION 3.30)
-project(lib_rm_lines)
+project(rm_lines)
 
 set(CMAKE_CXX_STANDARD 20)
 
-include_directories(headers)
+include_directories(rm_lines/headers)
 
-add_library(lib_rm_lines SHARED src/library.cpp
-        src/reader.cpp
-        src/reader/tagged_block_reader.cpp
-        src/v5/reader.cpp
-        src/v6/reader.cpp
-        src/common/blocks.cpp
-        src/common/scene_items.cpp
-        src/common/data_types.cpp
-        src/common/scene_tree.cpp
-        src/common/crdt_sequence_item.cpp
+add_library(rm_lines SHARED rm_lines/src/library.cpp
+        rm_lines/src/reader.cpp
+        rm_lines/src/reader/tagged_block_reader.cpp
+        rm_lines/src/v5/reader.cpp
+        rm_lines/src/v6/reader.cpp
+        rm_lines/src/common/blocks.cpp
+        rm_lines/src/common/scene_items.cpp
+        rm_lines/src/common/data_types.cpp
+        rm_lines/src/common/scene_tree.cpp
+        rm_lines/src/common/crdt_sequence_item.cpp
 )
 
-set_target_properties(lib_rm_lines PROPERTIES OUTPUT_NAME "rm_lines")
+#set_target_properties(rm_lines PROPERTIES OUTPUT_NAME "rm_lines")
