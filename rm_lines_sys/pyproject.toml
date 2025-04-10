@@ -1,6 +1,6 @@
 [project]
 name = "rm_lines_sys"
-version = "0.0.1"
+version = "0.0.0+replaced-by-ci"
 description = "This project holds the dynamic library and bindings for python."
 authors = [
     { name = "RedTTG", email = "red@redttg.com" }
@@ -11,6 +11,7 @@ dependencies = [
 
 ]
 
+
 [tool.poetry]
 packages = [{ include = "rm_lines_sys", from = "src" }]
 include = [
@@ -18,6 +19,7 @@ include = [
     "src/rm_lines_sys/*.so",
     "src/rm_lines_sys/*.dylib"
 ]
+build = "build.py"
 
 
 [build-system]

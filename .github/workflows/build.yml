@@ -1,71 +1,169 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake on multiple platforms
+name: CMake on multiple platforms and publish to PYPI
 
 on:
   push:
-    branches: [ "main" ]
+    tags: [ "*" ]
+    branches-ignore: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "experimental" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-
+  build-sys:
+    name: ${{ matrix.os }} ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}-latest
+    
     strategy:
       fail-fast: true
-
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        build_type: [Release]
-        c_compiler: [gcc, cl]
+        os: [ 'ubuntu', 'windows' ]
         include:
-          - os: windows-latest
-            c_compiler: cl
-            cpp_compiler: cl
-          - os: ubuntu-latest
-            c_compiler: gcc
-            cpp_compiler: g++
-        exclude:
-          - os: windows-latest
-            c_compiler: gcc
-          - os: ubuntu-latest
-            c_compiler: cl
+          - os: 'ubuntu'
+            target: 'x86_64-unknown-linux-gnu'
+            cpp_compiler: 'g++'
+            c_compiler: 'gcc'
+            build_type: 'Release'
+          - os: 'windows'
+            target: 'x86_64-pc-windows-gnu'
+            cpp_compiler: 'x86_64-w64-mingw32-g++'
+            c_compiler: 'x86_64-w64-mingw32-gcc'
+            build_type: 'Release'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch tags for current commit
+        run: git fetch --tags --depth=1
+
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Configure CMake
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -S ${{ github.workspace }}
+
+      - name: Build
+        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          cache: 'pip'
+
+      - name: Install Poetry
+        run: |
+          python -m pip install --upgrade pip
+          pip install poetry
+
+      - name: Update version
+        shell: bash
+        run: |
+          if [[ "${{ github.ref }}" == "refs/tags/"* ]]; then
+            # Check if there is a tag on the current commit
+            tag=$(git tag --points-at HEAD | head -n 1)
+            if [[ -n "$tag" ]]; then
+              echo "Tag found: $tag"
+              version="${tag}"
+            else
+              echo "Failed to get tag, using dev"
+              version="0.0.0.dev"
+            fi
+          else
+            echo "Not on tagged commit, using dev"
+            version="0.0.0.dev"
+          fi
+          echo "Version: $version"
+          echo "version=${version}" >> "$GITHUB_ENV"
+          sed -i -e "s|0.0.0+replaced-by-ci|${version}|g" rm_lines_sys/pyproject.toml
+
+      - name: Copy shared library to sys
+        shell: bash
+        run: |
+          case "${{ matrix.os }}" in
+            macos)
+              cp "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" rm_lines_sys/src/rm_lines_sys/librm_lines.dylib
+              ;;
+            ubuntu)
+              cp "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" rm_lines_sys/src/rm_lines_sys/librm_lines.so
+              ;;
+            windows)
+              cp "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" rm_lines_sys/src/rm_lines_sys/rm_lines.dll
+              ;;
+          esac
+
+      - name: Build with poetry
+        shell: bash
+        run: |
+          cd rm_lines_sys
+          poetry build -f wheel
+
+      - name: Gather files into temp dir
+        shell: bash
+        run: |
+          mkdir -p artifact
+          mv rm_lines_sys/dist/*.whl artifact/
+      
+          case "${{ matrix.os }}" in
+            ubuntu*)
+              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" artifact/
+              ;;
+            macos*)
+              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" artifact/
+              ;;
+            windows*)
+              mv "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" artifact/
+              ;;
+          esac
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }}-${{ matrix.target }}
+          path: |
+            artifact/*.whl
+            artifact/librm_lines.so
+            artifact/librm_lines.dylib
+            artifact/rm_lines.dll
+          retention-days: 5
+
+  publish-to-pypi:
+    name: >-
+      Publish Python 🐍 distribution 📦 to PyPI
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+    needs:
+      - build-sys
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/rm_lines_sys
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
 
     steps:
-    - uses: actions/checkout@v4
-
-    - name: Set reusable strings
-      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
-      id: strings
-      shell: bash
-      run: |
-        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: >
-        cmake -B ${{ steps.strings.outputs.build-output-dir }}
-        -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-        -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -S ${{ github.workspace }}
-
-    - name: Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
-
-    - name: Test
-      working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest --build-config ${{ matrix.build_type }}
-    - name: Upload Artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ${{ runner.os }}
-        path: |
-          ${{ steps.strings.outputs.build-output-dir }}/librm_lines.so
-          ${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib
-          ${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll
+      - name: Download all the dists
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+      - name: Move wheels to dist
+        shell: bash
+        run: |
+          mkdir -p dist
+          find artifacts -type f -name "*.whl" -exec mv {} dist/ \;
+      - name: Publish distribution 📦 to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
