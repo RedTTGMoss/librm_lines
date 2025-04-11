@@ -36,9 +36,13 @@ else:
     # Unix-specific code (Linux, macOS)
     lib = ctypes.CDLL(os.path.join(script_folder, '..', 'cmake-build-debug', 'librm_lines.so'))
 
-# Function signature: (int, size_t, int) -> size_t
-lib.convertToSvg.argtypes = [ctypes.c_int, ctypes.c_int]
+charptr = ctypes.POINTER(ctypes.c_char)
+
+lib.convertToSvg.argtypes = [ctypes.c_char_p, ctypes.c_int]
 lib.convertToSvg.restype = ctypes.c_bool
+
+lib.buildTree.argtypes = [ctypes.c_int]
+lib.buildTree.restype = ctypes.c_char_p
 
 lib.setLogger(python_logger)
 lib.setErrorLogger(python_error_logger)
@@ -50,9 +54,15 @@ for file in os.listdir(files_folder):
     with open(output_path, 'w') as f:
         pass
     print("Processing file:", file)
-    with open(os.path.join(files_folder, file), "r+b") as fin, open(output_path, "r+b") as fout:
-        # Call the shared library (it will expand the output file)
+    with open(os.path.join(files_folder, file), "r+b") as fin:
+        print(fn := fin.fileno())
         begin = time.time()
-        success = lib.convertToSvg(fin.fileno(), fout.fileno())
+        tree_id = lib.buildTree(fn).decode()
+        print(f"[{tree_id}] Read, time taken:", time.time() - begin)
+    if not tree_id:
+        continue
+    with open(output_path, "r+b") as fout:
+        begin = time.time()
+        success = lib.convertToSvg(tree_id.encode(), fout.fileno())
         print(f"[{success}] Time taken:", time.time() - begin)
 print("All files processed in:", time.time() - begin_all)

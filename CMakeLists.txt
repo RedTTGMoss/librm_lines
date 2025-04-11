@@ -17,4 +17,6 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/common/crdt_sequence_item.cpp
 )
 
+target_link_libraries(rm_lines PRIVATE uuid)
+
 #set_target_properties(rm_lines PROPERTIES OUTPUT_NAME "rm_lines")
