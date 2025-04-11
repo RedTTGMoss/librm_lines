@@ -154,7 +154,7 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
 
 json SceneInfoBlock::toJson() const {
     json j;
-    j["currentLayer"] = currentLayer.value.asJson();
+    j["currentLayer"] = currentLayer.value.toJson();
     if (backgroundVisible) {
         j["backgroundVisible"] = backgroundVisible->value;
     } else {

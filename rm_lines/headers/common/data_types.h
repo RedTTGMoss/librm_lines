@@ -25,7 +25,7 @@ struct CrdtId {
 
     std::string repr() const;
 
-    json asJson() const;
+    json toJson() const;
 };
 
 template<>
@@ -43,6 +43,15 @@ struct CrdtSequence {
     void add(T &item) {
         sequence[item.itemId] = item;
     }
+
+    json toJson() {
+        json j;
+        // Iterate over the map and convert each item to JSON
+        for (const auto &[key, value] : sequence) {
+            j[key.toJson()] = value.toJsonNoItem();
+        }
+        return j;
+    }
 };
 
 struct IntPair {
@@ -59,9 +68,17 @@ struct Rect {
 
 template<typename T>
 struct LwwItem {
-    CrdtId timestamp;
+    CrdtId itemId;
     T value;
+
+    json toJson() const {
+        return {
+            {"itemId", itemId.toJson()},
+            {"value", value}
+        };
+    }
 };
+
 
 class Group {
 public:
@@ -89,8 +106,13 @@ enum ParagraphStyle {
     CHECKBOX_CHECKED = 7
 };
 
+template<>
+json LwwItem<ParagraphStyle>::toJson() const;
+
 typedef std::pair<std::string, std::optional<uint32_t> > StringWithFormat;
 typedef std::pair<CrdtId, LwwItem<ParagraphStyle> > TextFormat;
+
+json textFormatToJson(const TextFormat &textFormat);
 
 struct Color {
     uint8_t alpha;

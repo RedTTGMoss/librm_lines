@@ -68,6 +68,20 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     return true;
 }
 
+json Text::toJson() {
+    std::vector<json> stylesJson;
+    for (const auto &style : styles) {
+        stylesJson.push_back(textFormatToJson(style));
+    }
+    return {
+        {"items", items.toJson()},
+        {"styles", stylesJson},
+        {"posX", posX},
+        {"posY", posY},
+        {"width", width},
+    };
+}
+
 bool Point::read(TaggedBlockReader *reader, uint8_t version) {
     if (!reader->readFloat(&x)) return false;
     if (!reader->readFloat(&y)) return false;

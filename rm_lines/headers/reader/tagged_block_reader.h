@@ -137,7 +137,7 @@ private:
     std::pair<uint8_t, TagType> _readTagValues();
 
     template<typename T>
-    bool _readLwwTimestamp(uint8_t index, LwwItem<T> *id);
+    bool _readLwwItemId(uint8_t index, LwwItem<T> *id);
 
     Tag tag;
     bool tagClaimed = true;

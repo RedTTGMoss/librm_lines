@@ -6,6 +6,10 @@
 #include <common/data_types.h>
 #include <common/crdt_sequence_item.h>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 class TaggedBlockReader;
 
 enum PenColor {
@@ -68,6 +72,8 @@ struct Text {
     double posX;
     double posY;
     float width;
+
+    json toJson();
 };
 
 struct GlyphRange {

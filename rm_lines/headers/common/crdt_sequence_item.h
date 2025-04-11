@@ -20,11 +20,33 @@ public:
         return _treeValue;
     }
 
+    json toJson() const {
+        json j = toJsonNoItem();
+        j["itemId"] = itemId.toJson();
+        return j;
+    }
+    json toJsonNoItem() const {
+        return {
+            {"leftId", leftId.toJson()},
+            {"rightId", rightId.toJson()},
+            {"deletedLength", deletedLength},
+            {"value", value.has_value() ? convertValue() : nullptr}
+        };
+    }
+
+    // ReSharper disable once CppMemberFunctionMayBeStatic
+    json convertValue() const {
+        return nullptr;
+    }
+
 private:
     std::optional<std::reference_wrapper<Group> > _treeValue;
 };
 
-typedef CrdtSequenceItem<std::variant<std::string, uint32_t> > TextItem;
+typedef CrdtSequenceItem<std::variant<std::string, uint32_t>> TextItem;
+
+template<>
+json TextItem::convertValue() const;
 
 std::string formatTextItem(TextItem textItem);
 

@@ -19,10 +19,8 @@ std::string CrdtId::repr() const {
     return std::format("CrdtId[{}:{}]", first, second);
 }
 
-json CrdtId::asJson() const {
-    return {
-        first, second,
-    };
+json CrdtId::toJson() const {
+    return std::format("{}:{}", first, second);
 }
 
 Group::Group(const CrdtId nodeId)
@@ -30,3 +28,18 @@ Group::Group(const CrdtId nodeId)
       label(LwwItem<std::string>(CrdtId(0, 0), "")),
       visible(LwwItem<bool>(CrdtId(0, 0), true))
 {}
+
+json textFormatToJson(const TextFormat &textFormat) {
+    return {
+        {"nodeId", textFormat.first.toJson()},
+        {"format", textFormat.second.toJson()}
+    };
+}
+
+template <>
+json LwwItem<ParagraphStyle>::toJson() const {
+    return {
+                {"characterId", itemId.toJson()},
+                {"value", value}
+    };
+}

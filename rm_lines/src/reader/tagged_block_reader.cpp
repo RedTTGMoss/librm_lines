@@ -302,31 +302,31 @@ bool TaggedBlockReader::readColor(Color *result) {
 // Lww
 
 bool TaggedBlockReader::readLwwId(const uint8_t index, LwwItem<CrdtId> *id) {
-    if (!_readLwwTimestamp<CrdtId>(index, id)) return false;
+    if (!_readLwwItemId<CrdtId>(index, id)) return false;
     if (!readId(2, &id->value)) return false;
     return true;
 }
 
 bool TaggedBlockReader::readLwwBool(const uint8_t index, LwwItem<bool> *result) {
-    if (!_readLwwTimestamp<bool>(index, result)) return false;
+    if (!_readLwwItemId<bool>(index, result)) return false;
     if (!readBool(2, &result->value)) return false;
     return true;
 }
 
 bool TaggedBlockReader::readLwwFloat(const uint8_t index, LwwItem<float> *result) {
-    if (!_readLwwTimestamp<float>(index, result)) return false;
+    if (!_readLwwItemId<float>(index, result)) return false;
     if (!readFloat(2, &result->value)) return false;
     return true;
 }
 
 bool TaggedBlockReader::readLwwByte(const uint8_t index, LwwItem<uint8_t> *result) {
-    if (!_readLwwTimestamp<uint8_t>(index, result)) return false;
+    if (!_readLwwItemId<uint8_t>(index, result)) return false;
     if (!readByte(2, &result->value)) return false;
     return true;
 }
 
 bool TaggedBlockReader::readLwwString(const uint8_t index, LwwItem<std::string> *result) {
-    if (!_readLwwTimestamp<std::string>(index, result)) return false;
+    if (!_readLwwItemId<std::string>(index, result)) return false;
     if (!readString(2, &result->value)) return false;
     return true;
 }
@@ -371,7 +371,7 @@ bool TaggedBlockReader::readTextItem(TextItem *textItem) {
 
 bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
     if (!readId(&textFormat->first)) return false;
-    if (!readId(1, &textFormat->second.timestamp)) return false;
+    if (!readId(1, &textFormat->second.itemId)) return false;
 
     getTag();
     if (!readSubBlock(2)) return false;
@@ -390,10 +390,10 @@ bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
 }
 
 template<typename T>
-bool TaggedBlockReader::_readLwwTimestamp(const uint8_t index, LwwItem<T> *id) {
+bool TaggedBlockReader::_readLwwItemId(const uint8_t index, LwwItem<T> *id) {
     getTag();
     if (!readSubBlock(index)) return false;
-    if (!readId(1, &id->timestamp)) return false;
+    if (!readId(1, &id->itemId)) return false;
     return true;
 }
 
