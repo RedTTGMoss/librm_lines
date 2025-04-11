@@ -2,7 +2,6 @@
 #include "v5/reader.h"
 #include "v6/reader.h"
 #include <cstring>
-#include <uuid/uuid.h>
 #include <cstddef>
 #include <cstdio>
 #include <format>
