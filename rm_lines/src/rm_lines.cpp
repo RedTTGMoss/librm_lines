@@ -92,20 +92,16 @@ EXPORT bool convertToJson(const char *treeId, const int outputFD) {
         logError("Invalid treeId provided");
         return false;
     }
-    logDebug("Got tree, converting to JSON");
     json j = tree->toJson();
 
-    logDebug("Got json, dumping");
     auto jsonString = j.dump(4);
 
-    logDebug("Got jsonString, writing to outputFD");
     write(outputFD, jsonString.c_str(), jsonString.size());
 
     return true;
 }
 
 EXPORT const char *buildTree(const int inputFD) {
-    logDebug(std::format("run build tree {}", inputFD));
     std::shared_ptr<TaggedBlockReader> reader;
     try {
         reader = prepareReader(inputFD);
@@ -117,12 +113,10 @@ EXPORT const char *buildTree(const int inputFD) {
         return "";
     }
 
-    logDebug("make shared tree");
 
     const auto tree = std::make_shared<SceneTree>();
 
     try {
-        logDebug("build tree");
         reader->buildTree(*tree);
     } catch (const std::exception &e) {
         logError(std::format("{}\nFailed to build tree: {}", getStackTrace(), e.what()));
