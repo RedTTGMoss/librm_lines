@@ -47,8 +47,16 @@ jobs:
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
       - name: Install libuuid
-        if: matrix.os == 'ubuntu'
-        run: sudo apt-get update && sudo apt-get install -y libuuid-dev
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y uuid-dev
+
+      - name: Install libuuid (macOS)
+        if: runner.os == 'macOS'
+        run: brew install ossp-uuid
+
+      - name: Install libuuid (Windows)
+        if: runner.os == 'Windows'
+        run: choco install ossp-uuid --yes
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
