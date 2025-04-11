@@ -48,6 +48,8 @@ struct Point {
     uint32_t pressure;
 
     bool read(TaggedBlockReader *reader, uint8_t version);
+
+    json toJson() const;
 };
 
 struct Line {

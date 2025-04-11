@@ -69,16 +69,21 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
 }
 
 json Line::toJson() const {
+    std::vector<json> pointsJson;
+    for (const auto &point : points) {
+        pointsJson.push_back(point.toJson());
+    }
+
     return {
         {"toolId", toolId},
         {"colorId", colorId},
         {"color", color},
         {"thicknessScale", thicknessScale},
         {"startingLength", startingLength},
-        // {"points", items.toJson()},
+        {"points", pointsJson},
         {"timestamp", timestamp.toJson()},
         {"moveId", moveId.has_value() ? moveId->toJson() : nullptr},
-        // {"argbColor", argbColor.has_value() ? argbColor->toJson() : nullptr}
+        {"argbColor", argbColor.has_value() ? argbColor->toJson() : nullptr}
     };
 }
 
@@ -140,6 +145,17 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
         return false;
     }
     return true;
+}
+
+json Point::toJson() const {
+    return {
+        {"x", x},
+        {"y", y},
+        {"speed", speed},
+        {"direction", direction},
+        {"width", width},
+        {"pressure", pressure}
+    };
 }
 
 bool GlyphRange::read(TaggedBlockReader *reader) {

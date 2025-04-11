@@ -36,6 +36,10 @@ json textFormatToJson(const TextFormat &textFormat) {
     };
 }
 
+json Color::toJson() const {
+    return {alpha, red, green, blue};
+}
+
 json Group::toJson() const {
     json j = toJsonNoItem();
     j["nodeId"] = nodeId.toJson();
