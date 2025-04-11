@@ -4,6 +4,7 @@ build/
 .idea/
 .venv/
 /tests/output.svg
-/tests/output/
+/tests/output_json/
+/tests/output_svg/
 __pycache__/
 /rm_lines_sys/dist/
