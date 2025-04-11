@@ -68,6 +68,20 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     return true;
 }
 
+json Line::toJson() const {
+    return {
+        {"toolId", toolId},
+        {"colorId", colorId},
+        {"color", color},
+        {"thicknessScale", thicknessScale},
+        {"startingLength", startingLength},
+        // {"points", items.toJson()},
+        {"timestamp", timestamp.toJson()},
+        {"moveId", moveId.has_value() ? moveId->toJson() : nullptr},
+        // {"argbColor", argbColor.has_value() ? argbColor->toJson() : nullptr}
+    };
+}
+
 json Text::toJson() {
     std::vector<json> stylesJson;
     for (const auto &style : styles) {

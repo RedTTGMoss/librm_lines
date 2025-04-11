@@ -93,6 +93,9 @@ public:
     std::optional<LwwItem<uint8_t> > anchorType;
     std::optional<LwwItem<float> > anchorThreshold;
     std::optional<LwwItem<float> > anchorOriginX;
+
+    json toJson() const;
+    json toJsonNoItem() const;
 };
 
 enum ParagraphStyle {
@@ -108,6 +111,8 @@ enum ParagraphStyle {
 
 template<>
 json LwwItem<ParagraphStyle>::toJson() const;
+template<>
+json LwwItem<CrdtId>::toJson() const;
 
 typedef std::pair<std::string, std::optional<uint32_t> > StringWithFormat;
 typedef std::pair<CrdtId, LwwItem<ParagraphStyle> > TextFormat;

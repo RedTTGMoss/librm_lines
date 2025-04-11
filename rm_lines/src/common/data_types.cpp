@@ -36,10 +36,32 @@ json textFormatToJson(const TextFormat &textFormat) {
     };
 }
 
+json Group::toJson() const {
+    json j = toJsonNoItem();
+    j["nodeId"] = nodeId.toJson();
+    return j;
+}
+
+json Group::toJsonNoItem() const {
+    return {
+        {"label", label.toJson()},
+        {"visible", visible.toJson()},
+        {"anchorId", anchorId ? anchorId->toJson() : nullptr},
+        {"anchorType", anchorType ? anchorType->toJson() : nullptr},
+        {"anchorThreshold", anchorThreshold ? anchorThreshold->toJson() : nullptr},
+        {"anchorOriginX", anchorOriginX ? anchorOriginX->toJson() : nullptr}
+    };
+}
+
 template <>
 json LwwItem<ParagraphStyle>::toJson() const {
     return {
                 {"characterId", itemId.toJson()},
                 {"value", value}
     };
+}
+
+template <>
+json LwwItem<CrdtId>::toJson() const {
+    return value.toJson();
 }

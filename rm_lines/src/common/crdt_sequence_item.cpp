@@ -18,6 +18,26 @@ json TextItem::convertValue() const {
     return nullptr;
 }
 
+template<>
+json CrdtSequenceItem<Group>::convertValue() const {
+    return value.value().toJson();
+}
+
+template<>
+json CrdtSequenceItem<CrdtId>::convertValue() const {
+    return value.value().toJson();
+}
+
+template<>
+json CrdtSequenceItem<GlyphRange>::convertValue() const {
+    return nullptr;
+}
+
+template<>
+json CrdtSequenceItem<Line>::convertValue() const {
+    return value.value().toJson();
+}
+
 template struct CrdtSequenceItem<Group>;
 template struct CrdtSequenceItem<CrdtId>;
 template struct CrdtSequenceItem<GlyphRange>;

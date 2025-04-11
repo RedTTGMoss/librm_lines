@@ -47,6 +47,8 @@ typedef CrdtSequenceItem<std::variant<std::string, uint32_t>> TextItem;
 
 template<>
 json TextItem::convertValue() const;
+template<>
+json CrdtSequenceItem<Group>::convertValue() const;
 
 std::string formatTextItem(TextItem textItem);
 

@@ -64,6 +64,8 @@ struct Line {
 
 
     bool read(TaggedBlockReader *reader, uint8_t version);
+
+    json toJson() const;
 };
 
 struct Text {
