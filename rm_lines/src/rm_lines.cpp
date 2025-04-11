@@ -9,19 +9,46 @@
 #include <library.h>
 #include <memory>
 #include <reader/tagged_block_reader.h>
+#include <string>
+#include <random>
+#include <sstream>
+#include <iomanip>
 
 std::unordered_map<std::string, std::shared_ptr<SceneTree> > globalSceneTreeMap;
 
 std::string generateUUID() {
-    uuid_t uuid;
-    uuid_generate(uuid);
-    char uuidStr[37];
-    uuid_unparse(uuid, uuidStr);
-    return {uuidStr};
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, 15);
+    std::uniform_int_distribution<> dis2(8, 11);
+
+    std::stringstream ss;
+    ss << std::hex;
+    for (int i = 0; i < 8; i++) ss << dis(gen);
+    ss << "-";
+    for (int i = 0; i < 4; i++) ss << dis(gen);
+    ss << "-4"; // UUID version 4
+    for (int i = 0; i < 3; i++) ss << dis(gen);
+    ss << "-";
+    ss << dis2(gen); // variant bits
+    for (int i = 0; i < 3; i++) ss << dis(gen);
+    ss << "-";
+    for (int i = 0; i < 12; i++) ss << dis(gen);
+    return ss.str();
 }
 
 std::string addSceneTree(std::shared_ptr<SceneTree> tree) {
     std::string uuid = generateUUID();
+
+    // Check if the UUID already exists
+    int attempts = 0;
+    while (globalSceneTreeMap.find(uuid) != globalSceneTreeMap.end()) {
+        uuid = generateUUID();
+        if (++attempts > 10) {
+            throw std::runtime_error("Failed to generate a unique UUID after 10 attempts");
+        }
+    }
+
     globalSceneTreeMap[uuid] = std::move(tree);
     return uuid;
 }
@@ -86,7 +113,14 @@ EXPORT const char *buildTree(const int inputFD) {
         return "";
     }
 
-    static auto result = addSceneTree(tree);
+    static std::string result;
+
+    try {
+        result = addSceneTree(tree);
+    } catch (const std::exception &e) {
+        logError(std::format("{}\nFailed to add tree to tree map: {}", getStackTrace(), e.what()));
+        return "";
+    }
 
     return result.c_str();
 }
