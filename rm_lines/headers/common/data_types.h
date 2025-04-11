@@ -9,6 +9,10 @@
 #include <format>
 #include <library.h>
 
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
+
 struct CrdtId {
     uint8_t first;
     uint64_t second;
@@ -20,6 +24,8 @@ struct CrdtId {
     }
 
     std::string repr() const;
+
+    json asJson() const;
 };
 
 template<>

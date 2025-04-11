@@ -19,6 +19,12 @@ std::string CrdtId::repr() const {
     return std::format("CrdtId[{}:{}]", first, second);
 }
 
+json CrdtId::asJson() const {
+    return {
+        first, second,
+    };
+}
+
 Group::Group(const CrdtId nodeId)
     : nodeId(nodeId),
       label(LwwItem<std::string>(CrdtId(0, 0), "")),

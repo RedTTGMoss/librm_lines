@@ -10,8 +10,12 @@
 #include <common/data_types.h>
 #include <common/crdt_sequence_item.h>
 #include <common/scene_items.h>
+#include <nlohmann/json.hpp>
 
 #include "blocks.h"
+
+using json = nlohmann::json;
+
 
 using SceneItemVariant = std::variant<
     CrdtSequenceItem<Group>,
@@ -33,6 +37,8 @@ public:
     void addItem(const SceneItemVariant &item, const CrdtId &parentId);
 
     Group *getNode(const CrdtId &nodeId);
+
+    json toJson();
 
 private:
     std::unordered_map<CrdtId, std::unique_ptr<Group> > _nodeIds;

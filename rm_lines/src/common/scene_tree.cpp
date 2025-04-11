@@ -30,3 +30,9 @@ Group *SceneTree::getNode(const CrdtId &nodeId) {
 
     return it->second.get();
 }
+
+json SceneTree::toJson() {
+    json j;
+    j["sceneInfo"] = sceneInfo ? sceneInfo->toJson() : nullptr;
+    return j;
+}

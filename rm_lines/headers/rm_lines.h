@@ -11,5 +11,6 @@ extern std::unordered_map<std::string, std::shared_ptr<SceneTree> > globalSceneT
 EXPORT const char *buildTree(int inputFD);
 
 EXPORT bool convertToSvg(const char *treeId, int outputFD);
+EXPORT bool convertToJson(const char *treeId, int outputFD);
 
 #endif //RM_LINES_H

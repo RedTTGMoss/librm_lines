@@ -93,6 +93,11 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
     return true;
 }
 
+json AuthorIdsBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
+}
+
 bool MigrationInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &migrationId)) return false;
     if (!reader->readBool(2, &isDevice)) return false;
@@ -101,6 +106,11 @@ bool MigrationInfoBlock::read(TaggedBlockReader *reader) {
         if (!reader->readBool(3, nullptr)) return false;
     }
     return true;
+}
+
+json MigrationInfoBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
 }
 
 bool PageInfoBlock::read(TaggedBlockReader *reader) {
@@ -113,6 +123,11 @@ bool PageInfoBlock::read(TaggedBlockReader *reader) {
         if (!reader->readInt(5, &typeFolioUseCount)) return false;
     }
     return true;
+}
+
+json PageInfoBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
 }
 
 bool SceneInfoBlock::read(TaggedBlockReader *reader) {
@@ -137,6 +152,27 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
     return true;
 }
 
+json SceneInfoBlock::toJson() const {
+    json j;
+    j["currentLayer"] = currentLayer.value.asJson();
+    if (backgroundVisible) {
+        j["backgroundVisible"] = backgroundVisible->value;
+    } else {
+        j["backgroundVisible"] = nullptr;
+    }
+    if (rootDocumentVisible) {
+        j["rootDocumentVisible"] = rootDocumentVisible->value;
+    } else {
+        j["rootDocumentVisible"] = nullptr;
+    }
+    if (paperSize) {
+        j["paperSize"] = { paperSize->first, paperSize->second };
+    } else {
+        j["paperSize"] = nullptr;
+    }
+    return j;
+}
+
 bool SceneTreeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &treeId)) return false;
     if (!reader->readId(2, &nodeId)) return false;
@@ -146,6 +182,11 @@ bool SceneTreeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &parentId)) return false;
 
     return true;
+}
+
+json SceneTreeBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
 }
 
 bool TreeNodeBlock::read(TaggedBlockReader *reader) {
@@ -168,6 +209,11 @@ bool TreeNodeBlock::read(TaggedBlockReader *reader) {
     }
 
     return true;
+}
+
+json TreeNodeBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
 }
 
 bool SceneItemBlock::read(TaggedBlockReader *reader) {
@@ -197,11 +243,21 @@ bool SceneGroupItemBlock::readValue(TaggedBlockReader *reader) {
     return true;
 }
 
+json SceneGroupItemBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
+}
+
 bool SceneLineItemBlock::readValue(TaggedBlockReader *reader) {
     version = reader->currentBlockInfo.currentVersion;
 
     item.value = std::make_optional<Line>();
     return item.value.value().read(reader, version);
+}
+
+json SceneLineItemBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
 }
 
 bool RootTextBlock::read(TaggedBlockReader *reader) {
@@ -249,7 +305,17 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     return true;
 }
 
+json RootTextBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
+}
+
 bool SceneGlyphItemBlock::readValue(TaggedBlockReader *reader) {
     item.value = std::make_optional<GlyphRange>();
     return item.value.value().read(reader);
+}
+
+json SceneGlyphItemBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
 }

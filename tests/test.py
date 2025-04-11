@@ -24,10 +24,12 @@ def python_debug_logger(msg):
 
 
 script_folder = os.path.dirname(os.path.abspath(__file__))
-output_folder = os.path.join(script_folder, 'output')
+svg_output_folder = os.path.join(script_folder, 'output_svg')
+json_output_folder = os.path.join(script_folder, 'output_json')
 files_folder = os.path.join(script_folder, 'files')
 
-os.makedirs(output_folder, exist_ok=True)
+os.makedirs(svg_output_folder, exist_ok=True)
+os.makedirs(json_output_folder, exist_ok=True)
 
 if os.name == 'nt':
     # Windows-specific code
@@ -41,6 +43,9 @@ charptr = ctypes.POINTER(ctypes.c_char)
 lib.convertToSvg.argtypes = [ctypes.c_char_p, ctypes.c_int]
 lib.convertToSvg.restype = ctypes.c_bool
 
+lib.convertToJson.argtypes = [ctypes.c_char_p, ctypes.c_int]
+lib.convertToJson.restype = ctypes.c_bool
+
 lib.buildTree.argtypes = [ctypes.c_int]
 lib.buildTree.restype = ctypes.c_char_p
 
@@ -50,8 +55,11 @@ lib.setDebugLogger(python_debug_logger)
 
 begin_all = time.time()
 for file in (files := os.listdir(files_folder)):
-    output_path = os.path.join(output_folder, file.replace('.rm', '.svg'))
-    with open(output_path, 'w') as f:
+    svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
+    json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
+    with open(svg_output_path, 'w') as _:
+        pass
+    with open(json_output_path, 'w') as _:
         pass
     print("Processing file:", file)
     with open(os.path.join(files_folder, file), "r+b") as fin:
@@ -61,8 +69,12 @@ for file in (files := os.listdir(files_folder)):
         print(f"[{tree_id}] Read, time taken:", time.time() - begin)
     if not tree_id:
         continue
-    with open(output_path, "r+b") as fout:
+    with open(json_output_path, "r+b") as fout:
+        begin = time.time()
+        success = lib.convertToJson(tree_id.encode(), fout.fileno())
+        print(f"JSON [{success}] Time taken:", time.time() - begin)
+    with open(svg_output_path, "r+b") as fout:
         begin = time.time()
         success = lib.convertToSvg(tree_id.encode(), fout.fileno())
-        print(f"[{success}] Time taken:", time.time() - begin)
+        print(f"SVG [{success}] Time taken:", time.time() - begin)
 print(f"All {len(files)} files processed in:", time.time() - begin_all)

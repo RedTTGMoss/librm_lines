@@ -8,10 +8,13 @@
 #include <library.h>
 #include <memory>
 #include <reader/tagged_block_reader.h>
+#include <nlohmann/json.hpp>
 #include <string>
 #include <random>
 #include <sstream>
 #include <iomanip>
+
+using json = nlohmann::json;
 
 std::unordered_map<std::string, std::shared_ptr<SceneTree> > globalSceneTreeMap;
 
@@ -83,9 +86,23 @@ std::shared_ptr<TaggedBlockReader> prepareReader(const int inputFD) {
     return reader;
 }
 
-// EXPORT bool compileTreeToJson(const int inputFD, const int outputFD) {
-//
-// }
+EXPORT bool convertToJson(const char *treeId, const int outputFD) {
+    const auto tree = getSceneTree(treeId);
+    if (!tree) {
+        logError("Invalid treeId provided");
+        return false;
+    }
+    logDebug("Got tree, converting to JSON");
+    json j = tree->toJson();
+
+    logDebug("Got json, dumping");
+    auto jsonString = j.dump(4);
+
+    logDebug("Got jsonString, writing to outputFD");
+    write(outputFD, jsonString.c_str(), jsonString.size());
+
+    return true;
+}
 
 EXPORT const char *buildTree(const int inputFD) {
     logDebug(std::format("run build tree {}", inputFD));

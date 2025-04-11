@@ -5,12 +5,15 @@
 #include <map>
 #include <memory>
 #include <string>
-#include <vector>
 #include <common/data_types.h>
 #include <common/crdt_sequence_item.h>
 #include <optional>
 
 #include "common/scene_items.h"
+
+#include <nlohmann/json.hpp>
+
+using json = nlohmann::json;
 
 enum BlockTypes {
     MIGRATION_INFO_BLOCK = 0,
@@ -52,10 +55,15 @@ struct Block {
     virtual bool read(TaggedBlockReader *reader);
 
     static std::unique_ptr<Block> lookup(const BlockInfo &info);
+
+    virtual json toJson() const = 0;
 };
 
 struct UnreadableBlock final : public Block {
     // Represents an unreadable block
+    json toJson() const override {
+        return json();
+    }
 };
 
 
@@ -63,6 +71,7 @@ struct AuthorIdsBlock final : public Block {
     std::map<uint32_t, std::string> authorIds;
 
     bool read(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct MigrationInfoBlock final : public Block {
@@ -70,6 +79,7 @@ struct MigrationInfoBlock final : public Block {
     bool isDevice;
 
     bool read(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct PageInfoBlock final : public Block {
@@ -80,6 +90,7 @@ struct PageInfoBlock final : public Block {
     uint32_t typeFolioUseCount = 0;
 
     bool read(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct SceneInfoBlock final : public Block {
@@ -89,6 +100,7 @@ struct SceneInfoBlock final : public Block {
     std::optional<IntPair> paperSize;
 
     bool read(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct SceneTreeBlock final : public Block {
@@ -100,12 +112,14 @@ struct SceneTreeBlock final : public Block {
     CrdtId parentId;
 
     bool read(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct TreeNodeBlock final : public Block {
     Group group;
 
     bool read(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct SceneItemBlock : public Block {
@@ -131,16 +145,18 @@ struct SceneGroupItemBlock final : public SceneItemBlock {
     CrdtSequenceItem<CrdtId> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct SceneLineItemBlock final : public SceneItemBlock {
     SceneLineItemBlock() : SceneItemBlock(0x03) {
     }
 
-    uint8_t version;
+    uint8_t version = 0;
     CrdtSequenceItem<Line> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct RootTextBlock final : public Block {
@@ -148,6 +164,7 @@ struct RootTextBlock final : public Block {
     Text value;
 
     bool read(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 struct SceneGlyphItemBlock final : public SceneItemBlock {
@@ -157,6 +174,7 @@ struct SceneGlyphItemBlock final : public SceneItemBlock {
     CrdtSequenceItem<GlyphRange> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
+    json toJson() const override;
 };
 
 #endif //BLOCKS_H
