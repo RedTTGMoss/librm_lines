@@ -3,6 +3,11 @@ project(rm_lines)
 
 set(CMAKE_CXX_STANDARD 20)
 
+include(FetchContent)
+
+FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+FetchContent_MakeAvailable(json)
+
 include_directories(rm_lines/headers)
 
 add_library(rm_lines SHARED rm_lines/src/library.cpp
@@ -17,4 +22,4 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/common/crdt_sequence_item.cpp
 )
 
-#set_target_properties(rm_lines PROPERTIES OUTPUT_NAME "rm_lines")
+target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json)
