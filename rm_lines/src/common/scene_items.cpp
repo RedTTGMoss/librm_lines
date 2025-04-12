@@ -18,6 +18,7 @@ size_t getPointSizeSerialized(uint8_t version) {
 
 bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     if (!reader->readInt(1, &toolId)) return false;
+    uint32_t colorId;
     if (!reader->readInt(2, &colorId)) return false;
     color = static_cast<PenColor>(colorId);
     if (!reader->readDouble(3, &thicknessScale)) return false;
@@ -29,7 +30,7 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
     size_t pointSizeSerialized = getPointSizeSerialized(version);
     if (subBlockInfo.size % pointSizeSerialized != 0) {
         logError(std::format("Point data size mismatch: {} is not multiple of {}", subBlockInfo.size,
-                               pointSizeSerialized));
+                             pointSizeSerialized));
         return false;
     }
 
@@ -70,13 +71,12 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
 
 json Line::toJson() const {
     std::vector<json> pointsJson;
-    for (const auto &point : points) {
+    for (const auto &point: points) {
         pointsJson.push_back(point.toJson());
     }
 
     return {
         {"toolId", toolId},
-        {"colorId", colorId},
         {"color", color},
         {"thicknessScale", thicknessScale},
         {"startingLength", startingLength},
@@ -87,9 +87,9 @@ json Line::toJson() const {
     };
 }
 
-json Text::toJson() {
+json Text::toJson() const {
     std::vector<json> stylesJson;
-    for (const auto &style : styles) {
+    for (const auto &style: styles) {
         stylesJson.push_back(textFormatToJson(style));
     }
     return {
@@ -215,4 +215,19 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
     }
 
     return true;
+}
+
+json GlyphRange::toJson() const {
+    std::vector<json> rectsJson;
+    for (const auto &rect: rects) {
+        rectsJson.push_back(rect.toJson());
+    }
+    return {
+        {"start", start},
+        {"length", length},
+        {"color", color},
+        {"argbColor", argbColor.toJson()},
+        {"text", text},
+        {"rects", rectsJson}
+    };
 }

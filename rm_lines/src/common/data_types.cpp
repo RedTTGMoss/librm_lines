@@ -23,11 +23,15 @@ json CrdtId::toJson() const {
     return std::format("{}:{}", first, second);
 }
 
+json Rect::toJson() const {
+    return {x, y, w, h};
+}
+
 Group::Group(const CrdtId nodeId)
     : nodeId(nodeId),
       label(LwwItem<std::string>(CrdtId(0, 0), "")),
-      visible(LwwItem<bool>(CrdtId(0, 0), true))
-{}
+      visible(LwwItem<bool>(CrdtId(0, 0), true)) {
+}
 
 json textFormatToJson(const TextFormat &textFormat) {
     return {
@@ -57,15 +61,15 @@ json Group::toJsonNoItem() const {
     };
 }
 
-template <>
+template<>
 json LwwItem<ParagraphStyle>::toJson() const {
     return {
-                {"characterId", itemId.toJson()},
-                {"value", value}
+        {"characterId", itemId.toJson()},
+        {"value", value}
     };
 }
 
-template <>
+template<>
 json LwwItem<CrdtId>::toJson() const {
     return value.toJson();
 }

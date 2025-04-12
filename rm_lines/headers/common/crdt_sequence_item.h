@@ -25,6 +25,7 @@ public:
         j["itemId"] = itemId.toJson();
         return j;
     }
+
     json toJsonNoItem() const {
         return {
             {"leftId", leftId.toJson()},
@@ -36,19 +37,17 @@ public:
 
     // ReSharper disable once CppMemberFunctionMayBeStatic
     json convertValue() const {
-        return nullptr;
+        return value.value().toJson();
     }
 
 private:
     std::optional<std::reference_wrapper<Group> > _treeValue;
 };
 
-typedef CrdtSequenceItem<std::variant<std::string, uint32_t>> TextItem;
+typedef CrdtSequenceItem<std::variant<std::string, uint32_t> > TextItem;
 
 template<>
 json TextItem::convertValue() const;
-template<>
-json CrdtSequenceItem<Group>::convertValue() const;
 
 std::string formatTextItem(TextItem textItem);
 

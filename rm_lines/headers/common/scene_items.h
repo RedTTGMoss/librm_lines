@@ -55,7 +55,6 @@ struct Point {
 struct Line {
     uint32_t toolId;
     // TODO: Maybe impl Pen type and add tool here
-    uint32_t colorId;
     PenColor color;
     double thicknessScale;
     float startingLength;
@@ -77,7 +76,7 @@ struct Text {
     double posY;
     float width;
 
-    json toJson();
+    json toJson() const;
 };
 
 struct GlyphRange {
@@ -90,6 +89,8 @@ struct GlyphRange {
     std::vector<Rect> rects;
 
     bool read(TaggedBlockReader *reader);
+
+    json toJson() const;
 };
 
 

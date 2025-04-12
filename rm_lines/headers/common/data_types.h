@@ -44,10 +44,10 @@ struct CrdtSequence {
         sequence[item.itemId] = item;
     }
 
-    json toJson() {
+    json toJson() const {
         json j;
         // Iterate over the map and convert each item to JSON
-        for (const auto &[key, value] : sequence) {
+        for (const auto &[key, value]: sequence) {
             j[key.toJson()] = value.toJsonNoItem();
         }
         return j;
@@ -64,6 +64,8 @@ struct Rect {
     double y;
     double w;
     double h;
+
+    json toJson() const;
 };
 
 template<typename T>
@@ -95,6 +97,7 @@ public:
     std::optional<LwwItem<float> > anchorOriginX;
 
     json toJson() const;
+
     json toJsonNoItem() const;
 };
 
@@ -111,6 +114,7 @@ enum ParagraphStyle {
 
 template<>
 json LwwItem<ParagraphStyle>::toJson() const;
+
 template<>
 json LwwItem<CrdtId>::toJson() const;
 
