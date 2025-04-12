@@ -49,9 +49,9 @@ lib.convertToJson.restype = ctypes.c_bool
 lib.buildTree.argtypes = [ctypes.c_int]
 lib.buildTree.restype = ctypes.c_char_p
 
-lib.setLogger(python_logger)
-lib.setErrorLogger(python_error_logger)
-lib.setDebugLogger(python_debug_logger)
+# lib.setLogger(python_logger)
+# lib.setErrorLogger(python_error_logger)
+# lib.setDebugLogger(python_debug_logger)
 
 begin_all = time.time()
 for file in (files := os.listdir(files_folder)):
@@ -77,4 +77,6 @@ for file in (files := os.listdir(files_folder)):
         begin = time.time()
         success = lib.convertToSvg(tree_id.encode(), fout.fileno())
         print(f"SVG [{success}] Time taken:", time.time() - begin)
+    print("=" * 20)
+
 print(f"All {len(files)} files processed in:", time.time() - begin_all)
