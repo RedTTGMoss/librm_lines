@@ -155,6 +155,10 @@ jobs:
         with:
           path: artifacts/
 
+      - name: Where TF are the artifacts
+        shell: bash
+        run: ls artifacts
+
       - name: Create Draft Release
         uses: softprops/action-gh-release@v1
         with:
