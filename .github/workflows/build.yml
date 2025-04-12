@@ -146,6 +146,8 @@ jobs:
     name: Create Draft Release
     needs: build-sys
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Download Artifacts
@@ -157,10 +159,9 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.ref_name }}
-          release_name: Release ${{ github.ref_name }}
+          name: Release ${{ github.ref_name }}
           draft: true
-          files: |
-            artifacts/*
+          files: artifacts/*
 
   publish-to-pypi:
     name: >-
