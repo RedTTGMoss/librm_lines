@@ -38,8 +38,6 @@ else:
     # Unix-specific code (Linux, macOS)
     lib = ctypes.CDLL(os.path.join(script_folder, '..', 'cmake-build-debug', 'librm_lines.so'))
 
-charptr = ctypes.POINTER(ctypes.c_char)
-
 lib.convertToSvg.argtypes = [ctypes.c_char_p, ctypes.c_int]
 lib.convertToSvg.restype = ctypes.c_bool
 
