@@ -139,6 +139,12 @@ jobs:
               ;;
           esac
 
+      - name: Rename wheel to be Python-agnostic
+        run: |
+          file=$(ls artifact/*.whl)
+          new_name=$(echo "$file" | sed 's/cp3[0-9]\+-cp3[0-9]\+/py3-none/')
+          mv "$file" "$new_name"
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
