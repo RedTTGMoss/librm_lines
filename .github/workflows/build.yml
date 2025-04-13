@@ -140,6 +140,7 @@ jobs:
           esac
 
       - name: Rename wheel to be Python-agnostic
+        shell: bash
         run: |
           file=$(ls artifact/*.whl)
           new_name=$(echo "$file" | sed 's/cp3[0-9]\+-cp3[0-9]\+/py3-none/')
