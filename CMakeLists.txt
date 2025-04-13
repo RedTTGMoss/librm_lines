@@ -20,6 +20,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/common/data_types.cpp
         rm_lines/src/common/scene_tree.cpp
         rm_lines/src/common/crdt_sequence_item.cpp
+        rm_lines/src/renderer/renderer.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json)
