@@ -30,6 +30,29 @@ void Renderer::calculateAnchors() {
         auto text = sceneTree->rootText->items[textId];
         auto [_, paragraphStyle] = sceneTree->rootText->styleMap[textId];
 
+        auto value = text.value.value();
+        std::string valueDebug;
+
+        if (std::holds_alternative<std::string>(value)) {
+            std::string rawString = std::get<std::string>(value);
+            std::ostringstream oss;
+
+            // Replace escape sequences with their literal representations
+            for (char c : rawString) {
+                switch (c) {
+                    case '\n': oss << "\\n"; break;
+                    case '\t': oss << "\\t"; break;
+                    case '\\': oss << "\\\\"; break;
+                    case '\"': oss << "\\\""; break;
+                    default: oss << c; break;
+                }
+            }
+
+            valueDebug = "\"" + oss.str() + "\"";
+        } else if (std::holds_alternative<uint32_t>(value)) {
+            valueDebug = std::to_string(std::get<uint32_t>(value));
+        }
+
         logDebug(
         std::format(
             "DEBUG Text item /w python: "
@@ -37,11 +60,12 @@ void Renderer::calculateAnchors() {
             "CrdtId({}, {}), "
             "CrdtId({}, {}), "
             "CrdtId({}, {}), {}, "
-            "None"
+            "{}"
             ")", textId.first, textId.second,
             text.leftId.first, text.leftId.second,
             text.rightId.first, text.rightId.second,
-            text.deletedLength
+            text.deletedLength,
+            valueDebug
             )
         );
 
