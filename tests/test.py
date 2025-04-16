@@ -36,7 +36,7 @@ if os.name == 'nt':
     lib = ctypes.WinDLL(os.path.join(script_folder, 'build', 'Debug', 'rm_lines.dll'))
 else:
     # Unix-specific code (Linux, macOS)
-    lib = ctypes.CDLL(os.path.join(script_folder, '..', 'cmake-build-debug', 'librm_lines.so'))
+    lib = ctypes.CDLL(os.path.join(script_folder, '..', 'build', 'librm_lines.so'))
 
 lib.convertToSvg.argtypes = [ctypes.c_char_p, ctypes.c_int]
 lib.convertToSvg.restype = ctypes.c_bool
