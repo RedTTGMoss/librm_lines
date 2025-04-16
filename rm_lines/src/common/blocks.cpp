@@ -291,8 +291,11 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
 
     value.styles = std::vector<TextFormat>(numberOfItems);
 
-    for (uint64_t i = 0; i < numberOfItems; i++)
+    for (uint64_t i = 0; i < numberOfItems; i++) {
         if (!reader->readTextFormat(&value.styles[i])) return false;
+        value.styleMap[value.styles[i].first] = value.styles[i].second;
+    }
+
 
     reader->getTag();
     if (!reader->readSubBlock(3)) return false; // last section

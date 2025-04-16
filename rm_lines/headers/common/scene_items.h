@@ -72,6 +72,7 @@ struct Line {
 struct Text {
     CrdtSequence<TextItem> items;
     std::vector<TextFormat> styles;
+    std::unordered_map<CrdtId, LwwItem<ParagraphStyle>> styleMap;
     double posX;
     double posY;
     float width;
