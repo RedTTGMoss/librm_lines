@@ -3,7 +3,7 @@
 
 template<typename T>
 void CrdtSequenceItem<T>::applyTreeValue(SceneTree &tree, const CrdtId &nodeId) {
-    auto node = tree.getNode(nodeId);
+    const auto node = tree.getNode(nodeId);
     _treeValue = *node;
 }
 
