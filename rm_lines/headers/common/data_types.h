@@ -2,12 +2,13 @@
 #define DATA_TYPES_H
 
 #include <cstdint>
-#include <map>
+#include <unordered_map>
 #include <optional>
 #include <string>
 #include <variant>
 #include <format>
 #include <library.h>
+#include <unordered_set>
 
 #include <nlohmann/json.hpp>
 
@@ -36,12 +37,100 @@ struct std::hash<CrdtId> {
     }
 };
 
+enum Side {
+    LEFT,
+    RIGHT
+};
+
+
+static constexpr CrdtId END_MARKER{0, 0};
+
+
 template<typename T>
 struct CrdtSequence {
-    std::map<CrdtId, T> sequence;
+    std::unordered_map<CrdtId, T> sequence;
 
     void add(T &item) {
         sequence[item.itemId] = item;
+    }
+
+    std::vector<CrdtId> getSortedIds() const {
+        // Skip all the processing ahead, if the sequence is empty
+        if (sequence.empty())
+            return {};
+
+        // Allocate size for the final sorted keys
+        std::vector<CrdtId> sortedIds;
+        sortedIds.reserve(sequence.size());
+
+        // We initialize a list containing the IDs and their dependant IDs
+        std::unordered_map<CrdtId, std::unordered_set<CrdtId>> graph;
+
+        // Lambda to get the respective sideId depending on the side passed
+        auto getSideId = [&](const T item, const Side side) -> std::optional<CrdtId> {
+            const auto sideId = side == LEFT ? item.leftId : item.rightId;
+            if (sideId == END_MARKER || !sequence.contains(sideId))
+                return std::nullopt;
+            return sideId;
+        };
+
+        for (const auto &[itemId, item]: sequence) {
+            // Get the side IDs of this item
+            auto leftSideId = getSideId(item, LEFT);
+            auto rightSideId = getSideId(item, RIGHT);
+
+            // Graph out which item needs which sideId
+            if (leftSideId.has_value() && sequence.contains(leftSideId.value()))
+                graph[itemId].insert(leftSideId.value()); // This item first needs the left side
+            else // If the sideId is not present in the sequence of items
+                graph[itemId] = {}; // Make an empty set for the item on the graph
+
+            if (rightSideId.has_value() && sequence.contains(rightSideId.value()))
+                // If the right side is present in the sequence
+                graph[rightSideId.value()].insert(itemId); // This item first needs the right side
+        }
+
+        // Debug the current graph
+
+        std::vector<CrdtId> nextIds;
+        while (graph.size() > 0) {
+            for (auto it = graph.begin(); it != graph.end();) {
+                // If the item has no dependencies, we can add it to the next items
+                if (it->second.empty()) {
+                    nextIds.push_back(it->first);
+                    it = graph.erase(it); // Remove the item from the graph
+                } else {
+                    ++it;
+                }
+            }
+
+            if (nextIds.empty() && graph.size() > 0) {
+                // If we have no next items but the graph is not finished, we have a cycle
+                throw std::runtime_error("Cyclic dependency in sequence");
+            }
+
+            // Sort descending
+            std::sort(nextIds.begin(), nextIds.end(), [](const CrdtId &a, const CrdtId &b) {
+                return a < b;
+            });
+
+            for (const auto &itemId: nextIds) {
+                // Add the item to the sorted keys
+                sortedIds.push_back(itemId);
+
+                // Remove the item as a dependency of all other items in the graph
+                for (auto &dependencies: graph | std::views::values)
+                    dependencies.erase(itemId);
+            }
+            // Erase the list of items for the next loop cycle
+            nextIds.clear();
+        }
+
+        return sortedIds;
+    }
+
+    T& operator[](const CrdtId& key) {
+        return sequence[key];
     }
 
     json toJson() const {

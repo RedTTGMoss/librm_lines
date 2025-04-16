@@ -25,14 +25,32 @@ void Renderer::calculateAnchors() {
     int posX = 0, posY = 0;
 
     // Calculate the anchors
-    for (const auto &text: sceneTree->rootText->items.sequence | std::views::values) {
-        auto [_, paragraphStyle] = sceneTree->rootText->styleMap[text.itemId];
+    auto textIds = sceneTree->rootText->items.getSortedIds();
+    for (const auto &textId : textIds){
+        auto text = sceneTree->rootText->items[textId];
+        auto [_, paragraphStyle] = sceneTree->rootText->styleMap[textId];
+
+        logDebug(
+        std::format(
+            "DEBUG Text item /w python: "
+            "CrdtSequenceItem("
+            "CrdtId({}, {}), "
+            "CrdtId({}, {}), "
+            "CrdtId({}, {}), {}, "
+            "None"
+            ")", textId.first, textId.second,
+            text.leftId.first, text.leftId.second,
+            text.rightId.first, text.rightId.second,
+            text.deletedLength
+            )
+        );
 
         // Get the height for this paragraph style
         yOffset += lineHeights[paragraphStyle].second;
 
         posX += 0;
         posY += yOffset;
+
         
     }
 }
