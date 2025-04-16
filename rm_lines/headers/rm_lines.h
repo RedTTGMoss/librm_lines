@@ -13,4 +13,7 @@ EXPORT const char *buildTree(int inputFD);
 EXPORT bool convertToSvg(const char *treeId, int outputFD);
 EXPORT bool convertToJson(const char *treeId, int outputFD);
 
+std::string generateUUID();
+std::shared_ptr<SceneTree> getSceneTree(const std::string &treeId);
+
 #endif //RM_LINES_H

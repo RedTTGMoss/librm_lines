@@ -1,3 +1,6 @@
+import shutil
+import sys
+
 import colorama
 import ctypes
 import mmap
@@ -33,23 +36,21 @@ os.makedirs(json_output_folder, exist_ok=True)
 
 if os.name == 'nt':
     # Windows-specific code
-    lib = ctypes.WinDLL(os.path.join(script_folder, 'build', 'Debug', 'rm_lines.dll'))
+    lib_path = os.path.join(script_folder, 'build', 'Debug', 'rm_lines.dll')
 else:
     # Unix-specific code (Linux, macOS)
-    lib = ctypes.CDLL(os.path.join(script_folder, '..', 'build', 'librm_lines.so'))
+    lib_path = os.path.join(script_folder, '..', 'build', 'librm_lines.so')
 
-lib.convertToSvg.argtypes = [ctypes.c_char_p, ctypes.c_int]
-lib.convertToSvg.restype = ctypes.c_bool
+shutil.copy(lib_path, os.path.join('..', 'rm_lines_sys', 'src', 'rm_lines_sys', os.path.basename(lib_path)))
+os.chdir(os.path.join('..', 'rm_lines_sys'))
+os.system(f'poetry install')
+os.chdir(script_folder)
 
-lib.convertToJson.argtypes = [ctypes.c_char_p, ctypes.c_int]
-lib.convertToJson.restype = ctypes.c_bool
+from rm_lines_sys import lib
 
-lib.buildTree.argtypes = [ctypes.c_int]
-lib.buildTree.restype = ctypes.c_char_p
-
-# lib.setLogger(python_logger)
-# lib.setErrorLogger(python_error_logger)
-# lib.setDebugLogger(python_debug_logger)
+lib.setLogger(python_logger)
+lib.setErrorLogger(python_error_logger)
+lib.setDebugLogger(python_debug_logger)
 
 begin_all = time.time()
 for file in (files := os.listdir(files_folder)):
@@ -71,10 +72,13 @@ for file in (files := os.listdir(files_folder)):
         begin = time.time()
         success = lib.convertToJson(tree_id.encode(), fout.fileno())
         print(f"JSON [{success}] Time taken:", time.time() - begin)
-    with open(svg_output_path, "r+b") as fout:
-        begin = time.time()
-        success = lib.convertToSvg(tree_id.encode(), fout.fileno())
-        print(f"SVG [{success}] Time taken:", time.time() - begin)
+    # Make a renderer
+
+    renderer_id = lib.makeRenderer(tree_id.encode()).decode()
+    if not renderer_id:
+        continue
+
+
     print("=" * 20)
 
 print(f"All {len(files)} files processed in:", time.time() - begin_all)
