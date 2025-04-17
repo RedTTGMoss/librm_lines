@@ -27,26 +27,25 @@ void Renderer::calculateAnchors() {
     int posX = 0, posY = 0;
 
     // Calculate the anchors
-    expandTextItems(sceneTree);
+    sceneTree->rootText->items.expandTextItems();
     auto textIds = sceneTree->rootText->items.getSortedIds();
 
     std::string debugTextIds = "TextIds: ";
-    for (const auto &textId : textIds) {
+    for (const auto &textId: textIds) {
         debugTextIds += textId.repr() + " ";
     }
     logDebug(debugTextIds);
 
-    for (const auto &textId : textIds){
+    for (const auto &textId: textIds) {
         auto text = sceneTree->rootText->items[textId];
         // auto [_, paragraphStyle] = sceneTree->rootText->styleMap[textId];
 
-        // logDebug(reprTextItem(text));
+        logDebug(reprTextItem(text));
 
         // Get the height for this paragraph style
         // yOffset += lineHeights[paragraphStyle].second;
         //
         // posX += 0;
         // posY += yOffset;
-        
     }
 }

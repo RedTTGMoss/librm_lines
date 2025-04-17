@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <advanced/text.h>
 #include <common/data_types.h>
 #include <common/crdt_sequence_item.h>
 
@@ -70,9 +71,9 @@ struct Line {
 };
 
 struct Text {
-    CrdtSequence<TextItem> items;
+    TextSequence items;
     std::vector<TextFormat> styles;
-    std::unordered_map<CrdtId, LwwItem<ParagraphStyle>> styleMap;
+    std::unordered_map<CrdtId, LwwItem<ParagraphStyle> > styleMap;
     double posX;
     double posY;
     float width;

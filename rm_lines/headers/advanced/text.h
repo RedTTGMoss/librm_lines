@@ -3,18 +3,12 @@
 
 #include "common/data_types.h"
 #include "common/crdt_sequence_item.h"
-#include "common/scene_tree.h"
 
-void expandTextItems(CrdtSequence<TextItem> &textSequence);
+struct TextSequence : CrdtSequence<TextItem> {
+    void expandTextItems();
 
-inline void expandTextItems(SceneTree &tree) {
-    if (!tree.rootText.has_value())
-        return;
-    return expandTextItems(tree.rootText->items);
-}
-
-inline void expandTextItems(SceneTree *tree) {
-    return expandTextItems(*tree);
-}
+private:
+    bool expanded = false;
+};
 
 #endif //ADVANCED_TEXT_H
