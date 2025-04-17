@@ -39,7 +39,7 @@ struct BlockInfo {
     uint8_t currentVersion;
     uint8_t blockType;
 
-    BlockTypes getBlockType() const;
+    [[nodiscard]] BlockTypes getBlockType() const;
 };
 
 struct SubBlockInfo {
@@ -56,33 +56,33 @@ struct Block {
 
     static std::unique_ptr<Block> lookup(const BlockInfo &info);
 
-    virtual json toJson() const = 0;
+    [[nodiscard]] virtual json toJson() const = 0;
 };
 
-struct UnreadableBlock final : public Block {
+struct UnreadableBlock final : Block {
     // Represents an unreadable block
-    json toJson() const override {
-        return json();
+    [[nodiscard]] json toJson() const override {
+        return {};
     }
 };
 
 
-struct AuthorIdsBlock final : public Block {
+struct AuthorIdsBlock final : Block {
     std::map<uint32_t, std::string> authorIds;
 
     bool read(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct MigrationInfoBlock final : public Block {
+struct MigrationInfoBlock final : Block {
     CrdtId migrationId;
     bool isDevice;
 
     bool read(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct PageInfoBlock final : public Block {
+struct PageInfoBlock final : Block {
     uint32_t loadsCount;
     uint32_t mergesCount;
     uint32_t textCharsCount;
@@ -90,20 +90,20 @@ struct PageInfoBlock final : public Block {
     uint32_t typeFolioUseCount = 0;
 
     bool read(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct SceneInfoBlock final : public Block {
+struct SceneInfoBlock final : Block {
     LwwItem<CrdtId> currentLayer;
     std::optional<LwwItem<bool> > backgroundVisible;
     std::optional<LwwItem<bool> > rootDocumentVisible;
     std::optional<IntPair> paperSize;
 
     bool read(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct SceneTreeBlock final : public Block {
+struct SceneTreeBlock final : Block {
     CrdtId treeId;
     CrdtId nodeId;
     bool isUpdate;
@@ -112,17 +112,17 @@ struct SceneTreeBlock final : public Block {
     CrdtId parentId;
 
     bool read(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct TreeNodeBlock final : public Block {
+struct TreeNodeBlock final : Block {
     Group group;
 
     bool read(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct SceneItemBlock : public Block {
+struct SceneItemBlock : Block {
     explicit SceneItemBlock(const uint8_t itemType = 0) : _itemType(itemType) {
     }
 
@@ -138,17 +138,17 @@ private:
     virtual bool readValue(TaggedBlockReader *reader) = 0;
 };
 
-struct SceneGroupItemBlock final : public SceneItemBlock {
+struct SceneGroupItemBlock final : SceneItemBlock {
     SceneGroupItemBlock() : SceneItemBlock(0x02) {
     }
 
     CrdtSequenceItem<CrdtId> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct SceneLineItemBlock final : public SceneItemBlock {
+struct SceneLineItemBlock final : SceneItemBlock {
     SceneLineItemBlock() : SceneItemBlock(0x03) {
     }
 
@@ -156,10 +156,10 @@ struct SceneLineItemBlock final : public SceneItemBlock {
     CrdtSequenceItem<Line> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
-struct RootTextBlock final : public Block {
+struct RootTextBlock final : Block {
     CrdtId blockId;
     Text value;
 
@@ -167,14 +167,14 @@ struct RootTextBlock final : public Block {
     json toJson() const override;
 };
 
-struct SceneGlyphItemBlock final : public SceneItemBlock {
+struct SceneGlyphItemBlock final : SceneItemBlock {
     SceneGlyphItemBlock() : SceneItemBlock(0x01) {
     }
 
     CrdtSequenceItem<GlyphRange> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
-    json toJson() const override;
+    [[nodiscard]] json toJson() const override;
 };
 
 #endif //BLOCKS_H

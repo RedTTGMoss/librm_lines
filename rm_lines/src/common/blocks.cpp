@@ -274,11 +274,11 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     uint64_t numberOfItems;
     if (!reader->readValuint(numberOfItems)) return false;
 
-    TextItem textItem;
+
     for (uint64_t i = 0; i < numberOfItems; i++) {
-        textItem = TextItem(); // Reset textItem
+        TextItem textItem;
         if (!reader->readTextItem(&textItem)) return false;
-        value.items.add(textItem);
+        value.items.add(std::move(textItem));
     }
 
     for (int i = 2; i >= 1; i--) {

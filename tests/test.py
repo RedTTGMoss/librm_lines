@@ -52,7 +52,7 @@ lib.setLogger(python_logger)
 lib.setErrorLogger(python_error_logger)
 lib.setDebugLogger(python_debug_logger)
 
-begin_all = time.time()
+total_time = 0
 for file in (files := os.listdir(files_folder)):
     svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
     json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
@@ -65,7 +65,8 @@ for file in (files := os.listdir(files_folder)):
         print(fn := fin.fileno())
         begin = time.time()
         tree_id = lib.buildTree(fn).decode()
-        print(f"[{tree_id}] Read, time taken:", time.time() - begin)
+        total_time += (process_time := time.time() - begin)
+        print(f"[{tree_id}] Read, time taken:", process_time)
     if not tree_id:
         continue
     with open(json_output_path, "r+b") as fout:
@@ -74,11 +75,15 @@ for file in (files := os.listdir(files_folder)):
         print(f"JSON [{success}] Time taken:", time.time() - begin)
     # Make a renderer
 
+    begin = time.time()
     renderer_id = lib.makeRenderer(tree_id.encode()).decode()
     if not renderer_id:
         continue
 
+    total_time += (renderer_time := time.time() - begin)
+    print(f"It took {renderer_time:.04f} to initialize the renderer")
+
 
     print("=" * 20)
 
-print(f"All {len(files)} files processed in:", time.time() - begin_all)
+print(f"All {len(files)} files processed in:", total_time)

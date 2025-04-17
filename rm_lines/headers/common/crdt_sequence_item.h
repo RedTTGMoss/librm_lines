@@ -7,7 +7,6 @@ class SceneTree;
 
 template<typename T = std::monostate>
 struct CrdtSequenceItem {
-public:
     CrdtId itemId;
     CrdtId leftId;
     CrdtId rightId;
@@ -40,6 +39,20 @@ public:
         return value.value().toJson();
     }
 
+    CrdtSequenceItem() = default;
+
+    explicit CrdtSequenceItem(
+        const CrdtId itemId,
+        const CrdtId leftId = END_MARKER,
+        const CrdtId rightId = END_MARKER,
+        const uint32_t deletedLength = 0,
+        std::optional<T> value = std::nullopt) :
+    itemId(itemId),
+    leftId(leftId),
+    rightId(rightId),
+    deletedLength(deletedLength),
+    value(value) {};
+
 private:
     std::optional<std::reference_wrapper<Group> > _treeValue;
 };
@@ -50,5 +63,6 @@ template<>
 json TextItem::convertValue() const;
 
 std::string formatTextItem(TextItem textItem);
+std::string reprTextItem(TextItem textItem);
 
 #endif //CRDT_SEQUENCE_ITEM_H

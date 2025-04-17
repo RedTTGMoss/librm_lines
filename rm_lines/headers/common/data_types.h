@@ -50,8 +50,8 @@ template<typename T>
 struct CrdtSequence {
     std::unordered_map<CrdtId, T> sequence;
 
-    void add(T &item) {
-        sequence[item.itemId] = item;
+    void add(T &&item) {
+        sequence[item.itemId] = std::move(item);
     }
 
     std::vector<CrdtId> getSortedIds() const {
@@ -106,6 +106,14 @@ struct CrdtSequence {
 
             if (nextIds.empty() && graph.size() > 0) {
                 // If we have no next items but the graph is not finished, we have a cycle
+                std::string debugGraph = "Here's the dependency graph, while sorting the sequence: ";
+                for (const auto &[key, value]: graph) {
+                    debugGraph += std::format("\nItem: {} -> ", key.repr());
+                    for (const auto &dep: value) {
+                        debugGraph += std::format("{} ", dep.repr());
+                    }
+                }
+                logError(debugGraph);
                 throw std::runtime_error("Cyclic dependency in sequence");
             }
 
@@ -140,6 +148,24 @@ struct CrdtSequence {
             j[key.toJson()] = value.toJsonNoItem();
         }
         return j;
+    }
+
+    // Allow for itteration
+    auto begin() {
+        return sequence.begin();
+    }
+
+    auto end() {
+        return sequence.end();
+    }
+
+    // Add const versions for const CrdtSequence
+    auto begin() const {
+        return sequence.begin();
+    }
+
+    auto end() const {
+        return sequence.end();
     }
 };
 
