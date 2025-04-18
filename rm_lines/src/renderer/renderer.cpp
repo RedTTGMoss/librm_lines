@@ -16,8 +16,8 @@ void Renderer::calculateAnchors() {
     anchors.clear();
 
     // Map special anchors
-    anchors[CrdtId(0, 281474976710654)] = 270;
-    anchors[CrdtId(0, 281474976710655)] = 700;
+    anchors[ANCHOR_ID_START] = 270;
+    anchors[ANCHOR_ID_END] = 700;
 
     // Check for the root text
     if (!sceneTree->rootText) return;
