@@ -1,4 +1,4 @@
-#include "advanced/text.h"
+#include "advanced/text_sequence.h"
 
 void TextSequence::expandTextItems() {
     if (expanded)

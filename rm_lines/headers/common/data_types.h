@@ -1,7 +1,6 @@
 #ifndef DATA_TYPES_H
 #define DATA_TYPES_H
 
-#include <cstdint>
 #include <unordered_map>
 #include <optional>
 #include <string>
@@ -24,9 +23,9 @@ struct CrdtId {
         return std::tie(first, second) < std::tie(other.first, other.second);
     }
 
-    std::string repr() const;
+    [[nodiscard]] std::string repr() const;
 
-    json toJson() const;
+    [[nodiscard]] json toJson() const;
 };
 
 template<>
@@ -54,7 +53,7 @@ struct CrdtSequence {
         sequence[item.itemId] = std::move(item);
     }
 
-    std::vector<CrdtId> getSortedIds() const {
+    [[nodiscard]] std::vector<CrdtId> getSortedIds() const {
         // Skip all the processing ahead, if the sequence is empty
         if (sequence.empty())
             return {};
@@ -64,7 +63,7 @@ struct CrdtSequence {
         sortedIds.reserve(sequence.size());
 
         // We initialize a list containing the IDs and their dependant IDs
-        std::unordered_map<CrdtId, std::unordered_set<CrdtId>> graph;
+        std::unordered_map<CrdtId, std::unordered_set<CrdtId> > graph;
 
         // Lambda to get the respective sideId depending on the side passed
         auto getSideId = [&](const T item, const Side side) -> std::optional<CrdtId> {
@@ -93,7 +92,7 @@ struct CrdtSequence {
         // Debug the current graph
 
         std::vector<CrdtId> nextIds;
-        while (graph.size() > 0) {
+        while (!graph.empty()) {
             for (auto it = graph.begin(); it != graph.end();) {
                 // If the item has no dependencies, we can add it to the next items
                 if (it->second.empty()) {
@@ -104,7 +103,7 @@ struct CrdtSequence {
                 }
             }
 
-            if (nextIds.empty() && graph.size() > 0) {
+            if (nextIds.empty() && !graph.empty()) {
                 // If we have no next items but the graph is not finished, we have a cycle
                 std::string debugGraph = "Here's the dependency graph, while sorting the sequence: ";
                 for (const auto &[key, value]: graph) {
@@ -137,11 +136,11 @@ struct CrdtSequence {
         return sortedIds;
     }
 
-    T& operator[](const CrdtId& key) {
+    T &operator[](const CrdtId &key) {
         return sequence[key];
     }
 
-    json toJson() const {
+    [[nodiscard]] json toJson() const {
         json j;
         // Iterate over the map and convert each item to JSON
         for (const auto &[key, value]: sequence) {
@@ -180,17 +179,17 @@ struct Rect {
     double w;
     double h;
 
-    json toJson() const;
+    [[nodiscard]] json toJson() const;
 };
 
 template<typename T>
 struct LwwItem {
-    CrdtId itemId;
+    CrdtId timestamp;
     T value;
 
-    json toJson() const {
+    [[nodiscard]] json toJson() const {
         return {
-            {"itemId", itemId.toJson()},
+            {"timestamp", timestamp.toJson()},
             {"value", value}
         };
     }

@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include <vector>
-#include <advanced/text.h>
+#include <advanced/text_sequence.h>
 #include <common/data_types.h>
 #include <common/crdt_sequence_item.h>
 

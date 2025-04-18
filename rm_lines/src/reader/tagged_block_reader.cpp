@@ -371,7 +371,7 @@ bool TaggedBlockReader::readTextItem(TextItem *textItem) {
 
 bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
     if (!readId(&textFormat->first)) return false;
-    if (!readId(1, &textFormat->second.itemId)) return false;
+    if (!readId(1, &textFormat->second.timestamp)) return false;
 
     getTag();
     if (!readSubBlock(2)) return false;
@@ -393,7 +393,7 @@ template<typename T>
 bool TaggedBlockReader::_readLwwItemId(const uint8_t index, LwwItem<T> *id) {
     getTag();
     if (!readSubBlock(index)) return false;
-    if (!readId(1, &id->itemId)) return false;
+    if (!readId(1, &id->timestamp)) return false;
     return true;
 }
 

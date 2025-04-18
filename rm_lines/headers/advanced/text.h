@@ -1,9 +1,10 @@
-#ifndef ADVANCED_TEXT_H
-#define ADVANCED_TEXT_H
+#ifndef TEXT_H
+#define TEXT_H
 
 #include "common/data_types.h"
 #include "common/crdt_sequence_item.h"
 
+struct Text;
 constexpr std::array<std::pair<ParagraphStyle, int>, 8> LineHeights = {
     {
         {BASIC, 100},
@@ -20,11 +21,27 @@ constexpr std::array<std::pair<ParagraphStyle, int>, 8> LineHeights = {
 constexpr CrdtId ANCHOR_ID_START = {0, 281474976710654};
 constexpr CrdtId ANCHOR_ID_END = {0, 281474976710655};
 
-struct TextSequence : CrdtSequence<TextItem> {
-    void expandTextItems();
+struct FormattedText {
+    std::string text;
+
+    // Formatting options on this text
+    bool bold = false;
+    bool italic = false;
 
 private:
-    bool expanded = false;
+    std::vector<CrdtId> textSequenceItems;
 };
 
-#endif //ADVANCED_TEXT_H
+struct Paragraph {
+    // Representing a single line which can contain multiple texts
+    std::vector<FormattedText> contents;
+    CrdtId startId;
+    LwwItem<ParagraphStyle> style;
+};
+
+struct TextDocument {
+    Text &text;
+    // TODO: finish and impl
+};
+
+#endif //TEXT_H

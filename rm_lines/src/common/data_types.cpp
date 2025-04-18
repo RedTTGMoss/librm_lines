@@ -97,7 +97,7 @@ json Group::toJsonNoItem() const {
 template<>
 json LwwItem<ParagraphStyle>::toJson() const {
     return {
-        {"characterId", itemId.toJson()},
+        {"characterId", timestamp.toJson()},
         {"value", value}
     };
 }
