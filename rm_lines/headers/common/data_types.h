@@ -184,8 +184,16 @@ struct Rect {
 
 template<typename T>
 struct LwwItem {
-    CrdtId timestamp;
+    CrdtId timestamp = END_MARKER;
     T value;
+
+    explicit LwwItem(T value) : value(value) {
+    };
+
+    explicit LwwItem(CrdtId timestamp, T value) : timestamp(timestamp), value(value) {
+    };
+
+    LwwItem() = default;
 
     [[nodiscard]] json toJson() const {
         return {

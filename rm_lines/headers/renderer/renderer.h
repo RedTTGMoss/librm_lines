@@ -4,7 +4,9 @@
 #include <common/scene_tree.h>
 #include <unordered_map>
 
-#define TEXT_TOP_Y -88
+#include "advanced/text.h"
+
+#define TEXT_TOP_Y (-88)
 
 class Renderer {
 public:
@@ -12,10 +14,13 @@ public:
 
     ~Renderer();
 
+    void prepareTextDocument();
+
     void calculateAnchors();
 
 private:
     SceneTree *sceneTree;
+    TextDocument textDocument = TextDocument();
     std::unordered_map<CrdtId, float> anchors;
 };
 

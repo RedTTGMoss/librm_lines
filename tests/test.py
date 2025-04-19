@@ -1,10 +1,8 @@
-import shutil
-import sys
-
 import colorama
 import ctypes
 import mmap
 import os
+import shutil
 import time
 from colorama import Fore
 
@@ -13,17 +11,17 @@ colorama.init()
 
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_logger(msg):
-    print(msg.decode())
+    print(msg.decode(errors='replace'))
 
 
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_error_logger(msg):
-    print(f"{Fore.RED}{msg.decode()}{Fore.RESET}")
+    print(f"{Fore.RED}{msg.decode(errors='replace')}{Fore.RESET}")
 
 
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_debug_logger(msg):
-    print(f"{Fore.LIGHTYELLOW_EX}{msg.decode()}{Fore.RESET}")
+    print(f"{Fore.LIGHTYELLOW_EX}{msg.decode(errors='replace')}{Fore.RESET}")
 
 
 script_folder = os.path.dirname(os.path.abspath(__file__))
@@ -82,7 +80,6 @@ for file in (files := os.listdir(files_folder)):
 
     total_time += (renderer_time := time.time() - begin)
     print(f"It took {renderer_time:.04f} to initialize the renderer")
-
 
     print("=" * 20)
 

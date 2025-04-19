@@ -23,6 +23,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/renderer/renderer.cpp
         rm_lines/src/renderer/renderer_export.cpp
         rm_lines/src/advanced/text_sequence.cpp
+        rm_lines/src/advanced/text.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json)
