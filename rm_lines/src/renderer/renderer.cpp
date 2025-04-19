@@ -16,7 +16,6 @@ void Renderer::prepareTextDocument() {
     if (!sceneTree->rootText) return;
 
     textDocument.fromText(sceneTree->rootText.value());
-    logDebug(textDocument.repr());
 }
 
 void Renderer::calculateAnchors() {
@@ -35,23 +34,14 @@ void Renderer::calculateAnchors() {
     int posX = 0, posY = 0;
 
     // Calculate the anchors
+    for (const auto &paragraph: textDocument.paragraphs) {
+        // Get the height for this paragraph style
+        yOffset += LineHeights[paragraph.style.value].second;
 
-    // std::string debugTextIds = "TextIds: ";
-    // for (const auto &textId: textIds) {
-    //     debugTextIds += textId.repr() + " ";
-    // }
-    // logDebug(debugTextIds);
-    //
-    // for (const auto &textId: textIds) {
-    //     auto text = sceneTree->rootText->items[textId];
-    //     // auto [_, paragraphStyle] = sceneTree->rootText->styleMap[textId];
-    //
-    //     logDebug(reprTextItem(text));
-    //
-    //     // Get the height for this paragraph style
-    //     // yOffset += lineHeights[paragraphStyle].second;
-    //     //
-    //     // posX += 0;
-    //     // posY += yOffset;
-    // }
+        posX += 0;
+        posY += yOffset;
+
+        // Save the anchor for this paragraph
+        anchors[paragraph.startId] = posY;
+    }
 }
