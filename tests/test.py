@@ -59,7 +59,7 @@ for file in (files := os.listdir(files_folder)):
     total_time += (process_time := time.time() - begin)
     print(f"[{tree_id}] Read, time taken:", process_time)
     if not tree_id:
-        continue
+        raise Exception("Failed to build tree")
     begin = time.time()
     success = lib.convertToJson(tree_id.encode(), json_output_path.encode())
     print(f"JSON [{success}] Time taken:", time.time() - begin)
@@ -68,7 +68,7 @@ for file in (files := os.listdir(files_folder)):
     begin = time.time()
     renderer_id = lib.makeRenderer(tree_id.encode(), 0, False).decode()
     if not renderer_id:
-        continue
+        raise Exception("Failed to make renderer")
 
     total_time += (renderer_time := time.time() - begin)
     print(f"It took {renderer_time:.04f} to initialize the renderer")
