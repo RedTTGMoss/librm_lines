@@ -74,10 +74,10 @@ jobs:
           python-version: '3.9'
           cache: 'pip'
 
-      - name: Install Poetry
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install poetry
+          pip install poetry colorama
 
       - name: Update version
         shell: bash
@@ -114,6 +114,12 @@ jobs:
               cp "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" rm_lines_sys/src/rm_lines_sys/rm_lines.dll
               ;;
           esac
+
+      - name: Run test
+        shell: bash
+        run: |
+          cd tests
+          python test.py
 
       - name: Build with poetry
         shell: bash

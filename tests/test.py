@@ -1,3 +1,5 @@
+import sys
+
 import colorama
 import ctypes
 import mmap
@@ -25,6 +27,8 @@ def python_debug_logger(msg):
 
 
 script_folder = os.path.dirname(os.path.abspath(__file__))
+rm_lines_sys_src_path = os.path.join(script_folder, '..', 'rm_lines_sys', 'src')
+sys.path.append(rm_lines_sys_src_path)
 svg_output_folder = os.path.join(script_folder, 'output_svg')
 json_output_folder = os.path.join(script_folder, 'output_json')
 files_folder = os.path.join(script_folder, 'files')
@@ -38,11 +42,6 @@ if os.name == 'nt':
 else:
     # Unix-specific code (Linux, macOS)
     lib_path = os.path.join(script_folder, '..', 'build', 'librm_lines.so')
-
-shutil.copy(lib_path, os.path.join('..', 'rm_lines_sys', 'src', 'rm_lines_sys', os.path.basename(lib_path)))
-os.chdir(os.path.join('..', 'rm_lines_sys'))
-os.system(f'poetry install')
-os.chdir(script_folder)
 
 from rm_lines_sys import lib
 
