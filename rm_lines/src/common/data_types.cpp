@@ -10,13 +10,18 @@ std::string formatTextItem(TextItem textItem) {
             std::ostringstream oss;
 
             // Replace escape sequences with their literal representations
-            for (char c : rawString) {
+            for (char c: rawString) {
                 switch (c) {
-                    case '\n': oss << "\\n"; break;
-                    case '\t': oss << "\\t"; break;
-                    case '\\': oss << "\\\\"; break;
-                    case '\"': oss << "\\\""; break;
-                    default: oss << c; break;
+                    case '\n': oss << "\\n";
+                        break;
+                    case '\t': oss << "\\t";
+                        break;
+                    case '\\': oss << "\\\\";
+                        break;
+                    case '\"': oss << "\\\"";
+                        break;
+                    default: oss << c;
+                        break;
                 }
             }
 
@@ -54,10 +59,6 @@ std::string CrdtId::repr() const {
 
 json CrdtId::toJson() const {
     return std::format("{}:{}", first, second);
-}
-
-json Rect::toJson() const {
-    return {x, y, w, h};
 }
 
 Group::Group(const CrdtId nodeId)

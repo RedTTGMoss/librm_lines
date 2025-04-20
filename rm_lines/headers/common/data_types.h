@@ -4,6 +4,7 @@
 #include <unordered_map>
 #include <optional>
 #include <string>
+#include <advanced/rect.h>
 #include <variant>
 #include <format>
 #include <library.h>
@@ -171,15 +172,6 @@ struct CrdtSequence {
 struct IntPair {
     uint32_t first;
     uint32_t second;
-};
-
-struct Rect {
-    double x;
-    double y;
-    double w;
-    double h;
-
-    [[nodiscard]] json toJson() const;
 };
 
 template<typename T>

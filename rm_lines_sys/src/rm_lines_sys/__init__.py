@@ -45,7 +45,7 @@ def load_lib() -> Optional[ctypes.CDLL]:
     _lib.convertToSvg.restype = ctypes.c_bool
 
     # Functon makeRenderer(str) -> str
-    _lib.makeRenderer.argtypes = [ctypes.c_char_p]
+    _lib.makeRenderer.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_bool]
     _lib.makeRenderer.restype = ctypes.c_char_p
 
     return _lib

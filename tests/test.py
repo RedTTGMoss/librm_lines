@@ -74,7 +74,7 @@ for file in (files := os.listdir(files_folder)):
     # Make a renderer
 
     begin = time.time()
-    renderer_id = lib.makeRenderer(tree_id.encode()).decode()
+    renderer_id = lib.makeRenderer(tree_id.encode(), 0, False).decode()
     if not renderer_id:
         continue
 

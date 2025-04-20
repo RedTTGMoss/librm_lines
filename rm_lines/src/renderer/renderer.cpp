@@ -3,8 +3,10 @@
 
 #include "advanced/text.h"
 
-Renderer::Renderer(SceneTree *sceneTree) {
+Renderer::Renderer(SceneTree *sceneTree, PageType pageType, bool landscape): _sizeTracker(
+    sceneTree->sceneInfo->paperSize.value_or<IntPair>({1404, 1872}), pageType) {
     this->sceneTree = sceneTree;
+    this->_sizeTracker.reverseFrameSize = landscape;
     prepareTextDocument();
     calculateAnchors();
 }
@@ -16,6 +18,14 @@ void Renderer::prepareTextDocument() {
     if (!sceneTree->rootText) return;
 
     textDocument.fromText(sceneTree->rootText.value());
+}
+
+void Renderer::trackX(const float posX) {
+    _sizeTracker.trackX(posX);
+}
+
+void Renderer::trackY(const float posY) {
+    _sizeTracker.trackY(posY);
 }
 
 void Renderer::calculateAnchors() {
@@ -43,5 +53,6 @@ void Renderer::calculateAnchors() {
 
         // Save the anchor for this paragraph
         anchors[paragraph.startId] = posY;
+        trackY(posY);
     }
 }

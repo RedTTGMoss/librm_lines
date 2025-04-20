@@ -31,9 +31,9 @@ bool removeRenderer(const std::string &uuid) {
   return globalRendererMap.erase(uuid) > 0;
 }
 
-EXPORT const char *makeRenderer(const char *treeId) {
+EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bool landscape) {
   auto tree = getSceneTree(treeId);
-  auto renderer = std::make_shared<Renderer>(tree.get());
+  auto renderer = std::make_shared<Renderer>(tree.get(), static_cast<PageType>(pageType), landscape);
 
   static std::string result;
 
