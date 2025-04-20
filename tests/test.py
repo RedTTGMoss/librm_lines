@@ -54,23 +54,16 @@ total_time = 0
 for file in (files := os.listdir(files_folder)):
     svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
     json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
-    with open(svg_output_path, 'w') as _:
-        pass
-    with open(json_output_path, 'w') as _:
-        pass
     print("Processing file:", file)
-    with open(os.path.join(files_folder, file), "r+b") as fin:
-        print(fn := fin.fileno())
-        begin = time.time()
-        tree_id = lib.buildTree(fn).decode()
-        total_time += (process_time := time.time() - begin)
-        print(f"[{tree_id}] Read, time taken:", process_time)
+    begin = time.time()
+    tree_id = lib.buildTree(os.path.join(files_folder, file).encode()).decode()
+    total_time += (process_time := time.time() - begin)
+    print(f"[{tree_id}] Read, time taken:", process_time)
     if not tree_id:
         continue
-    with open(json_output_path, "r+b") as fout:
-        begin = time.time()
-        success = lib.convertToJson(tree_id.encode(), fout.fileno())
-        print(f"JSON [{success}] Time taken:", time.time() - begin)
+    begin = time.time()
+    success = lib.convertToJson(tree_id.encode(), json_output_path.encode())
+    print(f"JSON [{success}] Time taken:", time.time() - begin)
     # Make a renderer
 
     begin = time.time()

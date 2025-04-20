@@ -14,6 +14,8 @@
 #include <sys/stat.h>
 #endif
 #include <string>
+// ReSharper disable once CppUnusedIncludeDirective
+#include <fcntl.h>
 
 #define PI 3.14159265358979323846
 

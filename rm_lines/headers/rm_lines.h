@@ -8,10 +8,9 @@
 
 extern std::unordered_map<std::string, std::shared_ptr<SceneTree> > globalSceneTreeMap;
 
-EXPORT const char *buildTree(int inputFD);
+EXPORT const char *buildTree(const char *rmPath);
 
-EXPORT bool convertToSvg(const char *treeId, int outputFD);
-EXPORT bool convertToJson(const char *treeId, int outputFD);
+EXPORT bool convertToJson(const char *treeId, const char *outPath);
 
 std::string generateUUID();
 std::shared_ptr<SceneTree> getSceneTree(const std::string &treeId);

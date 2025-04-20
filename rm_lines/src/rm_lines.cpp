@@ -86,30 +86,44 @@ std::shared_ptr<TaggedBlockReader> prepareReader(const int inputFD) {
     return reader;
 }
 
-EXPORT bool convertToJson(const char *treeId, const int outputFD) {
+EXPORT bool convertToJson(const char *treeId, const char *outPath) {
     const auto tree = getSceneTree(treeId);
     if (!tree) {
         logError("Invalid treeId provided");
         return false;
     }
-    json j = tree->toJson();
 
-    auto jsonString = j.dump(4);
+    const json j = tree->toJson();
 
+    const auto jsonString = j.dump(4);
+
+    const int outputFD = open(outPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+    if (outputFD == -1) {
+        logError("Could not open output file");
+        return false;
+    }
     write(outputFD, jsonString.c_str(), jsonString.size());
+    close(outputFD);
 
     return true;
 }
 
-EXPORT const char *buildTree(const int inputFD) {
+EXPORT const char *buildTree(const char *rmPath) {
     std::shared_ptr<TaggedBlockReader> reader;
+    const int inputFD = open(rmPath, O_RDONLY);
+    if (inputFD == -1) {
+        logError("Could not open file");
+        return "";
+    }
     try {
         reader = prepareReader(inputFD);
     } catch (const CannotReadHeaderException &e) {
         logError(e.what());
+        close(inputFD);
         return "";
     } catch (const std::exception &e) {
         logError(e.what());
+        close(inputFD);
         return "";
     }
 
@@ -120,6 +134,7 @@ EXPORT const char *buildTree(const int inputFD) {
         reader->buildTree(*tree);
     } catch (const std::exception &e) {
         logError(std::format("{}\nFailed to build tree: {}", getStackTrace(), e.what()));
+        close(inputFD);
         return "";
     }
 
@@ -129,25 +144,10 @@ EXPORT const char *buildTree(const int inputFD) {
         result = addSceneTree(tree);
     } catch (const std::exception &e) {
         logError(std::format("{}\nFailed to add tree to tree map: {}", getStackTrace(), e.what()));
+        close(inputFD);
         return "";
     }
 
+    close(inputFD);
     return result.c_str();
-}
-
-EXPORT bool convertToSvg(const char *treeId, const int outputFD) {
-    const auto tree = getSceneTree(treeId);
-    if (!tree) {
-        logError("Invalid treeId provided");
-        return false;
-    }
-
-    // Dummy SVG content (replace with real conversion later)
-    const char *svg_content = "<svg xmlns=\"http://www.w3.org/2000/svg\"></svg>";
-    size_t svg_size = strlen(svg_content);
-
-    // Write SVG data
-    write(outputFD, svg_content, svg_size);
-
-    return true;
 }

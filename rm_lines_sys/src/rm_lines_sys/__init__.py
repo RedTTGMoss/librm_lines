@@ -33,16 +33,12 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Add function signatures
 
     # Function buildTree(int) -> str
-    _lib.buildTree.argtypes = [ctypes.c_int]
+    _lib.buildTree.argtypes = [ctypes.c_char_p]
     _lib.buildTree.restype = ctypes.c_char_p
 
     # Function convertToJson(str, int) -> bool
-    _lib.convertToJson.argtypes = [ctypes.c_char_p, ctypes.c_int]
+    _lib.convertToJson.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
     _lib.convertToJson.restype = ctypes.c_bool
-
-    # Function convertToSvg(str, int) -> bool
-    _lib.convertToSvg.argtypes = [ctypes.c_char_p, ctypes.c_int]
-    _lib.convertToSvg.restype = ctypes.c_bool
 
     # Functon makeRenderer(str) -> str
     _lib.makeRenderer.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_bool]
