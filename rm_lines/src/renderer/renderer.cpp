@@ -25,6 +25,7 @@ void Renderer::trackX(const float posX) {
 }
 
 void Renderer::trackY(const float posY) {
+    logDebug(std::format("TRACK[Y] {}", posY));
     _sizeTracker.trackY(posY);
 }
 
