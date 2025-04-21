@@ -9,8 +9,8 @@
 
 class V6Reader : public TaggedBlockReader {
 public:
-    V6Reader(const int fd, const size_t data_size)
-        : TaggedBlockReader(fd, data_size, V6_HEADER_SIZE) {
+    V6Reader(FILE* file, const size_t dataSize)
+        : TaggedBlockReader(file, dataSize, V6_HEADER_SIZE) {
     };
 
     bool readHeader() override;

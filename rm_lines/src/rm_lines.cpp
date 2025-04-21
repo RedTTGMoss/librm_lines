@@ -66,19 +66,15 @@ bool removeSceneTree(const std::string &uuid) {
     return globalSceneTreeMap.erase(uuid) > 0;
 }
 
-std::shared_ptr<TaggedBlockReader> prepareReader(const int inputFD) {
-    // Map input file
-    struct stat fd_stat;
-    if (fstat(inputFD, &fd_stat) == -1) {
-        throw std::runtime_error(std::format("Invalid file descriptor {}", inputFD));
-    }
-    size_t input_size = getFileSize(inputFD);
+std::shared_ptr<TaggedBlockReader> prepareReader(FILE *inputFile) {
+    // Get size of input file
+    size_t inputSize = getFileSize(inputFile);
 
     // Initialize reader
-    std::shared_ptr<TaggedBlockReader> reader = std::make_shared<V6Reader>(inputFD, input_size);
+    std::shared_ptr<TaggedBlockReader> reader = std::make_shared<V6Reader>(inputFile, inputSize);
 
     if (!reader->readHeader()) {
-        reader = std::make_shared<V5Reader>(inputFD, input_size);
+        reader = std::make_shared<V5Reader>(inputFile, inputSize);
         if (!reader->readHeader()) {
             throw CannotReadHeaderException("Failed to handle v6 and v5");
         }
@@ -97,33 +93,33 @@ EXPORT bool convertToJson(const char *treeId, const char *outPath) {
 
     const auto jsonString = j.dump(4);
 
-    const int outputFD = open(outPath, O_WRONLY | O_CREAT | O_TRUNC, 0644);
-    if (outputFD == -1) {
+    FILE *outputFile = fopen(outPath, "wb");
+    if (!outputFile) {
         logError("Could not open output file");
         return false;
     }
-    write(outputFD, jsonString.c_str(), jsonString.size());
-    close(outputFD);
+    fwrite(jsonString.c_str(), jsonString.size(), 1, outputFile);
+    fclose(outputFile);
 
     return true;
 }
 
 EXPORT const char *buildTree(const char *rmPath) {
     std::shared_ptr<TaggedBlockReader> reader;
-    const int inputFD = open(rmPath, O_RDONLY);
-    if (inputFD == -1) {
+    FILE *inputFile = std::fopen(rmPath, "rb");
+    if (!inputFile) {
         logError("Could not open file");
         return "";
     }
     try {
-        reader = prepareReader(inputFD);
+        reader = prepareReader(inputFile);
     } catch (const CannotReadHeaderException &e) {
         logError(e.what());
-        close(inputFD);
+        fclose(inputFile);
         return "";
     } catch (const std::exception &e) {
         logError(e.what());
-        close(inputFD);
+        fclose(inputFile);
         return "";
     }
 
@@ -134,7 +130,7 @@ EXPORT const char *buildTree(const char *rmPath) {
         reader->buildTree(*tree);
     } catch (const std::exception &e) {
         logError(std::format("{}\nFailed to build tree: {}", getStackTrace(), e.what()));
-        close(inputFD);
+        fclose(inputFile);
         return "";
     }
 
@@ -144,10 +140,10 @@ EXPORT const char *buildTree(const char *rmPath) {
         result = addSceneTree(tree);
     } catch (const std::exception &e) {
         logError(std::format("{}\nFailed to add tree to tree map: {}", getStackTrace(), e.what()));
-        close(inputFD);
+        fclose(inputFile);
         return "";
     }
 
-    close(inputFD);
+    fclose(inputFile);
     return result.c_str();
 }

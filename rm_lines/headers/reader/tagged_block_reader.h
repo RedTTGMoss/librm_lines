@@ -26,8 +26,14 @@ struct Tag {
 
 class TaggedBlockReader {
 public:
-    TaggedBlockReader(const int fd, const size_t dataSize,
-                      const int headerOffset) : fd(fd),
+    FILE *file;
+    size_t dataSize_;
+    uint32_t currentOffset;
+    std::unique_ptr<Block> currentBlock;
+    BlockInfo currentBlockInfo;
+
+    TaggedBlockReader(FILE *file, const size_t dataSize,
+                      const int headerOffset) : file(file),
                                                 dataSize_(dataSize), currentOffset(headerOffset) {
     };
 
@@ -126,12 +132,6 @@ public:
     bool readTextItem(TextItem *textItem);
 
     bool readTextFormat(TextFormat *textFormat);
-
-    int fd;
-    size_t dataSize_;
-    uint32_t currentOffset;
-    std::unique_ptr<Block> currentBlock;
-    BlockInfo currentBlockInfo;
 
 private:
     std::pair<uint8_t, TagType> _readTagValues();

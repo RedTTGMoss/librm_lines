@@ -2,18 +2,11 @@
 #define LIBRARY_H
 
 #ifdef _WIN32
-    #include <io.h>
-    #include <sys/stat.h>
     #define EXPORT extern "C" __declspec(dllexport)
-    #define read _read
-    #define write _write
-    #define fstat _fstat
-    #define stat _stat
-    #define lseek _lseek
 #else
 #define EXPORT extern "C" __attribute__((visibility("default")))
-#include <sys/stat.h>
 #endif
+#include <cstdio>
 #include <string>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <fcntl.h>
@@ -41,7 +34,7 @@ EXPORT void setDebugLogger(LogFunc debugLogger);
 
 void logDebug(const std::string &msg);
 
-off_t getFileSize(int fd);
+off_t getFileSize(FILE *file);
 
 std::string getStackTrace();
 

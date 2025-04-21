@@ -4,7 +4,7 @@
 
 bool V5Reader::readHeader() {
     char header[V5_HEADER_SIZE];
-    read(fd, header, V5_HEADER_SIZE);
+    fread(header, V5_HEADER_SIZE, 1, file);
 
     if (memcmp(header, V5_HEADER, V5_HEADER_SIZE) == 0) {
         logDebug("Found V5 header");

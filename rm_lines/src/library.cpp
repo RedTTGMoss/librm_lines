@@ -36,10 +36,18 @@ void logDebug(const std::string &msg) {
     }
 }
 
-off_t getFileSize(const int fd) {
-    struct stat st;
-    if (fstat(fd, &st) == -1) return -1;
-    return st.st_size;
+off_t getFileSize(FILE *file) {
+    // Save current position
+    const long currentPos = ftell(file);
+
+    // Seek to end and get position (file size)
+    fseek(file, 0, SEEK_END);
+    const size_t size = ftell(file);
+
+    // Restore original position
+    fseek(file, currentPos, SEEK_SET);
+
+    return size;
 }
 
 #ifdef _WIN32
