@@ -6,6 +6,11 @@ on:
   push:
     tags: [ "*" ]
     branches-ignore: [ "main" ]
+    paths:
+      - 'CMakeLists.txt'
+      - '.github/workflows/build.yml'
+      - 'rm_lines/**'
+      - 'rm_lines_sys/**'
   pull_request:
     branches: [ "main", "experimental" ]
 
@@ -100,20 +105,20 @@ jobs:
           echo "version=${version}" >> "$GITHUB_ENV"
           sed -i -e "s|0.0.0+replaced-by-ci|${version}|g" rm_lines_sys/pyproject.toml
 
-#      - name: Copy shared library to sys
-#        shell: bash
-#        run: |
-#          case "${{ matrix.os }}" in
-#            macos)
-#              cp "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" rm_lines_sys/src/rm_lines_sys/librm_lines.dylib
-#              ;;
-#            ubuntu)
-#              cp "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" rm_lines_sys/src/rm_lines_sys/librm_lines.so
-#              ;;
-#            windows)
-#              cp "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" rm_lines_sys/src/rm_lines_sys/rm_lines.dll
-#              ;;
-#          esac
+      #      - name: Copy shared library to sys
+      #        shell: bash
+      #        run: |
+      #          case "${{ matrix.os }}" in
+      #            macos)
+      #              cp "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" rm_lines_sys/src/rm_lines_sys/librm_lines.dylib
+      #              ;;
+      #            ubuntu)
+      #              cp "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" rm_lines_sys/src/rm_lines_sys/librm_lines.so
+      #              ;;
+      #            windows)
+      #              cp "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" rm_lines_sys/src/rm_lines_sys/rm_lines.dll
+      #              ;;
+      #          esac
 
       - name: Run test & copy shared library to sys
         shell: bash
