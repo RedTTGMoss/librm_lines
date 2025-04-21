@@ -105,10 +105,20 @@ bool TaggedBlockReader::readUUID(std::string &uuid, const uint32_t length) {
 }
 
 bool TaggedBlockReader::readBytes(const uint32_t size, void *result) {
-    if (currentOffset + size > dataSize_) return false;
+    if (currentOffset + size > dataSize_) {
+        logError(std::format("Attempted to read beyond the end of the data: {} - {} / {}", currentOffset,
+                             currentOffset + size, dataSize_));
+        return false;
+    }
 
     // Read the bytes directly into the destination buffer
-    if (read(fd, result, size) != size) return false; // Error: Failed to read the expected number of bytes
+    const uint32_t bytesRead = read(fd, result, size);
+
+    if (bytesRead != size) {
+        logError(std::format("Tried to read {} bytes, {} - {} / {}, instead got {}", size, currentOffset,
+                             currentOffset + size, dataSize_, bytesRead));
+        return false;
+    }
 
     // Update the current offset
     currentOffset += size;
@@ -117,15 +127,29 @@ bool TaggedBlockReader::readBytes(const uint32_t size, void *result) {
 }
 
 void TaggedBlockReader::readBytesOrError(uint32_t size, void *result) {
-    if (readBytes(size, result)) {
-        return;
-    }
-    throw std::runtime_error("Failed to read bytes");
+    if (currentOffset + size > dataSize_)
+        throw std::runtime_error(std::format("Attempted to read beyond the end of the data: {} - {} / {}",
+                                             currentOffset,
+                                             currentOffset + size, dataSize_));
+
+    // Read the bytes directly into the destination buffer
+    const uint32_t bytesRead = read(fd, result, size);
+
+    if (bytesRead != size)
+        throw std::runtime_error(std::format("Tried to read {} bytes, {} - {} / {}, instead got {}", size,
+                                             currentOffset,
+                                             currentOffset + size, dataSize_, bytesRead));
+
+    // Update the current offset
+    currentOffset += size;
 }
 
 
 void TaggedBlockReader::skipBytes(const uint32_t size) {
-    lseek(fd, size, SEEK_CUR);
+    const long result = lseek(fd, size, SEEK_CUR);
+    if (result == -1) {
+        throw std::runtime_error(std::format("Failed to skip bytes {}", size));
+    }
     currentOffset += size;
 }
 
@@ -133,7 +157,12 @@ void TaggedBlockReader::seekTo(uint32_t offset) {
     if (offset > dataSize_) {
         throw std::out_of_range("Offset exceeds data size");
     }
-    lseek(fd, offset, SEEK_SET);
+    const long result = lseek(fd, offset, SEEK_SET);
+
+    if (result == -1) {
+        throw std::runtime_error(std::format("Failed to seek to offset {}", offset));
+    }
+
     currentOffset = offset;
 }
 
