@@ -105,6 +105,8 @@ bool TaggedBlockReader::readUUID(std::string &uuid, const uint32_t length) {
 }
 
 bool TaggedBlockReader::readBytes(const uint32_t size, void *result) {
+    if (size == 0)
+        return true; // nothing to do, skip.
     if (currentOffset + size > dataSize_) {
         logError(std::format("Attempted to read beyond the end of the data: {} - {} / {}", currentOffset,
                              currentOffset + size, dataSize_));
@@ -125,6 +127,8 @@ bool TaggedBlockReader::readBytes(const uint32_t size, void *result) {
 }
 
 void TaggedBlockReader::readBytesOrError(uint32_t size, void *result) {
+    if (size == 0)
+        return; // nothing to do, skip.
     if (currentOffset + size > dataSize_)
         throw std::runtime_error(std::format("Attempted to read beyond the end of the data: {} - {} / {}",
                                              currentOffset,
