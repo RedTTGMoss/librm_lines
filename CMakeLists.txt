@@ -28,9 +28,9 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json)
 
-if(WIN32)
+if (WIN32)
     target_link_libraries(rm_lines PRIVATE DbgHelp)
     set_target_properties(rm_lines PROPERTIES OUTPUT_NAME "rm_lines" PREFIX "")
-endif()
+endif ()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

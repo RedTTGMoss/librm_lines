@@ -1,10 +1,9 @@
-import sys
-
 import colorama
 import ctypes
 import mmap
 import os
 import shutil
+import sys
 import time
 from colorama import Fore
 
@@ -38,7 +37,10 @@ os.makedirs(json_output_folder, exist_ok=True)
 
 if os.name == 'nt':
     # Windows-specific code
-    lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'rm_lines.dll')
+    for sub_path in ('', 'Debug', 'Release'):
+        lib_path = os.path.join(os.path.dirname(script_folder), 'build', sub_path, 'rm_lines.dll')
+        if os.path.exists(lib_path):
+            break
 else:
     # Unix-specific code (Linux, macOS)
     lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'librm_lines.so')
