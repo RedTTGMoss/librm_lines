@@ -38,10 +38,12 @@ os.makedirs(json_output_folder, exist_ok=True)
 
 if os.name == 'nt':
     # Windows-specific code
-    lib_path = os.path.join(script_folder, 'build', 'Debug', 'rm_lines.dll')
+    lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'rm_lines.dll')
 else:
     # Unix-specific code (Linux, macOS)
-    lib_path = os.path.join(script_folder, '..', 'build', 'librm_lines.so')
+    lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'librm_lines.so')
+
+shutil.copy(lib_path, os.path.join('..', 'rm_lines_sys', 'src', 'rm_lines_sys', os.path.basename(lib_path)))
 
 from rm_lines_sys import lib
 

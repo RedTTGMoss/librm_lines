@@ -3,12 +3,13 @@
 
 #ifdef _WIN32
     #include <io.h>
+    #include <sys/stat.h>
     #define EXPORT extern "C" __declspec(dllexport)
-    # define read _read
-    # define write _write
-    # define fstat _fstat
-    # define stat _stat
-    # define lseek _lseek
+    #define read _read
+    #define write _write
+    #define fstat _fstat
+    #define stat _stat
+    #define lseek _lseek
 #else
 #define EXPORT extern "C" __attribute__((visibility("default")))
 #include <sys/stat.h>

@@ -19,8 +19,7 @@ def load_lib() -> Optional[ctypes.CDLL]:
         logger.error(f"Unsupported platform: {sys.platform}")
         return None
 
-    lib_path = os.path.join(MODULE_FOLDER, lib_name)
-
+    lib_path = os.path.abspath(os.path.join(MODULE_FOLDER, lib_name))
     if not os.path.exists(lib_path):
         logger.error(f"Library file not found, path: {lib_path}")
         return None
