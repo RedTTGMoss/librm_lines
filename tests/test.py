@@ -45,7 +45,8 @@ else:
     # Unix-specific code (Linux, macOS)
     lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'librm_lines.so')
 
-shutil.copy(lib_path, os.path.join('..', 'rm_lines_sys', 'src', 'rm_lines_sys', os.path.basename(lib_path)))
+shutil.copy(lib_path, copy_to := os.path.join('..', 'rm_lines_sys', 'src', 'rm_lines_sys', os.path.basename(lib_path)))
+print(f"Copied the dynamic library from {lib_path} to {os.path.realpath(copy_to)} for {os.name}")
 
 from rm_lines_sys import lib
 

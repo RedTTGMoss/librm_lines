@@ -15,13 +15,12 @@ dependencies = [
 [tool.poetry]
 packages = [{ include = "rm_lines_sys", from = "src" }]
 include = [
-    "src/rm_lines_sys/*.dll",
-    "src/rm_lines_sys/*.so",
-    "src/rm_lines_sys/*.dylib"
+    { path = "src/rm_lines_sys/*.dll", format = ["wheel", "sdist"] },
+    { path = "src/rm_lines_sys/*.so", format = ["wheel", "sdist"] },
+    { path = "src/rm_lines_sys/*.dylib", format = ["wheel", "sdist"] }
 ]
 build = "build.py"
 
-
 [build-system]
-requires = ["poetry-core>=2.0.0,<3.0.0"]
+requires = ["setuptools", "poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
