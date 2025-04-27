@@ -57,3 +57,13 @@ void Renderer::calculateAnchors() {
         trackY(posY);
     }
 }
+
+json Renderer::getParagraphs() {
+    json j = json::array();
+    for (const auto &paragraph: textDocument.paragraphs) {
+        logDebug("Paragraph to json: " + paragraph.repr());
+        json a = paragraph.toJson();
+        j.push_back(a);
+    }
+    return j;
+}

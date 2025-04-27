@@ -1,4 +1,4 @@
-#include "rm_lines.h"
+#include "../../headers/scene_tree/scene_tree_export.h"
 #include "v5/reader.h"
 #include "v6/reader.h"
 #include <cstring>
@@ -91,7 +91,7 @@ EXPORT bool convertToJson(const char *treeId, const char *outPath) {
 
     const json j = tree->toJson();
 
-    const auto jsonString = j.dump(4);
+    const auto jsonString = j.dump();
 
     FILE *outputFile = fopen(outPath, "wb");
     if (!outputFile) {
@@ -102,6 +102,25 @@ EXPORT bool convertToJson(const char *treeId, const char *outPath) {
     fclose(outputFile);
 
     return true;
+}
+
+EXPORT const char * getSceneInfo(const char *treeId) {
+    const auto tree = getSceneTree(treeId);
+    if (!tree) {
+        logError("Invalid treeId provided");
+        return "";
+    }
+
+    if (!tree->sceneInfo) {
+        return "";
+    }
+
+    const json j = tree->sceneInfo.value().toJson();
+
+    static std::string result;
+    result = j.dump();
+
+    return result.c_str();
 }
 
 EXPORT const char *buildTree(const char *rmPath) {
@@ -146,4 +165,19 @@ EXPORT const char *buildTree(const char *rmPath) {
 
     fclose(inputFile);
     return result.c_str();
+}
+
+EXPORT int destroyTree(const char *treeId) {
+    auto tree = getSceneTree(treeId);
+    if (!tree) {
+        logError("Invalid treeId provided");
+        return -1;
+    }
+    int size = sizeof(*tree);
+    if (removeSceneTree(treeId)) {
+        return size;
+    }
+
+    logError("Failed to remove tree from tree map");
+    return -1;
 }

@@ -1,5 +1,5 @@
 #include "common/crdt_sequence_item.h"
-#include <common/scene_tree.h>
+#include <scene_tree/scene_tree.h>
 
 template<typename T>
 void CrdtSequenceItem<T>::applyTreeValue(SceneTree &tree, const CrdtId &nodeId) {

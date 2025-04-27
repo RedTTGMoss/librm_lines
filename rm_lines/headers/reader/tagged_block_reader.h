@@ -5,7 +5,7 @@
 #include <cstdint>
 #include <memory>
 #include <common/blocks.h>
-#include <common/scene_tree.h>
+#include <scene_tree/scene_tree.h>
 #include <common/crdt_sequence_item.h>
 
 enum class TagType : uint8_t {

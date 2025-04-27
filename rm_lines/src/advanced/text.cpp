@@ -1,5 +1,7 @@
 #include "advanced/text.h"
 #include "common/scene_items.h"
+#include <cppcodec/base64_rfc4648.hpp>
+using base64 = cppcodec::base64_rfc4648;
 
 bool checkString(const TextItem &item, const std::string &str) {
     if (!item.value.has_value())
@@ -11,6 +13,21 @@ bool checkString(const TextItem &item, const std::string &str) {
 
 bool operator==(const std::string &str, const char rhs) {
     return str.size() == 1 && *str.begin() == rhs;
+}
+
+json TextFormattingOptions::toJson() const {
+    return {
+        {"bold", bold},
+        {"italic", italic}
+    };
+}
+
+json FormattedText::toJson() const {
+    json j;
+    j["text"] = base64::encode(text);
+    j["formatting"] = formatting.toJson();
+
+    return j;
 }
 
 std::string Paragraph::repr() const {
@@ -48,6 +65,18 @@ std::string Paragraph::repr() const {
         final += text.text;
     }
     return final + "\n";
+}
+
+json Paragraph::toJson() const {
+    json j;
+    j["startId"] = startId.toJson();
+    j["style"] = style.value;
+    j["contents"] = json::array();
+    for (const auto &text: contents) {
+        j["contents"].push_back(text.toJson());
+    }
+
+    return j;
 }
 
 void TextDocument::fromText(Text &text) {

@@ -68,6 +68,8 @@ struct TextFormattingOptions {
     bool operator==(const TextFormattingOptions other) const {
         return bold == other.bold && italic == other.italic;
     }
+
+    json toJson() const;
 };
 
 template<>
@@ -84,6 +86,7 @@ struct FormattedText {
     // Formatting options on this text
     TextFormattingOptions formatting;
 
+    json toJson() const;
 private:
     std::vector<CrdtId> textSequenceItems;
 };
@@ -95,6 +98,8 @@ struct Paragraph {
     LwwItem<ParagraphStyle> style = LwwItem<ParagraphStyle>(PLAIN);
 
     std::string repr() const;
+
+    json toJson() const;
 };
 
 struct TextDocument {

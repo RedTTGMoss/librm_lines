@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include <common/scene_tree.h>
+#include <scene_tree/scene_tree.h>
 #include <unordered_map>
 
 #include "advanced/document_size_tracker.h"
@@ -22,6 +22,8 @@ public:
     void trackY(float posY);
 
     void calculateAnchors();
+
+    json getParagraphs();
 
 private:
     SceneTree *sceneTree;

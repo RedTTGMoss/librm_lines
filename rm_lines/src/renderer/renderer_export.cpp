@@ -1,5 +1,5 @@
 #include <renderer/renderer_export.h>
-#include <rm_lines.h>
+#include <scene_tree/scene_tree_export.h>
 #include <format>
 
 std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendererMap;
@@ -46,3 +46,32 @@ EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bo
 
   return result.c_str();
 };
+
+EXPORT int destroyRenderer(const char *rendererId) {
+  auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return -1;
+  }
+  int size = sizeof(*renderer);
+  if (removeRenderer(rendererId)) {
+    return size;
+  }
+
+  logError("Failed to remove renderer from renderer map");
+  return -1;
+}
+
+EXPORT const char *getParagraphs(const char *rendererId) {
+  auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return "";
+  }
+  json j = renderer->getParagraphs();
+
+  static std::string result;
+  result = j.dump();
+
+  return result.c_str();
+}

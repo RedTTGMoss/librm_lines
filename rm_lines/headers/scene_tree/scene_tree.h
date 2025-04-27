@@ -12,7 +12,7 @@
 #include <common/scene_items.h>
 #include <nlohmann/json.hpp>
 
-#include "blocks.h"
+#include "../common/blocks.h"
 
 using json = nlohmann::json;
 

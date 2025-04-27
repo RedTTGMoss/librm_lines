@@ -1,4 +1,4 @@
-#include "common/scene_tree.h"
+#include "scene_tree/scene_tree.h"
 
 SceneTree::SceneTree() {
     // Add the root node

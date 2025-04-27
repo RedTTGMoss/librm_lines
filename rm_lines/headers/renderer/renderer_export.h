@@ -7,4 +7,8 @@ extern std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendere
 
 EXPORT const char *makeRenderer(const char *treeId, int pageType, bool landscape);
 
+EXPORT int destroyRenderer(const char *rendererId);
+
+EXPORT const char *getParagraphs(const char *rendererId);
+
 #endif //RENDERER_EXPORT_H
