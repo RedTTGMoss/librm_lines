@@ -23,7 +23,9 @@ public:
 
     void calculateAnchors();
 
-    json getParagraphs();
+    json getParagraphs() const;
+
+    void toMd(std::ostream& stream) const;
 
 private:
     SceneTree *sceneTree;

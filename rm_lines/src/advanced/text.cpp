@@ -30,6 +30,13 @@ json FormattedText::toJson() const {
     return j;
 }
 
+std::string FormattedText::getSanitizedText() const {
+    std::string result = text;
+    // Remove the special marker character 0x93
+    std::erase(result, '\x93');
+    return result;
+}
+
 std::string Paragraph::repr() const {
     std::string final = "";
     switch (style.value) {

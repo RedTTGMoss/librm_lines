@@ -28,6 +28,12 @@ class LibAnnotations(ctypes.Structure):
     def getParagraphs(self, renderer_id: bytes) -> bytes:
         pass
 
+    def textToMdFile(self, renderer_id: bytes, md_file: bytes) -> bool:
+        pass
+
+    def textToMd(self, renderer_id: bytes) -> bytes:
+        pass
+
 def load_lib() -> Optional[ctypes.CDLL]:
     lib_name = {
         'win32': 'rm_lines.dll',
@@ -80,6 +86,14 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function getParagraphs(str) -> str
     _lib.getParagraphs.argtypes = [ctypes.c_char_p]
     _lib.getParagraphs.restype = ctypes.c_char_p
+
+    # Function toMd(str, str) -> bool
+    _lib.textToMdFile.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+    _lib.textToMdFile.restype = ctypes.c_bool
+
+    # Function toMd(str) -> str
+    _lib.textToMd.argtypes = [ctypes.c_char_p]
+    _lib.textToMd.restype = ctypes.c_char_p
 
     return _lib
 

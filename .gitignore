@@ -6,6 +6,8 @@ build/
 /tests/output.svg
 /tests/output_json/
 /tests/output_svg/
+/tests/output_md/
+
 __pycache__/
 /rm_lines_sys/dist/
 /rm_lines_sys/src/rm_lines_sys/librm_lines.so

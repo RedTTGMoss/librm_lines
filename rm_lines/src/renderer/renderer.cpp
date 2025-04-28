@@ -3,7 +3,7 @@
 
 #include "advanced/text.h"
 
-Renderer::Renderer(SceneTree *sceneTree, PageType pageType, bool landscape): _sizeTracker(
+Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): _sizeTracker(
     sceneTree->sceneInfo->paperSize.value_or<IntPair>({1404, 1872}), pageType) {
     this->sceneTree = sceneTree;
     this->_sizeTracker.reverseFrameSize = landscape;
@@ -58,7 +58,7 @@ void Renderer::calculateAnchors() {
     }
 }
 
-json Renderer::getParagraphs() {
+json Renderer::getParagraphs() const {
     json j = json::array();
     for (const auto &paragraph: textDocument.paragraphs) {
         logDebug("Paragraph to json: " + paragraph.repr());
@@ -66,4 +66,66 @@ json Renderer::getParagraphs() {
         j.push_back(a);
     }
     return j;
+}
+
+void Renderer::toMd(std::ostream &stream) const {
+    for (const auto &paragraph : textDocument.paragraphs) {
+        // Write style prefix based on paragraph style
+        switch (paragraph.style.value) {
+            case ParagraphStyle::HEADING:
+                stream << "# ";
+                break;
+            case ParagraphStyle::BOLD:
+                stream << "## ";
+                break;
+            case ParagraphStyle::BULLET:
+            case ParagraphStyle::BULLET2:
+                stream << "- ";
+                break;
+            case ParagraphStyle::CHECKBOX:
+                stream << "☐ ";
+                break;
+            case ParagraphStyle::CHECKBOX_CHECKED:
+                stream << "**☑** ";
+                break;
+            case ParagraphStyle::PLAIN:
+            default:
+                break;
+        }
+
+        // Add strikethrough for checked checkboxes
+        if (paragraph.style.value == ParagraphStyle::CHECKBOX_CHECKED) {
+            stream << "~~";
+        }
+
+        // Process each formatted text segment
+        for (const auto &formattedText : paragraph.contents) {
+            std::string formatting;
+            if (formattedText.formatting.bold) {
+                formatting += "**";
+            }
+            if (formattedText.formatting.italic) {
+                formatting += "*";
+            }
+
+            // Create a sanitized version of the text to comply with UTF-8
+            std::string sanitizedText = formattedText.getSanitizedText();
+
+            // Write the sanitized formatted text
+            stream << formatting << sanitizedText;
+
+
+            // Close formatting tags in reverse order
+            std::string reverseFormatting(formatting.rbegin(), formatting.rend());
+            stream << reverseFormatting;
+        }
+
+        // Close strikethrough if needed
+        if (paragraph.style.value == ParagraphStyle::CHECKBOX_CHECKED) {
+            stream << "~~";
+        }
+
+        // Add double newline after each paragraph
+        stream << "\n\n";
+    }
 }

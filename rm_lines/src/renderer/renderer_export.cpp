@@ -1,6 +1,7 @@
 #include <renderer/renderer_export.h>
 #include <scene_tree/scene_tree_export.h>
 #include <format>
+#include <fstream>
 
 std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendererMap;
 
@@ -74,4 +75,36 @@ EXPORT const char *getParagraphs(const char *rendererId) {
   result = j.dump();
 
   return result.c_str();
+}
+
+const char * textToMd(const char *rendererId) {
+  const auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return "";
+  }
+
+  static std::string result;
+  std::ostringstream stringStream;
+
+  renderer->toMd(stringStream);
+  result = stringStream.str();
+
+  return result.c_str();
+}
+
+bool textToMdFile(const char *rendererId, const char *outputFile) {
+  const auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return false;
+  }
+
+  std::ofstream fileStream(outputFile);
+  if (!fileStream) {
+    logError(std::format("Failed to open file: {}", outputFile));
+    return false;
+  }
+  renderer->toMd(fileStream);
+  return true;
 }

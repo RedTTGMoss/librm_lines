@@ -30,10 +30,12 @@ rm_lines_sys_src_path = os.path.join(script_folder, '..', 'rm_lines_sys', 'src')
 sys.path.append(rm_lines_sys_src_path)
 svg_output_folder = os.path.join(script_folder, 'output_svg')
 json_output_folder = os.path.join(script_folder, 'output_json')
+md_output_folder = os.path.join(script_folder, 'output_md')
 files_folder = os.path.join(script_folder, 'files')
 
 os.makedirs(svg_output_folder, exist_ok=True)
 os.makedirs(json_output_folder, exist_ok=True)
+os.makedirs(md_output_folder, exist_ok=True)
 
 if os.name == 'nt':
     # Windows-specific code
@@ -60,6 +62,8 @@ total_size_of_trees = 0
 for file in (files := os.listdir(files_folder)):
     svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
     json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
+    md_output_path = os.path.join(md_output_folder, file.replace('.rm', '.md'))
+
     print("Processing file:", file)
     begin = time.time()
     tree_id = lib.buildTree(os.path.join(files_folder, file).encode())
@@ -89,6 +93,21 @@ for file in (files := os.listdir(files_folder)):
     paragraphs = lib.getParagraphs(renderer_id)
     if paragraphs:
         print(f"Paragraphs: {paragraphs.decode()}")
+
+    begin = time.time()
+    success = lib.textToMdFile(renderer_id, md_output_path.encode())
+    print(f"MD (file) [{success}] Time taken:", time.time() - begin)
+    begin = time.time()
+    result = lib.textToMd(renderer_id)
+    print(f"MD (raw) [{len(result)}] Time taken:", time.time() - begin)
+
+    # Confirm it complies with UTF-8
+    try:
+        result.decode('utf-8')
+    except UnicodeDecodeError as e:
+        print(f"MD (raw) failed to decode: {e}")
+        raise
+
 
     begin = time.time()
     size_of_renderer = lib.destroyRenderer(renderer_id)
