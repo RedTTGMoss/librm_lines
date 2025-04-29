@@ -1,4 +1,5 @@
 import io
+from typing import List
 
 import colorama
 import ctypes
@@ -26,6 +27,12 @@ def python_error_logger(msg):
 def python_debug_logger(msg):
     print(f"{Fore.LIGHTYELLOW_EX}{msg.decode('utf-8', errors='replace')}{Fore.RESET}")
 
+def check_decode(raw: bytes, name: str):
+    try:
+        raw.decode('utf-8')
+    except UnicodeDecodeError as e:
+        print(f"{name} Invalid UTF-8 bytes: {raw[e.start:e.end]}")
+        raise
 
 script_folder = os.path.dirname(os.path.abspath(__file__))
 output_folder = os.path.join(script_folder, 'output')
@@ -87,11 +94,7 @@ for file in (files := os.listdir(files_folder)):
     print(f"JSON (raw) [{len(result)}] Time taken:", time.time() - begin)
 
     # Confirm it complies with UTF-8
-    try:
-        result.decode('utf-8')
-    except UnicodeDecodeError as e:
-        print(f"JSON (raw) failed to decode: {e}")
-        raise
+    check_decode(result, 'JSON (raw)')
 
     scene_info = lib.getSceneInfo(tree_id)
     if scene_info:
@@ -120,11 +123,7 @@ for file in (files := os.listdir(files_folder)):
     print(f"MD (raw) [{len(result)}] Time taken:", time.time() - begin)
 
     # Confirm it complies with UTF-8
-    try:
-        result.decode('utf-8')
-    except UnicodeDecodeError as e:
-        print(f"MD (raw) failed to decode: {e}")
-        raise
+    check_decode(result, 'MD (raw)')
 
     begin = time.time()
     success = lib.textToHtmlFile(renderer_id, html_output_path.encode())
@@ -134,11 +133,7 @@ for file in (files := os.listdir(files_folder)):
     print(f"HTML (raw) [{len(result)}] Time taken:", time.time() - begin)
 
     # Confirm it complies with UTF-8
-    try:
-        result.decode('utf-8')
-    except UnicodeDecodeError as e:
-        print(f"HTML (raw) failed to decode: {e}")
-        raise
+    check_decode(result, 'HTML (raw)')
 
     begin = time.time()
     size_of_renderer = lib.destroyRenderer(renderer_id)
