@@ -140,7 +140,6 @@ for file in (files := os.listdir(files_folder)):
         print(f"HTML (raw) failed to decode: {e}")
         raise
 
-
     begin = time.time()
     size_of_renderer = lib.destroyRenderer(renderer_id)
     destroy_time = time.time() - begin
