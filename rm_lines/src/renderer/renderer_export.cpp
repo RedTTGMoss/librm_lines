@@ -77,6 +77,23 @@ EXPORT const char *getParagraphs(const char *rendererId) {
   return result.c_str();
 }
 
+bool textToMdFile(const char *rendererId, const char *outputFile) {
+  const auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return false;
+  }
+
+  std::ofstream fileStream(outputFile);
+  if (!fileStream) {
+    logError(std::format("Failed to open file: {}", outputFile));
+    return false;
+  }
+  renderer->toMd(fileStream);
+  return true;
+}
+
+
 const char * textToMd(const char *rendererId) {
   const auto renderer = getRenderer(rendererId);
   if (!renderer) {
@@ -93,7 +110,7 @@ const char * textToMd(const char *rendererId) {
   return result.c_str();
 }
 
-bool textToMdFile(const char *rendererId, const char *outputFile) {
+bool textToHtmlFile(const char *rendererId, const char *outputFile) {
   const auto renderer = getRenderer(rendererId);
   if (!renderer) {
     logError("Invalid treeId provided");
@@ -105,6 +122,23 @@ bool textToMdFile(const char *rendererId, const char *outputFile) {
     logError(std::format("Failed to open file: {}", outputFile));
     return false;
   }
-  renderer->toMd(fileStream);
+  renderer->toHtml(fileStream);
   return true;
+}
+
+
+const char * textToHtml(const char *rendererId) {
+  const auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return "";
+  }
+
+  static std::string result;
+  std::ostringstream stringStream;
+
+  renderer->toHtml(stringStream);
+  result = stringStream.str();
+
+  return result.c_str();
 }

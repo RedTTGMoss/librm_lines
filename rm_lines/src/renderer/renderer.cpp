@@ -2,6 +2,8 @@
 #include <format>
 
 #include "advanced/text.h"
+#define HTML_HEADER "<!DOCTYPE html><html><body>"
+#define HTML_FOOTER "</body></html>"
 
 Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): _sizeTracker(
     sceneTree->sceneInfo->paperSize.value_or<IntPair>({1404, 1872}), pageType) {
@@ -128,4 +130,10 @@ void Renderer::toMd(std::ostream &stream) const {
         // Add double newline after each paragraph
         stream << "\n\n";
     }
+}
+
+void Renderer::toHtml(std::ostream &stream) {
+    stream << HTML_HEADER;
+    // TODO: Implement HTML rendering based on rM rendering, textDocument and *GliphRange(s)* for markings on the text!
+    stream << HTML_FOOTER;
 }

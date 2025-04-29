@@ -27,6 +27,8 @@ public:
 
     void toMd(std::ostream& stream) const;
 
+    void toHtml(std::ostream& stream);
+
 private:
     SceneTree *sceneTree;
     DocumentSizeTracker _sizeTracker;
