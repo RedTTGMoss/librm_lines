@@ -9,6 +9,7 @@ on:
     paths:
       - 'CMakeLists.txt'
       - '.github/workflows/build.yml'
+      - 'tests/**'
       - 'rm_lines/**'
       - 'rm_lines_sys/**'
   pull_request:
