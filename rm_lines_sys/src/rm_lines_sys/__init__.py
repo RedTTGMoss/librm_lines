@@ -15,7 +15,9 @@ class LibAnnotations(ctypes.Structure):
         pass
     def destroyTree(self, tree_id: bytes) -> int:
         pass
-    def convertToJson(self, tree_id: bytes, json_file: bytes) -> bool:
+    def convertToJsonFile(self, tree_id: bytes, json_file: bytes) -> bool:
+        pass
+    def convertToJson(self, tree_id: bytes) -> bytes:
         pass
     def getSceneInfo(self, tree_id: bytes) -> bytes:
         pass
@@ -37,7 +39,7 @@ class LibAnnotations(ctypes.Structure):
     def textToHtmlFile(self, renderer_id: bytes, html_file: bytes) -> bool:
         pass
 
-    def textToHtmlMd(self, renderer_id: bytes) -> bytes:
+    def textToHtml(self, renderer_id: bytes) -> bytes:
         pass
 
 def load_lib() -> Optional[ctypes.CDLL]:
@@ -71,9 +73,13 @@ def load_lib() -> Optional[ctypes.CDLL]:
     _lib.destroyTree.argtypes = [ctypes.c_char_p]
     _lib.destroyTree.restype = ctypes.c_int
 
-    # Function convertToJson(str, int) -> bool
-    _lib.convertToJson.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
-    _lib.convertToJson.restype = ctypes.c_bool
+    # Function convertToJsonFile(str, int) -> bool
+    _lib.convertToJsonFile.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+    _lib.convertToJsonFile.restype = ctypes.c_bool
+
+    # Function convertToJson(str) -> str
+    _lib.convertToJson.argtypes = [ctypes.c_char_p]
+    _lib.convertToJson.restype = ctypes.c_char_p
 
     # Function getSceneInfo(str) -> str
     _lib.getSceneInfo.argtypes = [ctypes.c_char_p]

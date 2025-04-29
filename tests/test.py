@@ -75,9 +75,20 @@ for file in (files := os.listdir(files_folder)):
     print(f"[{tree_id.decode()}] Read, time taken:", process_time)
     if not tree_id:
         raise Exception("Failed to build tree")
+
     begin = time.time()
-    success = lib.convertToJson(tree_id, json_output_path.encode())
-    print(f"JSON [{success}] Time taken:", time.time() - begin)
+    success = lib.convertToJsonFile(tree_id, json_output_path.encode())
+    print(f"JSON (file) [{success}] Time taken:", time.time() - begin)
+    begin = time.time()
+    result = lib.convertToJson(tree_id)
+    print(f"JSON (raw) [{len(result)}] Time taken:", time.time() - begin)
+
+    # Confirm it complies with UTF-8
+    try:
+        result.decode('utf-8')
+    except UnicodeDecodeError as e:
+        print(f"JSON (raw) failed to decode: {e}")
+        raise
 
     scene_info = lib.getSceneInfo(tree_id)
     if scene_info:

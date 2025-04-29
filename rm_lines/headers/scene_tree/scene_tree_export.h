@@ -11,7 +11,8 @@ extern std::unordered_map<std::string, std::shared_ptr<SceneTree> > globalSceneT
 EXPORT const char *buildTree(const char *rmPath);
 EXPORT int destroyTree(const char *treeId);
 
-EXPORT bool convertToJson(const char *treeId, const char *outPath);
+EXPORT bool convertToJsonFile(const char *treeId, const char *outPath);
+EXPORT const char* convertToJson(const char *treeId);
 EXPORT const char *getSceneInfo(const char *treeId);
 
 std::string generateUUID();

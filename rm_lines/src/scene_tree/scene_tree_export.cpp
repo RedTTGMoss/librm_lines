@@ -82,7 +82,7 @@ std::shared_ptr<TaggedBlockReader> prepareReader(FILE *inputFile) {
     return reader;
 }
 
-EXPORT bool convertToJson(const char *treeId, const char *outPath) {
+EXPORT bool convertToJsonFile(const char *treeId, const char *outPath) {
     const auto tree = getSceneTree(treeId);
     if (!tree) {
         logError("Invalid treeId provided");
@@ -102,6 +102,19 @@ EXPORT bool convertToJson(const char *treeId, const char *outPath) {
     fclose(outputFile);
 
     return true;
+}
+EXPORT const char* convertToJson(const char *treeId) {
+    const auto tree = getSceneTree(treeId);
+    if (!tree) {
+        logError("Invalid treeId provided");
+        return "";
+    }
+
+    const json j = tree->toJson();
+    static std::string result;
+    result = j.dump();
+
+    return result.c_str();
 }
 
 EXPORT const char * getSceneInfo(const char *treeId) {
