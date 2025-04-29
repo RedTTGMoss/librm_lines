@@ -1,3 +1,5 @@
+import io
+
 import colorama
 import ctypes
 import mmap
@@ -12,17 +14,17 @@ colorama.init()
 
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_logger(msg):
-    print(msg.decode(errors='replace'))
+    print(msg.decode('utf-8', errors='replace'))
 
 
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_error_logger(msg):
-    print(f"{Fore.RED}{msg.decode(errors='replace')}{Fore.RESET}")
+    print(f"{Fore.RED}{msg.decode('utf-8', errors='replace')}{Fore.RESET}")
 
 
 @ctypes.CFUNCTYPE(None, ctypes.c_char_p)
 def python_debug_logger(msg):
-    print(f"{Fore.LIGHTYELLOW_EX}{msg.decode(errors='replace')}{Fore.RESET}")
+    print(f"{Fore.LIGHTYELLOW_EX}{msg.decode('utf-8', errors='replace')}{Fore.RESET}")
 
 
 script_folder = os.path.dirname(os.path.abspath(__file__))
@@ -46,6 +48,7 @@ if os.name == 'nt':
         lib_path = os.path.join(os.path.dirname(script_folder), 'build', sub_path, 'rm_lines.dll')
         if os.path.exists(lib_path):
             break
+    sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf-8', errors='replace')
 else:
     # Unix-specific code (Linux, macOS)
     lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'librm_lines.so')
@@ -113,7 +116,7 @@ for file in (files := os.listdir(files_folder)):
     success = lib.textToMdFile(renderer_id, md_output_path.encode())
     print(f"MD (file) [{success}] Time taken:", time.time() - begin)
     begin = time.time()
-    result = lib.textToMd(renderer_id)
+    result: bytes = lib.textToMd(renderer_id)
     print(f"MD (raw) [{len(result)}] Time taken:", time.time() - begin)
 
     # Confirm it complies with UTF-8
