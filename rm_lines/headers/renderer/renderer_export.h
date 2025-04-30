@@ -4,6 +4,8 @@
 #include <renderer/renderer.h>
 
 extern std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendererMap;
+std::shared_ptr<Renderer> getRenderer(const std::string &treeId);
+
 
 EXPORT const char *makeRenderer(const char *treeId, int pageType, bool landscape);
 
