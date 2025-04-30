@@ -87,7 +87,6 @@ json Paragraph::toJson() const {
 }
 
 void TextDocument::fromText(Text &text) {
-    this->text = text;
     text.items.expandTextItems();
     paragraphs.clear();
     const auto characterIDs = text.items.getSortedIds();
@@ -142,6 +141,9 @@ void TextDocument::fromText(Text &text) {
         }
         paragraphs.push_back(std::move(paragraph));
     }
+
+    // Finally make sure to move the text into the text document
+    this->text = std::move(text);
 }
 
 std::string TextDocument::repr() const {
