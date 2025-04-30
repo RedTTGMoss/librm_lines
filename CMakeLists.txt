@@ -40,3 +40,11 @@ if (WIN32)
 endif ()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+
+add_executable(test tests/test.cpp)
+target_link_libraries(test PRIVATE rm_lines)
+target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec)
+
+if (WIN32)
+    target_link_libraries(test PRIVATE DbgHelp)
+endif ()
