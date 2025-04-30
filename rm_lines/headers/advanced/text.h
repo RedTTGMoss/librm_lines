@@ -89,9 +89,6 @@ struct FormattedText {
     json toJson() const;
 
     std::string getSanitizedText() const;
-
-private:
-    std::vector<CrdtId> textSequenceItems;
 };
 
 struct Paragraph {
