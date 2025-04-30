@@ -27,6 +27,8 @@ struct CrdtId {
     [[nodiscard]] std::string repr() const;
 
     [[nodiscard]] json toJson() const;
+
+    CrdtId operator++(int);
 };
 
 template<>

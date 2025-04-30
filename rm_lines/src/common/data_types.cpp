@@ -61,6 +61,10 @@ json CrdtId::toJson() const {
     return std::format("{}:{}", first, second);
 }
 
+CrdtId CrdtId::operator++(int) {
+    return CrdtId(first, ++second);
+}
+
 Group::Group(const CrdtId nodeId)
     : nodeId(nodeId),
       label(LwwItem<std::string>(CrdtId(0, 0), "")),
