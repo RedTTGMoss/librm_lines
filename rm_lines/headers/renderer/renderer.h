@@ -11,6 +11,9 @@
 
 class Renderer {
 public:
+    TextDocument textDocument = TextDocument();
+    std::unordered_map<CrdtId, uint32_t> anchors;
+
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);
 
     ~Renderer();
@@ -32,8 +35,6 @@ public:
 private:
     SceneTree *sceneTree;
     DocumentSizeTracker _sizeTracker;
-    TextDocument textDocument = TextDocument();
-    std::unordered_map<CrdtId, uint32_t> anchors;
 };
 
 #endif //RENDERER_H
