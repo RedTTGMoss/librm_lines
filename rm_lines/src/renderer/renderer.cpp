@@ -108,10 +108,9 @@ void Renderer::toMd(std::ostream &stream) const {
             }
 
             // Create a sanitized version of the text to comply with UTF-8
-            std::string sanitizedText = formattedText.getSanitizedText();
 
             // Write the sanitized formatted text
-            stream << formatting << sanitizedText;
+            stream << formatting << formattedText.text;
 
 
             // Close formatting tags in reverse order

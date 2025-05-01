@@ -87,8 +87,6 @@ struct FormattedText {
     TextFormattingOptions formatting;
 
     json toJson() const;
-
-    std::string getSanitizedText() const;
 };
 
 struct Paragraph {
