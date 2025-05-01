@@ -93,7 +93,7 @@ json Text::toJson() const {
         stylesJson.push_back(textFormatToJson(style));
     }
     return {
-        // {"items", items.toJson()},
+        {"items", items.toJson()},
         {"styles", stylesJson},
         {"posX", posX},
         {"posY", posY},
