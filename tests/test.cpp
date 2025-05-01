@@ -146,7 +146,7 @@ bool processFile(const std::string &filename, const std::string &path) {
         if (textCopy.has_value()) {
             // Export the original text items in raw
             rawTextFilePtr << "\n\n";
-            for (const auto &[key, value]: textCopy.value().items.sequence) {
+            for (const auto &value: textCopy.value().items.sequence | std::views::values) {
                 if (value.value.has_value()) {
                     if (std::holds_alternative<std::string>(value.value.value())) {
                         auto string = std::get<std::string>(value.value.value());
