@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 #define JSON_OUT "./output/json/"
 #define MD_OUT "./output/md/"
 #define SVG_OUT "./output/svg/"
+#define PNG_OUT "./output/png/"
 #define PARA_OUT "./output/paragraphs/"
 #define RAW_TEXT_OUT "./output/raw_text/"
 #define TEXT_EXPAND_PYTHON_OUT "./output/text_expand/"
@@ -29,7 +30,7 @@ std::string getTextItemContents(const TextItem item) {
     }
 }
 
-void replaceNewLine(std::string & string) {
+void replaceNewLine(std::string &string) {
     size_t pos = 0;
     while ((pos = string.find("\n", pos)) != std::string::npos) {
         string.replace(pos, 1, "\\n");
@@ -39,7 +40,7 @@ void replaceNewLine(std::string & string) {
 
 std::string safeString(std::string input) {
     std::string output;
-    for (const char c : input) {
+    for (const char c: input) {
         if (c == '\"') {
             output += "\\\"";
         } else if (c == '\'') {
@@ -107,6 +108,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::string jsonFile = JSON_OUT + filename + ".json";
     std::string mdFile = MD_OUT + filename + ".md";
     std::string svgFile = SVG_OUT + filename + ".svg";
+    std::string pngFile = PNG_OUT + filename + ".png";
     std::string paraFile = PARA_OUT + filename + ".json";
     std::string rawTextFile = RAW_TEXT_OUT + filename + ".bin";
     std::string textExpandPythonFile = TEXT_EXPAND_PYTHON_OUT + filename + ".py";
@@ -116,6 +118,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::ofstream htmlFilePtr(htmlFile.c_str());
     std::ofstream mdFilePtr(mdFile.c_str());
     std::ofstream svgFilePtr(svgFile.c_str());
+    std::ofstream pngFilePtr(pngFile.c_str());
     std::ofstream paraFilePtr(paraFile.c_str());
     std::ofstream rawTextFilePtr(rawTextFile.c_str());
     std::ofstream textExpandPythonFilePtr(textExpandPythonFile.c_str());
@@ -157,44 +160,44 @@ bool processFile(const std::string &filename, const std::string &path) {
 
             // Export the original text items in json
             rawTextFilePtr << "\n\n" << textCopy.value().items.toJson().dump(4);
-        }
 
-        // Export the text to python symbols for testing
-        textExpandPythonFilePtr << "[";
-        for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
-            if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
-                if (std::holds_alternative<std::string>(item.value.value())) {
-                    auto string = safeString(std::get<std::string>(item.value.value()));
-                    textExpandPythonFilePtr << std::format(
-                        "CrdtSequenceItem("
-                        "item_id=CrdtId({}, {}),"
-                        "left_id=CrdtId({}, {}),"
-                        "right_id=CrdtId({}, {}),"
-                        "deleted_length={},value=\"{}\""
-                        "),",
-                        item.itemId.first, item.itemId.second,
-                        item.leftId.first, item.leftId.second,
-                        item.rightId.first, item.rightId.second,
-                        item.deletedLength, string
-                    );
-                } else if (std::holds_alternative<uint32_t>(item.value.value())) {
-                    textExpandPythonFilePtr << std::format(
-                        "CrdtSequenceItem("
-                        "item_id=CrdtId({}, {}),"
-                        "left_id=CrdtId({}, {}),"
-                        "right_id=CrdtId({}, {}),"
-                        "deleted_length={},value={}"
-                        "),",
-                        item.itemId.first, item.itemId.second,
-                        item.leftId.first, item.leftId.second,
-                        item.rightId.first, item.rightId.second,
-                        item.deletedLength,
-                        std::get<std::uint32_t>(item.value.value())
-                    );
+            // Export the text to python symbols for testing
+            textExpandPythonFilePtr << "[";
+            for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
+                if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
+                    if (std::holds_alternative<std::string>(item.value.value())) {
+                        auto string = safeString(std::get<std::string>(item.value.value()));
+                        textExpandPythonFilePtr << std::format(
+                            "CrdtSequenceItem("
+                            "item_id=CrdtId({}, {}),"
+                            "left_id=CrdtId({}, {}),"
+                            "right_id=CrdtId({}, {}),"
+                            "deleted_length={},value=\"{}\""
+                            "),",
+                            item.itemId.first, item.itemId.second,
+                            item.leftId.first, item.leftId.second,
+                            item.rightId.first, item.rightId.second,
+                            item.deletedLength, string
+                        );
+                    } else if (std::holds_alternative<uint32_t>(item.value.value())) {
+                        textExpandPythonFilePtr << std::format(
+                            "CrdtSequenceItem("
+                            "item_id=CrdtId({}, {}),"
+                            "left_id=CrdtId({}, {}),"
+                            "right_id=CrdtId({}, {}),"
+                            "deleted_length={},value={}"
+                            "),",
+                            item.itemId.first, item.itemId.second,
+                            item.leftId.first, item.leftId.second,
+                            item.rightId.first, item.rightId.second,
+                            item.deletedLength,
+                            std::get<std::uint32_t>(item.value.value())
+                        );
+                    }
                 }
             }
+            textExpandPythonFilePtr << "]";
         }
-        textExpandPythonFilePtr << "]";
     } catch (const std::exception &e) {
         logError(std::format("Failed to export page \"{}\"", filename));
         logError(std::format("Exception: {}", e.what()));
@@ -235,6 +238,7 @@ int main() {
     fs::create_directories(JSON_OUT);
     fs::create_directories(MD_OUT);
     fs::create_directories(SVG_OUT);
+    fs::create_directories(PNG_OUT);
     fs::create_directories(PARA_OUT);
     fs::create_directories(RAW_TEXT_OUT);
     fs::create_directories(TEXT_EXPAND_PYTHON_OUT);
