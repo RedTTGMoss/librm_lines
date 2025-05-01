@@ -1,11 +1,19 @@
 #include <iostream>
 #include <filesystem>
+#include <fstream>
 #include <queue>
 
 #include "library.h"
 #include "renderer/renderer_export.h"
 #include "scene_tree/scene_tree_export.h"
 namespace fs = std::filesystem;
+
+#define DIR_OUT "./output/"
+#define HTML_OUT "./output/html/"
+#define JSON_OUT "./output/json/"
+#define MD_OUT "./output/md/"
+#define SVG_OUT "./output/svg/"
+#define PARA_OUT "./output/paragraphs/"
 
 std::string getTextItemContents(const TextItem item) {
     if (!item.value.has_value()) {
@@ -19,8 +27,8 @@ std::string getTextItemContents(const TextItem item) {
     }
 }
 
-bool testFile(const std::string &filename, const std::string &path) {
-    logMessage(std::format("Processing page {}", filename));
+bool processFile(const std::string &filename, const std::string &path) {
+    logMessage(std::format("\nProcessing page {}", filename));
 
     const char *treeId = buildTree(path.c_str());
     if (!treeId) {
@@ -61,6 +69,38 @@ bool testFile(const std::string &filename, const std::string &path) {
         }
     }
 
+    // Run exports
+    std::string htmlFile = HTML_OUT + filename + ".html";
+    std::string jsonFile = JSON_OUT + filename + ".json";
+    std::string mdFile = MD_OUT + filename + ".md";
+    std::string svgFile = SVG_OUT + filename + ".svg";
+    std::string paraFile = PARA_OUT + filename + ".json";
+
+    convertToJsonFile(treeId, jsonFile.c_str());
+
+    std::ofstream htmlFilePtr(htmlFile.c_str());
+    std::ofstream mdFilePtr(mdFile.c_str());
+    std::ofstream svgFilePtr(svgFile.c_str());
+    std::ofstream paraFilePtr(paraFile.c_str());
+    if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !paraFilePtr) {
+        logError(std::format("Failed to open output files for page \"{}\"", filename));
+        destroyTree(treeId);
+        return false;
+    }
+    try {
+        renderer.toHtml(htmlFilePtr);
+        renderer.toMd(mdFilePtr);
+        json paragraphs = renderer.getParagraphs();
+        paraFilePtr << paragraphs.dump(4);
+    } catch (const std::exception &e) {
+        logError(std::format("Failed to export page \"{}\"", filename));
+        logError(std::format("Exception: {}", e.what()));
+        destroyTree(treeId);
+        return false;
+    }
+
+
+
     // Clean up
     destroyTree(treeId);
     return true;
@@ -80,6 +120,20 @@ int main() {
     setDebugLogger(loggerDefault);
     setErrorLogger(loggerError);
 
+    // Ensure the location matches the source `tests/`
+    if (!fs::exists("./test.cpp")) {
+        logError("Please run this test from the tests directory.");
+        return -1;
+    }
+
+    // Make sure the output directories exist
+    fs::create_directories(DIR_OUT);
+    fs::create_directories(HTML_OUT);
+    fs::create_directories(JSON_OUT);
+    fs::create_directories(MD_OUT);
+    fs::create_directories(SVG_OUT);
+    fs::create_directories(PARA_OUT);
+
     try {
         // Set the directory path
 
@@ -91,7 +145,7 @@ int main() {
                 std::cerr << "File " << file << " is not a LINES file" << std::endl;
                 return -1;
             }
-            if (!testFile(filename.substr(0, filename.length()-3), file))
+            if (!processFile(filename.substr(0, filename.length()-3), file))
                 return -1;
         }
     } catch (const fs::filesystem_error& e) {
