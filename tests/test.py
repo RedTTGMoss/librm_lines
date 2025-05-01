@@ -41,12 +41,14 @@ sys.path.append(rm_lines_sys_src_path)
 svg_output_folder = os.path.join(output_folder, 'svg')
 json_output_folder = os.path.join(output_folder, 'json')
 md_output_folder = os.path.join(output_folder, 'md')
+txt_output_folder = os.path.join(output_folder, 'txt')
 html_output_folder = os.path.join(output_folder, 'html')
 files_folder = os.path.join(script_folder, 'files')
 
 os.makedirs(svg_output_folder, exist_ok=True)
 os.makedirs(json_output_folder, exist_ok=True)
 os.makedirs(md_output_folder, exist_ok=True)
+os.makedirs(txt_output_folder, exist_ok=True)
 os.makedirs(html_output_folder, exist_ok=True)
 
 if os.name == 'nt':
@@ -76,6 +78,7 @@ for file in (files := os.listdir(files_folder)):
     svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
     json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
     md_output_path = os.path.join(md_output_folder, file.replace('.rm', '.md'))
+    txt_output_path = os.path.join(txt_output_folder, file.replace('.rm', '.txt'))
     html_output_path = os.path.join(html_output_folder, file.replace('.rm', '.html'))
 
     print("Processing file:", file)
@@ -88,13 +91,13 @@ for file in (files := os.listdir(files_folder)):
 
     begin = time.time()
     success = lib.convertToJsonFile(tree_id, json_output_path.encode())
+    if not success:
+        exit(-1)
     print(f"JSON (file) [{success}] Time taken:", time.time() - begin)
     begin = time.time()
     result = lib.convertToJson(tree_id)
-    print(f"JSON (raw) [{len(result)}] Time taken:", time.time() - begin)
-
-    # Confirm it complies with UTF-8
     check_decode(result, 'JSON (raw)')
+    print(f"JSON (raw) [{len(result)}] Time taken:", time.time() - begin)
 
     scene_info = lib.getSceneInfo(tree_id)
     if scene_info:
@@ -117,23 +120,33 @@ for file in (files := os.listdir(files_folder)):
 
     begin = time.time()
     success = lib.textToMdFile(renderer_id, md_output_path.encode())
+    if not success:
+        exit(-1)
     print(f"MD (file) [{success}] Time taken:", time.time() - begin)
     begin = time.time()
     result: bytes = lib.textToMd(renderer_id)
+    check_decode(result, 'MD (raw)')
     print(f"MD (raw) [{len(result)}] Time taken:", time.time() - begin)
 
-    # Confirm it complies with UTF-8
+    begin = time.time()
+    success = lib.textToTxtFile(renderer_id, txt_output_path.encode())
+    if not success:
+        exit(-1)
+    print(f"TXT (file) [{success}] Time taken:", time.time() - begin)
+    begin = time.time()
+    result: bytes = lib.textToTxt(renderer_id)
     check_decode(result, 'MD (raw)')
+    print(f"TXT (raw) [{len(result)}] Time taken:", time.time() - begin)
 
     begin = time.time()
     success = lib.textToHtmlFile(renderer_id, html_output_path.encode())
+    if not success:
+        exit(-1)
     print(f"HTML (file) [{success}] Time taken:", time.time() - begin)
     begin = time.time()
     result = lib.textToHtml(renderer_id)
-    print(f"HTML (raw) [{len(result)}] Time taken:", time.time() - begin)
-
-    # Confirm it complies with UTF-8
     check_decode(result, 'HTML (raw)')
+    print(f"HTML (raw) [{len(result)}] Time taken:", time.time() - begin)
 
     begin = time.time()
     size_of_renderer = lib.destroyRenderer(renderer_id)
