@@ -1,5 +1,4 @@
-#ifndef BLOCKS_H
-#define BLOCKS_H
+#pragma once
 
 #include <cstdint>
 #include <map>
@@ -176,5 +175,3 @@ struct SceneGlyphItemBlock final : SceneItemBlock {
     bool readValue(TaggedBlockReader *reader) override;
     [[nodiscard]] json toJson() const override;
 };
-
-#endif //BLOCKS_H

@@ -1,5 +1,4 @@
-#ifndef CRDT_SEQUENCE_ITEM_H
-#define CRDT_SEQUENCE_ITEM_H
+#pragma once
 
 #include <common/data_types.h>
 
@@ -46,12 +45,12 @@ struct CrdtSequenceItem {
         const CrdtId leftId = END_MARKER,
         const CrdtId rightId = END_MARKER,
         const uint32_t deletedLength = 0,
-        std::optional<T> value = std::nullopt) :
-    itemId(itemId),
-    leftId(leftId),
-    rightId(rightId),
-    deletedLength(deletedLength),
-    value(value) {};
+        std::optional<T> value = std::nullopt) : itemId(itemId),
+                                                 leftId(leftId),
+                                                 rightId(rightId),
+                                                 deletedLength(deletedLength),
+                                                 value(value) {
+    };
 
 private:
     std::optional<std::reference_wrapper<Group> > _treeValue;
@@ -63,6 +62,5 @@ template<>
 json TextItem::convertValue() const;
 
 std::string formatTextItem(TextItem textItem);
-std::string reprTextItem(TextItem textItem);
 
-#endif //CRDT_SEQUENCE_ITEM_H
+std::string reprTextItem(TextItem textItem);

@@ -1,5 +1,4 @@
-#ifndef V6_READER_H
-#define V6_READER_H
+#pragma once
 
 #include <library.h>
 
@@ -9,12 +8,11 @@
 
 class V6Reader : public TaggedBlockReader {
 public:
-    V6Reader(FILE* file, const size_t dataSize)
+    V6Reader(FILE *file, const size_t dataSize)
         : TaggedBlockReader(file, dataSize, V6_HEADER_SIZE) {
     };
 
     bool readHeader() override;
+
     bool buildTree();
 };
-
-#endif //V6_READER_H

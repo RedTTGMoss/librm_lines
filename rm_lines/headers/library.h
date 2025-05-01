@@ -1,5 +1,4 @@
-#ifndef LIBRARY_H
-#define LIBRARY_H
+#pragma once
 
 #ifdef _WIN32
     #define EXPORT extern "C" __declspec(dllexport)
@@ -37,5 +36,3 @@ void logDebug(const std::string &msg);
 off_t getFileSize(FILE *file);
 
 std::string getStackTrace();
-
-#endif //LIBRARY_H

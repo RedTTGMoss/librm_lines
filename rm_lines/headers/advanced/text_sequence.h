@@ -1,5 +1,4 @@
-#ifndef TEXT_SEQUENCE_H
-#define TEXT_SEQUENCE_H
+#pragma once
 
 #include "common/data_types.h"
 #include "common/crdt_sequence_item.h"
@@ -13,5 +12,3 @@ struct TextSequence : CrdtSequence<TextItem> {
 private:
     bool expanded = false;
 };
-
-#endif //TEXT_SEQUENCE_H

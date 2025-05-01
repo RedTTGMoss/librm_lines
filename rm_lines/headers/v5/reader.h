@@ -1,5 +1,4 @@
-#ifndef V5_READER_H
-#define V5_READER_H
+#pragma once
 
 #include <library.h>
 
@@ -16,5 +15,3 @@ public:
     bool readHeader() override;
     bool readBlockInfo() override;
 };
-
-#endif //V5_READER_H

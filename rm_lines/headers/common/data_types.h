@@ -1,5 +1,4 @@
-#ifndef DATA_TYPES_H
-#define DATA_TYPES_H
+#pragma once
 
 #include <unordered_map>
 #include <optional>
@@ -247,5 +246,3 @@ struct Color {
 
     json toJson() const;
 };
-
-#endif //DATA_TYPES_H

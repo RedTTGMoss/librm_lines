@@ -1,5 +1,4 @@
-#ifndef LINE_H
-#define LINE_H
+#pragma once
 
 #include <cstdint>
 #include <vector>
@@ -94,6 +93,3 @@ struct GlyphRange {
 
     json toJson() const;
 };
-
-
-#endif //LINE_H

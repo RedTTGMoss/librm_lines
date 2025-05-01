@@ -1,5 +1,4 @@
-#ifndef TAGGED_BLOCK_READER_H
-#define TAGGED_BLOCK_READER_H
+#pragma once
 
 #include <cstddef>
 #include <cstdint>
@@ -156,5 +155,3 @@ public:
 private:
     std::string message_;
 };
-
-#endif //TAGGED_BLOCK_READER_H

@@ -1,5 +1,4 @@
-#ifndef DOCUMENT_SIZE_TRACKER_H
-#define DOCUMENT_SIZE_TRACKER_H
+#pragma once
 
 #include "advanced/rect.h"
 #include <nlohmann/json.hpp>
@@ -91,5 +90,3 @@ private:
     Vector offset;
     PageType pageType;
 };
-
-#endif //DOCUMENT_SIZE_TRACKER_H

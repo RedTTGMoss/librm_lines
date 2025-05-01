@@ -1,5 +1,4 @@
-#ifndef RECT_H
-#define RECT_H
+#pragma once
 
 #include <nlohmann/json.hpp>
 
@@ -134,4 +133,3 @@ struct Rect : Vector {
         );
     }
 };
-#endif //RECT_H

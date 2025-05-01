@@ -1,5 +1,4 @@
-#ifndef RM_LINES_H
-#define RM_LINES_H
+#pragma once
 
 #include "../library.h"
 #include "scene_tree.h"
@@ -17,5 +16,3 @@ EXPORT const char *getSceneInfo(const char *treeId);
 
 std::string generateUUID();
 std::shared_ptr<SceneTree> getSceneTree(const std::string &treeId);
-
-#endif //RM_LINES_H

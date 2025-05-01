@@ -1,5 +1,4 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#pragma once
 
 #include <scene_tree/scene_tree.h>
 #include <unordered_map>
@@ -29,13 +28,13 @@ public:
     json getParagraphs() const;
 
     // Exports
-    void toMd(std::ostream& stream) const;
-    void toTxt(std::ostream& stream) const;
-    void toHtml(std::ostream& stream);
+    void toMd(std::ostream &stream) const;
+
+    void toTxt(std::ostream &stream) const;
+
+    void toHtml(std::ostream &stream);
 
 private:
     SceneTree *sceneTree;
     DocumentSizeTracker _sizeTracker;
 };
-
-#endif //RENDERER_H

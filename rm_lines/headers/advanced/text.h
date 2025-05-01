@@ -1,5 +1,4 @@
-#ifndef TEXT_H
-#define TEXT_H
+#pragma once
 
 #include "common/data_types.h"
 #include "common/crdt_sequence_item.h"
@@ -108,5 +107,3 @@ struct TextDocument {
 
     std::string repr() const;
 };
-
-#endif //TEXT_H

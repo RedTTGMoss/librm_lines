@@ -1,5 +1,5 @@
-#ifndef SCENE_TREE_H
-#define SCENE_TREE_H
+#pragma once
+
 #include <unordered_map>
 
 
@@ -44,5 +44,3 @@ private:
     std::unordered_map<CrdtId, std::unique_ptr<Group> > _nodeIds;
     std::unordered_map<CrdtId, std::vector<SceneItemVariant> > _groupChildren;
 };
-
-#endif //SCENE_TREE_H
