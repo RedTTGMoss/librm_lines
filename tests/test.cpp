@@ -14,6 +14,7 @@ namespace fs = std::filesystem;
 #define MD_OUT "./output/md/"
 #define SVG_OUT "./output/svg/"
 #define PARA_OUT "./output/paragraphs/"
+#define RAW_TEXT_OUT "./output/raw_text/"
 
 std::string getTextItemContents(const TextItem item) {
     if (!item.value.has_value()) {
@@ -36,6 +37,7 @@ bool processFile(const std::string &filename, const std::string &path) {
         return false;
     }
     auto tree = getSceneTree(treeId).get();
+    auto textCopy = tree->rootText;
     auto renderer = Renderer(tree, NOTEBOOK, false);
 
     // Checking text
@@ -43,21 +45,25 @@ bool processFile(const std::string &filename, const std::string &path) {
     CrdtId oldId = END_MARKER;
     CrdtId currentId = END_MARKER;
     // Iterate over the paragraphs and their contents
-    for (const auto &paragraph : renderer.textDocument.paragraphs) {
-        for (const auto &string : paragraph.contents) {
-            for (const auto &characterId : string.characterIDs) {
+    for (const auto &paragraph: renderer.textDocument.paragraphs) {
+        for (const auto &string: paragraph.contents) {
+            for (const auto &characterId: string.characterIDs) {
                 auto currentTextItem = renderer.textDocument.text.items[currentId];
                 if (
                     getTextItemContents(currentTextItem) != "\n" &&
                     currentId != END_MARKER &&
                     characterId != currentId
-                    ) {
-
+                ) {
                     auto oldTextItem = renderer.textDocument.text.items[oldId];
 
-                    logError(std::format("Character ID mismatch in file {}: expected {}, got {}", filename, currentId.repr(), characterId.repr()));
-                    logError(std::format("-> According to the current element ({}) the previous element should be {} but it is actually {}", currentId.repr(), currentTextItem.leftId.repr(), oldId.repr()));
-                    logError(std::format("-> According to the previous element ({}) this it's neighbours should be {} <-{}-> {}", oldId.repr(), oldTextItem.leftId.repr(), oldId.repr(), oldTextItem.rightId.repr()));
+                    logError(std::format("Character ID mismatch in file {}: expected {}, got {}", filename,
+                                         currentId.repr(), characterId.repr()));
+                    logError(std::format(
+                        "-> According to the current element ({}) the previous element should be {} but it is actually {}",
+                        currentId.repr(), currentTextItem.leftId.repr(), oldId.repr()));
+                    logError(std::format(
+                        "-> According to the previous element ({}) this it's neighbours should be {} <-{}-> {}",
+                        oldId.repr(), oldTextItem.leftId.repr(), oldId.repr(), oldTextItem.rightId.repr()));
                     logError(std::format("-> The current item contains: {}", getTextItemContents(currentTextItem)));
                     logError(std::format("-> The previous item contains: {}", getTextItemContents(oldTextItem)));
                     destroyTree(treeId);
@@ -75,6 +81,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::string mdFile = MD_OUT + filename + ".md";
     std::string svgFile = SVG_OUT + filename + ".svg";
     std::string paraFile = PARA_OUT + filename + ".json";
+    std::string rawTextFile = RAW_TEXT_OUT + filename + ".bin";
 
     convertToJsonFile(treeId, jsonFile.c_str());
 
@@ -82,6 +89,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::ofstream mdFilePtr(mdFile.c_str());
     std::ofstream svgFilePtr(svgFile.c_str());
     std::ofstream paraFilePtr(paraFile.c_str());
+    std::ofstream rawTextFilePtr(rawTextFile.c_str());
     if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !paraFilePtr) {
         logError(std::format("Failed to open output files for page \"{}\"", filename));
         destroyTree(treeId);
@@ -92,6 +100,41 @@ bool processFile(const std::string &filename, const std::string &path) {
         renderer.toMd(mdFilePtr);
         json paragraphs = renderer.getParagraphs();
         paraFilePtr << paragraphs.dump(4);
+        // Export the raw characters
+        for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
+            if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
+                if (std::holds_alternative<std::string>(item.value.value())) {
+                    rawTextFilePtr << std::get<std::string>(item.value.value());
+                } else if (std::holds_alternative<uint32_t>(item.value.value())) {
+                    continue;
+                }
+            }
+        }
+
+        if (textCopy.has_value()) {
+            // Export the original text items in raw
+            rawTextFilePtr << "\n\n";
+            for (const auto &[key, value]: textCopy.value().items.sequence) {
+                if (value.value.has_value()) {
+                    if (std::holds_alternative<std::string>(value.value.value())) {
+                        auto string = std::get<std::string>(value.value.value());
+                        size_t pos = 0;
+                        while ((pos = string.find("\n", pos)) != std::string::npos) {
+                            string.replace(pos, 1, "\\n");
+                            pos += 2; // Move past the replaced "\\n"
+                        }
+                        rawTextFilePtr << ">> " << string << "\n";
+                    } else if (std::holds_alternative<uint32_t>(value.value.value())) {
+                        continue;
+                    }
+                }
+            }
+
+            // Export the original text items in json
+            rawTextFilePtr << "\n\n" << textCopy.value().items.toJson().dump(4);
+
+
+        }
     } catch (const std::exception &e) {
         logError(std::format("Failed to export page \"{}\"", filename));
         logError(std::format("Exception: {}", e.what()));
@@ -100,17 +143,17 @@ bool processFile(const std::string &filename, const std::string &path) {
     }
 
 
-
     // Clean up
     destroyTree(treeId);
     return true;
 }
 
-void loggerDefault(const char * msg) {;
+void loggerDefault(const char *msg) {
+    ;
     std::cout << msg << std::endl;
 }
 
-void loggerError(const char * msg) {
+void loggerError(const char *msg) {
     std::cerr << msg << std::endl;
 }
 
@@ -133,22 +176,23 @@ int main() {
     fs::create_directories(MD_OUT);
     fs::create_directories(SVG_OUT);
     fs::create_directories(PARA_OUT);
+    fs::create_directories(RAW_TEXT_OUT);
 
     try {
         // Set the directory path
 
         // Iterate over the directory entries
-        for (const fs::path dirPath = "./files"; const auto& entry : fs::directory_iterator(dirPath)) {
+        for (const fs::path dirPath = "./files"; const auto &entry: fs::directory_iterator(dirPath)) {
             std::string filename = entry.path().filename().string();
             std::string file = entry.path().string();
             if (!file.ends_with(".rm")) {
                 std::cerr << "File " << file << " is not a LINES file" << std::endl;
                 return -1;
             }
-            if (!processFile(filename.substr(0, filename.length()-3), file))
+            if (!processFile(filename.substr(0, filename.length() - 3), file))
                 return -1;
         }
-    } catch (const fs::filesystem_error& e) {
+    } catch (const fs::filesystem_error &e) {
         std::cerr << "Filesystem error: " << e.what() << std::endl;
     }
     return 0;
