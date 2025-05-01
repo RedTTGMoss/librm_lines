@@ -137,8 +137,6 @@ bool processFile(const std::string &filename, const std::string &path) {
             if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
                 if (std::holds_alternative<std::string>(item.value.value())) {
                     rawTextFilePtr << std::get<std::string>(item.value.value());
-                } else if (std::holds_alternative<uint32_t>(item.value.value())) {
-                    continue;
                 }
             }
         }
@@ -152,8 +150,6 @@ bool processFile(const std::string &filename, const std::string &path) {
                         auto string = std::get<std::string>(value.value.value());
                         replaceNewLine(string);
                         rawTextFilePtr << ">> " << string << "\n";
-                    } else if (std::holds_alternative<uint32_t>(value.value.value())) {
-                        continue;
                     }
                 }
             }
