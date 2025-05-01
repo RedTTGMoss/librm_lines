@@ -15,6 +15,7 @@ namespace fs = std::filesystem;
 #define SVG_OUT "./output/svg/"
 #define PARA_OUT "./output/paragraphs/"
 #define RAW_TEXT_OUT "./output/raw_text/"
+#define TEXT_EXPAND_PYTHON_OUT "./output/text_expand/"
 
 std::string getTextItemContents(const TextItem item) {
     if (!item.value.has_value()) {
@@ -26,6 +27,32 @@ std::string getTextItemContents(const TextItem item) {
     if (std::holds_alternative<uint32_t>(item.value.value())) {
         return std::format("Formatting ({})", std::get<uint32_t>(item.value.value()));
     }
+}
+
+void replaceNewLine(std::string & string) {
+    size_t pos = 0;
+    while ((pos = string.find("\n", pos)) != std::string::npos) {
+        string.replace(pos, 1, "\\n");
+        pos += 2; // Move past the replaced "\\n"
+    }
+}
+
+std::string safeString(std::string input) {
+    std::string output;
+    for (const char c : input) {
+        if (c == '\"') {
+            output += "\\\"";
+        } else if (c == '\'') {
+            output += "\\\'";
+        } else if (c == '\\') {
+            output += "\\\\";
+        } else if (c == '\n') {
+            output += "\\n";
+        } else {
+            output += c;
+        }
+    }
+    return output;
 }
 
 bool processFile(const std::string &filename, const std::string &path) {
@@ -82,6 +109,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::string svgFile = SVG_OUT + filename + ".svg";
     std::string paraFile = PARA_OUT + filename + ".json";
     std::string rawTextFile = RAW_TEXT_OUT + filename + ".bin";
+    std::string textExpandPythonFile = TEXT_EXPAND_PYTHON_OUT + filename + ".py";
 
     convertToJsonFile(treeId, jsonFile.c_str());
 
@@ -90,6 +118,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::ofstream svgFilePtr(svgFile.c_str());
     std::ofstream paraFilePtr(paraFile.c_str());
     std::ofstream rawTextFilePtr(rawTextFile.c_str());
+    std::ofstream textExpandPythonFilePtr(textExpandPythonFile.c_str());
     if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !paraFilePtr) {
         logError(std::format("Failed to open output files for page \"{}\"", filename));
         destroyTree(treeId);
@@ -118,11 +147,7 @@ bool processFile(const std::string &filename, const std::string &path) {
                 if (value.value.has_value()) {
                     if (std::holds_alternative<std::string>(value.value.value())) {
                         auto string = std::get<std::string>(value.value.value());
-                        size_t pos = 0;
-                        while ((pos = string.find("\n", pos)) != std::string::npos) {
-                            string.replace(pos, 1, "\\n");
-                            pos += 2; // Move past the replaced "\\n"
-                        }
+                        replaceNewLine(string);
                         rawTextFilePtr << ">> " << string << "\n";
                     } else if (std::holds_alternative<uint32_t>(value.value.value())) {
                         continue;
@@ -132,9 +157,44 @@ bool processFile(const std::string &filename, const std::string &path) {
 
             // Export the original text items in json
             rawTextFilePtr << "\n\n" << textCopy.value().items.toJson().dump(4);
-
-
         }
+
+        // Export the text to python symbols for testing
+        textExpandPythonFilePtr << "[";
+        for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
+            if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
+                if (std::holds_alternative<std::string>(item.value.value())) {
+                    auto string = safeString(std::get<std::string>(item.value.value()));
+                    textExpandPythonFilePtr << std::format(
+                        "CrdtSequenceItem("
+                        "item_id=CrdtId({}, {}),"
+                        "left_id=CrdtId({}, {}),"
+                        "right_id=CrdtId({}, {}),"
+                        "deleted_length={},value=\"{}\""
+                        "),",
+                        item.itemId.first, item.itemId.second,
+                        item.leftId.first, item.leftId.second,
+                        item.rightId.first, item.rightId.second,
+                        item.deletedLength, string
+                    );
+                } else if (std::holds_alternative<uint32_t>(item.value.value())) {
+                    textExpandPythonFilePtr << std::format(
+                        "CrdtSequenceItem("
+                        "item_id=CrdtId({}, {}),"
+                        "left_id=CrdtId({}, {}),"
+                        "right_id=CrdtId({}, {}),"
+                        "deleted_length={},value={}"
+                        "),",
+                        item.itemId.first, item.itemId.second,
+                        item.leftId.first, item.leftId.second,
+                        item.rightId.first, item.rightId.second,
+                        item.deletedLength,
+                        std::get<std::uint32_t>(item.value.value())
+                    );
+                }
+            }
+        }
+        textExpandPythonFilePtr << "]";
     } catch (const std::exception &e) {
         logError(std::format("Failed to export page \"{}\"", filename));
         logError(std::format("Exception: {}", e.what()));
@@ -177,6 +237,7 @@ int main() {
     fs::create_directories(SVG_OUT);
     fs::create_directories(PARA_OUT);
     fs::create_directories(RAW_TEXT_OUT);
+    fs::create_directories(TEXT_EXPAND_PYTHON_OUT);
 
     try {
         // Set the directory path
