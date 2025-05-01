@@ -1,5 +1,14 @@
 #include "advanced/text_sequence.h"
 
+std::vector<std::string> splitUtf8(const std::string &str) {
+    std::vector<std::string> result;
+    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
+    for (const std::u32string u32 = conv.from_bytes(str); const char32_t ch : u32) {
+        result.push_back(conv.to_bytes(ch));
+    }
+    return result;
+}
+
 void TextSequence::expandTextItems() {
     if (expanded)
         return;
@@ -20,7 +29,7 @@ void TextSequence::expandTextItems() {
         }
 
         // Otherwise begin by getting the string
-        auto rawString = std::get<std::string>(value);
+        auto rawString = splitUtf8(std::get<std::string>(value));
 
         // Initialize IDs for registering the characters
         auto itemId = textItem.itemId;
@@ -52,7 +61,7 @@ void TextSequence::expandTextItems() {
                     leftId,
                     rightId,
                     0, // This is no longer a blank character
-                    std::string(1, rawString[i])
+                    rawString[i]
                 });
 
                 // Move the IDs forward for the next character

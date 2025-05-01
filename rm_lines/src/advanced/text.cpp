@@ -118,7 +118,7 @@ void TextDocument::fromText(Text &text) {
                 if (characterString == "\n") {
                     break; // Time for the next paragraph
                 }
-                assert(characterString.size() <= 1);
+                // assert(characterString.size() <= 1); This is not ideal due to utf8 encoding multiple bytes
                 if (currentText.text.empty()) {
                     // If the current text is empty, we can just add the formatting information
                     currentText.formatting = formatting;
