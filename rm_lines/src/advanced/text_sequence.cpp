@@ -1,10 +1,14 @@
 #include "advanced/text_sequence.h"
+#include <utf8.h>
 
 std::vector<std::string> splitUtf8(const std::string &str) {
     std::vector<std::string> result;
-    std::wstring_convert<std::codecvt_utf8<char32_t>, char32_t> conv;
-    for (const std::u32string u32 = conv.from_bytes(str); const char32_t ch : u32) {
-        result.push_back(conv.to_bytes(ch));
+    auto it = str.begin();
+    while (it != str.end()) {
+        auto next = it;
+        utf8::next(next, str.end());
+        result.emplace_back(it, next);
+        it = next;
     }
     return result;
 }
