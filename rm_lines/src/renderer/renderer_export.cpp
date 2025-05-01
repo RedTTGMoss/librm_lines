@@ -109,6 +109,38 @@ const char * textToMd(const char *rendererId) {
 
   return result.c_str();
 }
+bool textToTxtFile(const char *rendererId, const char *outputFile) {
+  const auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return false;
+  }
+
+  std::ofstream fileStream(outputFile);
+  if (!fileStream) {
+    logError(std::format("Failed to open file: {}", outputFile));
+    return false;
+  }
+  renderer->toTxt(fileStream);
+  return true;
+}
+
+
+const char * textToTxt(const char *rendererId) {
+  const auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return "";
+  }
+
+  static std::string result;
+  std::ostringstream stringStream;
+
+  renderer->toTxt(stringStream);
+  result = stringStream.str();
+
+  return result.c_str();
+}
 
 bool textToHtmlFile(const char *rendererId, const char *outputFile) {
   const auto renderer = getRenderer(rendererId);

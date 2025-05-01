@@ -14,6 +14,8 @@ EXPORT int destroyRenderer(const char *rendererId);
 EXPORT const char *getParagraphs(const char *rendererId);
 EXPORT bool textToMdFile(const char *rendererId, const char *outputFile);
 EXPORT const char *textToMd(const char *rendererId);
+EXPORT bool textToTxtFile(const char *rendererId, const char *outputFile);
+EXPORT const char *textToTxt(const char *rendererId);
 EXPORT bool textToHtmlFile(const char *rendererId, const char *outputFile);
 EXPORT const char *textToHtml(const char *rendererId);
 

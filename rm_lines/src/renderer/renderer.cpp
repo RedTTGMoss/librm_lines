@@ -128,6 +128,16 @@ void Renderer::toMd(std::ostream &stream) const {
     }
 }
 
+void Renderer::toTxt(std::ostream &stream) const {
+    for (const auto &paragraph : textDocument.paragraphs) {
+        for (const auto &formattedText : paragraph.contents) {
+            // Write the formatted text
+            stream << formattedText.text;
+        }
+        stream << "\n"; // Add newline after each paragraph
+    }
+}
+
 void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_HEADER;
     // TODO: Implement HTML rendering based on rM rendering, textDocument and *GliphRange(s)* for markings on the text!

@@ -28,8 +28,9 @@ public:
 
     json getParagraphs() const;
 
+    // Exports
     void toMd(std::ostream& stream) const;
-
+    void toTxt(std::ostream& stream) const;
     void toHtml(std::ostream& stream);
 
 private:

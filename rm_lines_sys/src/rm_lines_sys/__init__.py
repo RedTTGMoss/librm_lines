@@ -36,6 +36,12 @@ class LibAnnotations(ctypes.Structure):
     def textToMd(self, renderer_id: bytes) -> bytes:
         pass
 
+    def textToTxtFile(self, renderer_id: bytes, md_file: bytes) -> bool:
+        pass
+
+    def textToTxt(self, renderer_id: bytes) -> bytes:
+        pass
+
     def textToHtmlFile(self, renderer_id: bytes, html_file: bytes) -> bool:
         pass
 
@@ -106,6 +112,14 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function textToMd(str) -> str
     _lib.textToMd.argtypes = [ctypes.c_char_p]
     _lib.textToMd.restype = ctypes.c_char_p
+
+    # Function textToTxtFile(str, str) -> bool
+    _lib.textToTxtFile.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+    _lib.textToTxtFile.restype = ctypes.c_bool
+
+    # Function textToTxt(str) -> str
+    _lib.textToTxt.argtypes = [ctypes.c_char_p]
+    _lib.textToTxt.restype = ctypes.c_char_p
 
     # Function textToHtmlFile(str, str) -> bool
     _lib.textToHtmlFile.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
