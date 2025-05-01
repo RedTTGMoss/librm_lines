@@ -6,16 +6,16 @@ void TextSequence::expandTextItems() {
     expanded = true;
 
     // We move the current sequence and create the new sequence with characters
-    for (auto oldSequence = std::move(sequence); TextItem &text: oldSequence | std::views::values) {
+    for (auto oldSequence = std::move(sequence); TextItem &textItem: oldSequence | std::views::values) {
         // Get the variant of string / int of the text item
-        auto value = text.value.value();
+        auto value = textItem.value.value();
 
         // Check if we can skip the text item
         if (
             std::holds_alternative<uint32_t>(value) // Matches the definition of a text format item
         ) {
             // Move to the new sequence
-            add(std::move(text));
+            add(std::move(textItem));
             continue;
         }
 
@@ -23,14 +23,14 @@ void TextSequence::expandTextItems() {
         auto rawString = std::get<std::string>(value);
 
         // Initialize IDs for registering the characters
-        auto itemId = text.itemId;
-        auto leftId = text.leftId;
+        auto itemId = textItem.itemId;
+        auto leftId = textItem.leftId;
 
-        if (text.deletedLength > 0) {
+        if (textItem.deletedLength > 0) {
             // If the text is deleted we want to create one deleted character for the length of the deleted items
-            for (int i = 0; i < text.deletedLength; i++) {
-                const auto rightId = i == text.deletedLength - 1
-                                         ? text.rightId
+            for (int i = 0; i < textItem.deletedLength; i++) {
+                const auto rightId = i == textItem.deletedLength - 1
+                                         ? textItem.rightId
                                          : CrdtId{itemId.first, itemId.second + 1};
                 add(TextItem{
                     itemId,
@@ -46,7 +46,7 @@ void TextSequence::expandTextItems() {
         } else {
             // If the text is valid we want to split each char into a new item
             for (int i = 0; i < rawString.size(); i++) {
-                const auto rightId = i == rawString.size() - 1 ? text.rightId : CrdtId{itemId.first, itemId.second + 1};
+                const auto rightId = i == rawString.size() - 1 ? textItem.rightId : CrdtId{itemId.first, itemId.second + 1};
                 add(TextItem{
                     itemId,
                     leftId,
