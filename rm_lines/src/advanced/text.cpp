@@ -1,7 +1,5 @@
 #include "advanced/text.h"
 #include "common/scene_items.h"
-#include <cppcodec/base64_rfc4648.hpp>
-using base64 = cppcodec::base64_rfc4648;
 
 bool checkString(const TextItem &item, const std::string &str) {
     if (!item.value.has_value())
@@ -24,7 +22,7 @@ json TextFormattingOptions::toJson() const {
 
 json FormattedText::toJson() const {
     json j;
-    j["text"] = base64::encode(text);
+    j["text"] = text;
     j["formatting"] = formatting.toJson();
 
     return j;
