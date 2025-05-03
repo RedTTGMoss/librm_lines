@@ -5,10 +5,14 @@
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
 
-Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): _sizeTracker(
-    sceneTree->sceneInfo->paperSize.value_or<IntPair>({1404, 1872}), pageType) {
-    this->sceneTree = sceneTree;
-    this->_sizeTracker.reverseFrameSize = landscape;
+Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): sceneTree(sceneTree),
+    paperSize(sceneTree->sceneInfo->paperSize.value_or<IntPair>({1404, 1872})), landscape(landscape),
+    pageType(pageType) {
+
+    initSizeTracker(TEXT_LAYER);
+
+    layers = layersFromSceneTree(sceneTree);
+
     prepareTextDocument();
     calculateAnchors();
 }
@@ -22,12 +26,28 @@ void Renderer::prepareTextDocument() {
     textDocument.fromText(sceneTree->rootText.value());
 }
 
-void Renderer::trackX(const float posX) {
-    _sizeTracker.trackX(posX);
+DocumentSizeTracker *Renderer::getSizeTracker(CrdtId layerId) {
+    // Check if the size tracker exists
+    const auto it = sizeTrackers.find(layerId);
+    if (it != sizeTrackers.end()) {
+        return &it->second;
+    }
+    // If it doesn't exist, raise an error
+    throw std::runtime_error(std::format("Document size tracker for layer {} not found", layerId.repr()));
 }
 
-void Renderer::trackY(const float posY) {
-    _sizeTracker.trackY(posY);
+DocumentSizeTracker *Renderer::initSizeTracker(CrdtId layerId) {
+    auto [it, inserted] = sizeTrackers.emplace(layerId, DocumentSizeTracker(paperSize, pageType));
+    it->second.reverseFrameSize = landscape;
+    return &it->second;
+}
+
+void Renderer::trackX(const CrdtId &layerId, const float posX) {
+    getSizeTracker(layerId)->trackX(posX);
+}
+
+void Renderer::trackY(const CrdtId &layerId, const float posY) {
+    getSizeTracker(layerId)->trackY(posY);
 }
 
 void Renderer::calculateAnchors() {
@@ -55,8 +75,11 @@ void Renderer::calculateAnchors() {
 
         // Save the anchor for this paragraph
         anchors[paragraph.startId] = posY;
-        trackY(posY);
+        trackY(TEXT_LAYER, posY);
     }
+}
+
+void Renderer::groupLines() {
 }
 
 json Renderer::getParagraphs() const {
@@ -67,8 +90,16 @@ json Renderer::getParagraphs() const {
     return j;
 }
 
+json Renderer::getLayers() const {
+    json j = json::array();
+    for (const auto &layer: layers) {
+        j.push_back(layer.toJson());
+    }
+    return j;
+}
+
 void Renderer::toMd(std::ostream &stream) const {
-    for (const auto &paragraph : textDocument.paragraphs) {
+    for (const auto &paragraph: textDocument.paragraphs) {
         // Write style prefix based on paragraph style
         switch (paragraph.style.value) {
             case ParagraphStyle::HEADING:
@@ -98,7 +129,7 @@ void Renderer::toMd(std::ostream &stream) const {
         }
 
         // Process each formatted text segment
-        for (const auto &formattedText : paragraph.contents) {
+        for (const auto &formattedText: paragraph.contents) {
             std::string formatting;
             if (formattedText.formatting.bold) {
                 formatting += "**";
@@ -129,8 +160,8 @@ void Renderer::toMd(std::ostream &stream) const {
 }
 
 void Renderer::toTxt(std::ostream &stream) const {
-    for (const auto &paragraph : textDocument.paragraphs) {
-        for (const auto &formattedText : paragraph.contents) {
+    for (const auto &paragraph: textDocument.paragraphs) {
+        for (const auto &formattedText: paragraph.contents) {
             // Write the formatted text
             stream << formattedText.text;
         }

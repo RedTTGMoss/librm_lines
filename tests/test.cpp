@@ -15,6 +15,7 @@ namespace fs = std::filesystem;
 #define SVG_OUT "./output/svg/"
 #define PNG_OUT "./output/png/"
 #define PARA_OUT "./output/paragraphs/"
+#define LAYERS_OUT "./output/layers/"
 #define RAW_TEXT_OUT "./output/raw_text/"
 #define TEXT_EXPAND_PYTHON_OUT "./output/text_expand/"
 
@@ -110,6 +111,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::string svgFile = SVG_OUT + filename + ".svg";
     std::string pngFile = PNG_OUT + filename + ".png";
     std::string paraFile = PARA_OUT + filename + ".json";
+    std::string layersFile = LAYERS_OUT + filename + ".json";
     std::string rawTextFile = RAW_TEXT_OUT + filename + ".bin";
     std::string textExpandPythonFile = TEXT_EXPAND_PYTHON_OUT + filename + ".py";
 
@@ -120,9 +122,11 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::ofstream svgFilePtr(svgFile.c_str());
     std::ofstream pngFilePtr(pngFile.c_str());
     std::ofstream paraFilePtr(paraFile.c_str());
+    std::ofstream layersFilePtr(layersFile.c_str());
     std::ofstream rawTextFilePtr(rawTextFile.c_str());
     std::ofstream textExpandPythonFilePtr(textExpandPythonFile.c_str());
-    if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !paraFilePtr) {
+    if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !pngFilePtr || !paraFilePtr || !layersFilePtr || !rawTextFilePtr ||
+        !textExpandPythonFilePtr) {
         logError(std::format("Failed to open output files for page \"{}\"", filename));
         destroyTree(treeId);
         return false;
@@ -132,6 +136,8 @@ bool processFile(const std::string &filename, const std::string &path) {
         renderer.toMd(mdFilePtr);
         json paragraphs = renderer.getParagraphs();
         paraFilePtr << paragraphs.dump(4);
+        json layers = renderer.getLayers();
+        layersFilePtr << layers.dump(4);
         // Export the raw characters
         for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
             if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
@@ -236,6 +242,7 @@ int main() {
     fs::create_directories(SVG_OUT);
     fs::create_directories(PNG_OUT);
     fs::create_directories(PARA_OUT);
+    fs::create_directories(LAYERS_OUT);
     fs::create_directories(RAW_TEXT_OUT);
     fs::create_directories(TEXT_EXPAND_PYTHON_OUT);
 

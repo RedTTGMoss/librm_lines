@@ -38,6 +38,8 @@ public:
 
     Group *getNode(const CrdtId &nodeId);
 
+    std::vector<SceneItemVariant> getGroupChildren(const CrdtId &nodeId);
+
     json toJson();
 
 private:

@@ -31,6 +31,10 @@ Group *SceneTree::getNode(const CrdtId &nodeId) {
     return it->second.get();
 }
 
+std::vector<SceneItemVariant> SceneTree::getGroupChildren(const CrdtId &nodeId) {
+    return _groupChildren[nodeId];
+}
+
 json SceneTree::toJson() {
     json j = {
         {"sceneInfo", sceneInfo ? sceneInfo->toJson() : nullptr},

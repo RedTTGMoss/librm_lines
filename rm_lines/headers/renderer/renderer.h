@@ -5,13 +5,16 @@
 
 #include "advanced/document_size_tracker.h"
 #include "advanced/text.h"
+#include "advanced/layers.h"
 
 #define TEXT_TOP_Y (-88)
+static constexpr CrdtId TEXT_LAYER{7, 1};
 
 class Renderer {
 public:
     TextDocument textDocument = TextDocument();
     std::unordered_map<CrdtId, uint32_t> anchors;
+    std::vector<Layer> layers;
 
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);
 
@@ -19,13 +22,22 @@ public:
 
     void prepareTextDocument();
 
-    void trackX(float posX);
+    DocumentSizeTracker* getSizeTracker(CrdtId layerId);
+    DocumentSizeTracker* initSizeTracker(CrdtId layerId);
 
-    void trackY(float posY);
+    void trackX(const CrdtId &layerId, float posX);
+
+    void trackY(const CrdtId &layerId, float posY);
 
     void calculateAnchors();
 
+
+    void groupLines();
+
+    void groupLine(const CrdtId &id);
+
     json getParagraphs() const;
+    json getLayers() const;
 
     // Exports
     void toMd(std::ostream &stream) const;
@@ -36,5 +48,8 @@ public:
 
 private:
     SceneTree *sceneTree;
-    DocumentSizeTracker _sizeTracker;
+    IntPair paperSize;
+    bool landscape;
+    PageType pageType;
+    std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
 };
