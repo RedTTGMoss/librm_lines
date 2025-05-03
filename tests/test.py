@@ -106,7 +106,7 @@ for file in (files := os.listdir(files_folder)):
     # Make a renderer
 
     begin = time.time()
-    renderer_id = lib.makeRenderer(tree_id, 0, False)
+    renderer_id = lib.makeRenderer(tree_id, 1, False)
     if not renderer_id:
         raise Exception("Failed to make renderer")
 

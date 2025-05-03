@@ -71,7 +71,7 @@ bool Line::read(TaggedBlockReader *reader, uint8_t version) {
 
 json Line::toJson() const {
     std::vector<json> pointsJson;
-    for (const auto &point: points) {
+    for (auto &point: points) {
         pointsJson.push_back(point.toJson());
     }
 

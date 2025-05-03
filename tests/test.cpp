@@ -18,6 +18,7 @@ namespace fs = std::filesystem;
 #define LAYERS_OUT "./output/layers/"
 #define RAW_TEXT_OUT "./output/raw_text/"
 #define TEXT_EXPAND_PYTHON_OUT "./output/text_expand/"
+#define ANCHOR_TEST_PYTHON_OUT "./output/anchor_test/"
 
 std::string getTextItemContents(const TextItem item) {
     if (!item.value.has_value()) {
@@ -114,6 +115,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::string layersFile = LAYERS_OUT + filename + ".json";
     std::string rawTextFile = RAW_TEXT_OUT + filename + ".bin";
     std::string textExpandPythonFile = TEXT_EXPAND_PYTHON_OUT + filename + ".py";
+    std::string anchorTestPythonFile = ANCHOR_TEST_PYTHON_OUT + filename + ".json";
 
     convertToJsonFile(treeId, jsonFile.c_str());
 
@@ -125,8 +127,9 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::ofstream layersFilePtr(layersFile.c_str());
     std::ofstream rawTextFilePtr(rawTextFile.c_str());
     std::ofstream textExpandPythonFilePtr(textExpandPythonFile.c_str());
+    std::ofstream anchorTestPythonFilePtr(anchorTestPythonFile.c_str());
     if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !pngFilePtr || !paraFilePtr || !layersFilePtr || !rawTextFilePtr ||
-        !textExpandPythonFilePtr) {
+        !textExpandPythonFilePtr || !anchorTestPythonFilePtr) {
         logError(std::format("Failed to open output files for page \"{}\"", filename));
         destroyTree(treeId);
         return false;
@@ -138,6 +141,25 @@ bool processFile(const std::string &filename, const std::string &path) {
         paraFilePtr << paragraphs.dump(4);
         json layers = renderer.getLayers();
         layersFilePtr << layers.dump(4);
+        json anchorTestData = json::array();
+        for (const auto &layer: renderer.layers) {
+            json layerJ;
+            layerJ["layerId"] = layer.groupId.toJson();
+            layerJ["label"] = layer.getLabel();
+            layerJ["visible"] = layer.visible;
+            layerJ["lines"] = json::array();
+            for (const auto &[line, groupId, offsetX, offsetY]: layer.lines) {
+                json lineJ;
+                lineJ["offsetX"] = offsetX;
+                lineJ["offsetY"] = offsetY;
+                lineJ["groupId"] = groupId.toJson();
+                lineJ["value"] = line.toJson();
+                layerJ["lines"].push_back(lineJ);
+            }
+            anchorTestData.push_back(layerJ);
+        }
+        anchorTestPythonFilePtr << anchorTestData.dump(4);
+
         // Export the raw characters
         for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
             if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
@@ -245,6 +267,7 @@ int main() {
     fs::create_directories(LAYERS_OUT);
     fs::create_directories(RAW_TEXT_OUT);
     fs::create_directories(TEXT_EXPAND_PYTHON_OUT);
+    fs::create_directories(ANCHOR_TEST_PYTHON_OUT);
 
     try {
         // Set the directory path

@@ -22,8 +22,9 @@ public:
 
     void prepareTextDocument();
 
-    DocumentSizeTracker* getSizeTracker(CrdtId layerId);
-    DocumentSizeTracker* initSizeTracker(CrdtId layerId);
+    DocumentSizeTracker *getSizeTracker(CrdtId layerId);
+
+    DocumentSizeTracker *initSizeTracker(CrdtId layerId);
 
     void trackX(const CrdtId &layerId, float posX);
 
@@ -31,11 +32,10 @@ public:
 
     void calculateAnchors();
 
-    void groupLines();
-
-    void groupLine(const CrdtId &id);
+    void groupLines(Layer &layer, CrdtId parentId, CrdtId groupId, int offsetX = 0, int offsetY = 0);
 
     json getParagraphs() const;
+
     json getLayers() const;
 
     // Exports

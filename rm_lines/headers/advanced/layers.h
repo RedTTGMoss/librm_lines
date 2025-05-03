@@ -3,6 +3,8 @@
 #include "scene_tree/scene_tree.h"
 #include <nlohmann/json.hpp>
 
+#include "line_info.h"
+
 using json = nlohmann::json;
 
 /*
@@ -37,6 +39,7 @@ public:
 
     CrdtId groupId;
     bool visible;
+    std::vector<LineInfo> lines;
 private:
     SceneTree *tree;
 };

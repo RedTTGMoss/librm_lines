@@ -15,6 +15,11 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
 
     prepareTextDocument();
     calculateAnchors();
+
+    for (auto &layer : layers) {
+        initSizeTracker(layer.groupId);
+        groupLines(layer, LAYER_INFO_NODE, layer.groupId);
+    }
 }
 
 Renderer::~Renderer() {
@@ -55,8 +60,8 @@ void Renderer::calculateAnchors() {
     anchors.clear();
 
     // Map special anchors
-    anchors[ANCHOR_ID_START] = 270;
-    anchors[ANCHOR_ID_END] = 700;
+    anchors[ANCHOR_ID_START] = 270 / paperSize.second;
+    anchors[ANCHOR_ID_END] = 700 / paperSize.second;
 
     // Check for the root text
     if (!sceneTree->rootText) return;
@@ -68,18 +73,49 @@ void Renderer::calculateAnchors() {
     // Calculate the anchors
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
-        yOffset += LineHeights[paragraph.style.value].second;
+        yOffset += LineHeights[paragraph.style.value].second / paperSize.second;
 
         posX += 0;
         posY += yOffset;
 
         // Save the anchor for this paragraph
         anchors[paragraph.startId] = posY;
+        for (const auto &formattedText: paragraph.contents) {
+            for (const auto &characterId : formattedText.characterIDs) {
+                anchors[characterId] = posY;
+            }
+        }
         trackY(TEXT_LAYER, posY);
     }
 }
 
-void Renderer::groupLines() {
+void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId groupId, int offsetX, int offsetY) {
+    const auto nodes = sceneTree->getGroupChildren(groupId);
+    if (const auto group = sceneTree->getNode(groupId); group->anchorId.has_value()) {
+        offsetX = group->anchorOriginX.value().value;
+        if (!anchors.contains(group->anchorId.value().value)) {
+            logError(std::format("need anchor id {}", group->anchorId.value().value.repr()));
+            throw std::runtime_error("fix this file first");
+        }
+        offsetY = anchors[group->anchorId.value().value];
+    }
+    for (const auto &node: nodes) {
+        if (std::holds_alternative<CrdtSequenceItem<CrdtId>>(node)) {
+            const auto subGroupId = std::get<CrdtSequenceItem<CrdtId>>(node);
+            groupLines(layer, groupId, subGroupId.value.value(), offsetX, offsetY);
+
+        }
+        else if (std::holds_alternative<CrdtSequenceItem<Line>>(node)) {
+            auto line = std::get<CrdtSequenceItem<Line>>(node);
+            if (!line.value.has_value()) continue;
+            layer.lines.push_back(LineInfo{
+                .line = std::move(line.value.value()),
+                .groupId = groupId,
+                .offsetX = offsetX,
+                .offsetY = offsetY
+            });
+        }
+    }
 }
 
 json Renderer::getParagraphs() const {
