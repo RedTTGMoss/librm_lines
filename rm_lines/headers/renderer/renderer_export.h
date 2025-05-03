@@ -12,6 +12,7 @@ EXPORT const char *makeRenderer(const char *treeId, int pageType, bool landscape
 EXPORT int destroyRenderer(const char *rendererId);
 
 EXPORT const char *getParagraphs(const char *rendererId);
+EXPORT const char *getLayers(const char *rendererId);
 
 EXPORT bool textToMdFile(const char *rendererId, const char *outputFile);
 

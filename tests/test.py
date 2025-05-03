@@ -117,6 +117,10 @@ for file in (files := os.listdir(files_folder)):
     paragraphs = lib.getParagraphs(renderer_id)
     if paragraphs:
         print(f"Paragraphs: {paragraphs.decode()}")
+    # Get the paragraphs
+    layers = lib.getLayers(renderer_id)
+    if layers:
+        print(f"Layers: {layers.decode()}")
 
     begin = time.time()
     success = lib.textToMdFile(renderer_id, md_output_path.encode())

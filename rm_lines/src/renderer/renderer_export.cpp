@@ -10,7 +10,7 @@ std::string addRenderer(std::shared_ptr<Renderer> renderer) {
 
   // Check if the UUID already exists
   int attempts = 0;
-  while (globalRendererMap.find(uuid) != globalRendererMap.end()) {
+  while (globalRendererMap.contains(uuid)) {
     uuid = generateUUID();
     if (++attempts > 10) {
       throw std::runtime_error("Failed to generate a unique UUID after 10 attempts");
@@ -22,7 +22,7 @@ std::string addRenderer(std::shared_ptr<Renderer> renderer) {
 }
 
 std::shared_ptr<Renderer> getRenderer(const std::string &treeId) {
-  if (auto it = globalRendererMap.find(treeId); it != globalRendererMap.end()) {
+  if (const auto it = globalRendererMap.find(treeId); it != globalRendererMap.end()) {
     return it->second;
   }
   return nullptr;
@@ -33,8 +33,8 @@ bool removeRenderer(const std::string &uuid) {
 }
 
 EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bool landscape) {
-  auto tree = getSceneTree(treeId);
-  auto renderer = std::make_shared<Renderer>(tree.get(), static_cast<PageType>(pageType), landscape);
+  const auto tree = getSceneTree(treeId);
+  const auto renderer = std::make_shared<Renderer>(tree.get(), static_cast<PageType>(pageType), landscape);
 
   static std::string result;
 
@@ -49,14 +49,13 @@ EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bo
 };
 
 EXPORT int destroyRenderer(const char *rendererId) {
-  auto renderer = getRenderer(rendererId);
+  const auto renderer = getRenderer(rendererId);
   if (!renderer) {
     logError("Invalid treeId provided");
     return -1;
   }
-  int size = sizeof(*renderer);
   if (removeRenderer(rendererId)) {
-    return size;
+    return sizeof(*renderer);
   }
 
   logError("Failed to remove renderer from renderer map");
@@ -64,12 +63,26 @@ EXPORT int destroyRenderer(const char *rendererId) {
 }
 
 EXPORT const char *getParagraphs(const char *rendererId) {
-  auto renderer = getRenderer(rendererId);
+  const auto renderer = getRenderer(rendererId);
   if (!renderer) {
     logError("Invalid treeId provided");
     return "";
   }
-  json j = renderer->getParagraphs();
+  const json j = renderer->getParagraphs();
+
+  static std::string result;
+  result = j.dump();
+
+  return result.c_str();
+}
+
+const char * getLayers(const char *rendererId) {
+  const auto renderer = getRenderer(rendererId);
+  if (!renderer) {
+    logError("Invalid treeId provided");
+    return "";
+  }
+  const json j = renderer->getLayers();
 
   static std::string result;
   result = j.dump();
