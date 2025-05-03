@@ -26,7 +26,7 @@ void Renderer::prepareTextDocument() {
     textDocument.fromText(sceneTree->rootText.value());
 }
 
-DocumentSizeTracker *Renderer::getSizeTracker(CrdtId layerId) {
+DocumentSizeTracker *Renderer::getSizeTracker(const CrdtId layerId) {
     // Check if the size tracker exists
     const auto it = sizeTrackers.find(layerId);
     if (it != sizeTrackers.end()) {
