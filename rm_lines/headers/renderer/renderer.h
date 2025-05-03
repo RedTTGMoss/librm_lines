@@ -31,7 +31,6 @@ public:
 
     void calculateAnchors();
 
-
     void groupLines();
 
     void groupLine(const CrdtId &id);
