@@ -24,7 +24,7 @@ public:
     [[nodiscard]] const uint32_t* scanline(size_t y) const;
     void fill(uint32_t value) const;
 
-    void exportRawData(uint32_t** outData, size_t* outSize) const;
+    void exportRawData(uint32_t *dataPtr, size_t dataSize) const;
 
     size_t width = 0;
     size_t height = 0;

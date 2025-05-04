@@ -46,16 +46,17 @@ void ImageBuffer::fill(const uint32_t value) const {
     }
 }
 
-void ImageBuffer::exportRawData(uint32_t **outData, size_t *outSize) const {
+void ImageBuffer::exportRawData(uint32_t *dataPtr, size_t dataSize) const {
     if (!data) {
         throw std::runtime_error("ImageBuffer not allocated");
     }
-    if (!outData || !outSize) {
-        throw std::invalid_argument("Output data or size pointer is null");
+    if (!dataPtr) {
+        throw std::invalid_argument("Data pointer is null");
+    }
+    if (dataSize < data->size() * sizeof(uint32_t)) {
+        throw std::invalid_argument(std::format("Data pointer size {} is smaller than image size {}", dataSize, data->size() * sizeof(uint32_t)));
     }
     logError(std::format("Exporting {} bytes for size {} [{}x{}]", data->size() * sizeof(uint32_t), data->size(), width, height));
-    *outSize = data->size() * sizeof(uint32_t);
-    *outData = new uint32_t[data->size()];
-    std::ranges::copy(*data, *outData);
+    std::ranges::copy(*data, dataPtr);
 
 }

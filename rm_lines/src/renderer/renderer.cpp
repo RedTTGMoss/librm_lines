@@ -7,8 +7,13 @@
 #define HTML_FOOTER "</body></html>"
 
 Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): sceneTree(sceneTree),
-    paperSize(sceneTree->sceneInfo->paperSize.value_or<IntPair>({1404, 1872})), landscape(landscape),
+    paperSize({1404, 1872}), landscape(landscape),
     pageType(pageType) {
+
+    // Check for new paperSize in scene info block if applicable
+    if (sceneTree->sceneInfo.has_value() && sceneTree->sceneInfo.value().paperSize.has_value()) {
+        paperSize = sceneTree->sceneInfo.value().paperSize.value();
+    }
 
     initSizeTracker(TEXT_LAYER);
 
@@ -212,10 +217,10 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t** outData, size_t* outSize, Vector position, Vector size, float scale) {
+void Renderer::getFrame(uint32_t* data, const size_t dataSize, Vector position, const Vector size, float scale) {
     ImageBuffer iBuf;
-    iBuf.allocate(size);
-    iBuf.fill(0xFFFFFFFF);
+    iBuf.allocate(size * scale);
+    iBuf.fill(0x00000000);
 
-    iBuf.exportRawData(outData, outSize);
+    iBuf.exportRawData(data, dataSize);
 }

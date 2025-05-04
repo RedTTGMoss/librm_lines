@@ -36,6 +36,13 @@ struct Vector {
             y / 2
         };
     }
+
+    Vector operator*(const float m) const {
+        return {
+            x * m,
+            y * m
+        };
+    }
 };
 
 struct Rect : Vector {

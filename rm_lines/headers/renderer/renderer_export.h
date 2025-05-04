@@ -12,6 +12,7 @@ EXPORT const char *makeRenderer(const char *treeId, int pageType, bool landscape
 EXPORT int destroyRenderer(const char *rendererId);
 
 EXPORT const char *getParagraphs(const char *rendererId);
+
 EXPORT const char *getLayers(const char *rendererId);
 
 EXPORT bool textToMdFile(const char *rendererId, const char *outputFile);
@@ -26,5 +27,6 @@ EXPORT bool textToHtmlFile(const char *rendererId, const char *outputFile);
 
 EXPORT const char *textToHtml(const char *rendererId);
 
-EXPORT void getFrame(const char *rendererId, uint32_t **outData, size_t *outSize, int x, int y, int width, int height,
+EXPORT void getFrame(const char *rendererId, uint32_t *data, size_t dataSize, int x, int y, int width,
+                     int height,
                      float scale);

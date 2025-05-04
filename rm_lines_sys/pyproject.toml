@@ -21,6 +21,10 @@ include = [
 ]
 build = "build.py"
 
+[tool.poetry.group.dev.dependencies]
+pillow = "^11.2.1"
+colorama = "^0.4.6"
+
 [build-system]
 requires = ["setuptools", "poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"

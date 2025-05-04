@@ -1,13 +1,17 @@
 import io
+import json
 from typing import List
 
 import colorama
 import ctypes
 import mmap
 import os
+
 import shutil
 import sys
 import time
+
+from PIL import Image
 from colorama import Fore
 
 colorama.init()
@@ -27,6 +31,7 @@ def python_error_logger(msg):
 def python_debug_logger(msg):
     print(f"{Fore.LIGHTYELLOW_EX}{msg.decode('utf-8', errors='replace')}{Fore.RESET}")
 
+
 def check_decode(raw: bytes, name: str):
     try:
         raw.decode('utf-8')
@@ -34,11 +39,13 @@ def check_decode(raw: bytes, name: str):
         print(f"{name} Invalid UTF-8 bytes: {raw[e.start:e.end]}")
         raise
 
+
 script_folder = os.path.dirname(os.path.abspath(__file__))
 output_folder = os.path.join(script_folder, 'output')
 rm_lines_sys_src_path = os.path.join(script_folder, '..', 'rm_lines_sys', 'src')
 sys.path.append(rm_lines_sys_src_path)
 svg_output_folder = os.path.join(output_folder, 'svg')
+png_output_folder = os.path.join(output_folder, 'png')
 json_output_folder = os.path.join(output_folder, 'json')
 md_output_folder = os.path.join(output_folder, 'md')
 txt_output_folder = os.path.join(output_folder, 'txt')
@@ -46,6 +53,7 @@ html_output_folder = os.path.join(output_folder, 'html')
 files_folder = os.path.join(script_folder, 'files')
 
 os.makedirs(svg_output_folder, exist_ok=True)
+os.makedirs(png_output_folder, exist_ok=True)
 os.makedirs(json_output_folder, exist_ok=True)
 os.makedirs(md_output_folder, exist_ok=True)
 os.makedirs(txt_output_folder, exist_ok=True)
@@ -76,6 +84,7 @@ total_size_of_renderers = 0
 total_size_of_trees = 0
 for file in (files := os.listdir(files_folder)):
     svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
+    png_output_path = os.path.join(png_output_folder, file.replace('.rm', '.png'))
     json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
     md_output_path = os.path.join(md_output_folder, file.replace('.rm', '.md'))
     txt_output_path = os.path.join(txt_output_folder, file.replace('.rm', '.txt'))
@@ -102,6 +111,7 @@ for file in (files := os.listdir(files_folder)):
     scene_info = lib.getSceneInfo(tree_id)
     if scene_info:
         print(f"Scene info: {scene_info.decode()}")
+    paper_size = json.loads(scene_info.decode()).get('paper_size', (1404, 1872)) if scene_info else (1404, 1872)
 
     # Make a renderer
 
@@ -152,22 +162,19 @@ for file in (files := os.listdir(files_folder)):
     check_decode(result, 'HTML (raw)')
     print(f"HTML (raw) [{len(result)}] Time taken:", time.time() - begin)
 
-    ptr = ctypes.POINTER(ctypes.c_uint32)()
-    size = ctypes.c_size_t()
+    buffer_size = paper_size[0] * paper_size[1]
+    buffer = (ctypes.c_uint32 * buffer_size)()
 
-    lib.getFrame(renderer_id, ctypes.byref(ptr), ctypes.byref(size), 0, 0, 100, 100, 1.0)
+    lib.getFrame(renderer_id, buffer, buffer_size * 4, 0, 0, *paper_size, 1)
+    raw_frame = bytes(buffer)
 
-    array_type = ctypes.c_uint32 * size.value
-    num_elements = size.value // 4
-    array_type = ctypes.c_uint32 * num_elements
-    data = ctypes.cast(ptr, ctypes.POINTER(array_type)).contents
-    rawFrame = bytes(data)
-
-    if not rawFrame:
-        print(f"Couldn't get frame [{len(rawFrame)}]")
+    if not raw_frame:
+        print(f"Couldn't get frame [{len(raw_frame)}]")
         exit(-1)
     else:
-        print(f"Got frame [{len(rawFrame)}]")
+        print(f"Got frame [{len(raw_frame)}]")
+        image = Image.frombytes('RGBA', paper_size, raw_frame, 'raw', 'RGBA')
+        image.save(png_output_path, 'PNG')
 
     begin = time.time()
     size_of_renderer = lib.destroyRenderer(renderer_id)
