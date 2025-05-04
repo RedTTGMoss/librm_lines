@@ -66,9 +66,9 @@ bool processFile(const std::string &filename, const std::string &path) {
         logError(std::format("Failed to build tree for file: {}", filename));
         return false;
     }
-    auto tree = getSceneTree(treeId).get();
+    auto tree = getSceneTree(treeId);
     auto textCopy = tree->rootText;
-    auto renderer = Renderer(tree, NOTEBOOK, false);
+    auto renderer = Renderer(tree.get(), NOTEBOOK, false);
 
     // Checking text
     // Initialize both tracking ids to the END_MARKER for compatibility
@@ -79,6 +79,7 @@ bool processFile(const std::string &filename, const std::string &path) {
         for (const auto &string: paragraph.contents) {
             for (const auto &characterId: string.characterIDs) {
                 auto currentTextItem = renderer.textDocument.text.items[currentId];
+
                 if (
                     getTextItemContents(currentTextItem) != "\n" &&
                     currentId != END_MARKER &&
@@ -222,9 +223,19 @@ bool processFile(const std::string &filename, const std::string &path) {
             }
             textExpandPythonFilePtr << "]";
         }
-    } catch (const std::exception &e) {
+
+        uint32_t *outData = nullptr;
+        size_t outSize = 0;
+
+        renderer.getFrame(&outData, &outSize, {0, 0}, {100, 100}, 1.0f);
+
+        logDebug(std::format("The first color of the frame: 0x{:08X}", outData[0]));
+
+        delete[] outData;
+    } catch (const std::runtime_error &e) {
         logError(std::format("Failed to export page \"{}\"", filename));
         logError(std::format("Exception: {}", e.what()));
+        logError(std::format("Stack trace: {}", getStackTrace()));
         destroyTree(treeId);
         return false;
     }

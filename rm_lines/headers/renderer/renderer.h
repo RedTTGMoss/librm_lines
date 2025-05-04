@@ -15,6 +15,9 @@ public:
     TextDocument textDocument = TextDocument();
     std::unordered_map<CrdtId, uint32_t> anchors;
     std::vector<Layer> layers;
+    IntPair paperSize;
+    bool landscape;
+    PageType pageType;
 
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);
 
@@ -45,10 +48,9 @@ public:
 
     void toHtml(std::ostream &stream);
 
+    void getFrame(uint32_t** outData, size_t* outSize, Vector position, Vector size, float scale);
+
 private:
     SceneTree *sceneTree;
-    IntPair paperSize;
-    bool landscape;
-    PageType pageType;
     std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
 };

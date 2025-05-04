@@ -2,6 +2,7 @@
 #include <format>
 
 #include "advanced/text.h"
+#include "renderer/imagebuffer.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
 
@@ -209,4 +210,12 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_HEADER;
     // TODO: Implement HTML rendering based on rM rendering, textDocument and *GliphRange(s)* for markings on the text!
     stream << HTML_FOOTER;
+}
+
+void Renderer::getFrame(uint32_t** outData, size_t* outSize, Vector position, Vector size, float scale) {
+    ImageBuffer iBuf;
+    iBuf.allocate(size);
+    iBuf.fill(0xFFFFFFFF);
+
+    iBuf.exportRawData(outData, outSize);
 }

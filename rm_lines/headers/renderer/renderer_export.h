@@ -25,3 +25,6 @@ EXPORT const char *textToTxt(const char *rendererId);
 EXPORT bool textToHtmlFile(const char *rendererId, const char *outputFile);
 
 EXPORT const char *textToHtml(const char *rendererId);
+
+EXPORT void getFrame(const char *rendererId, uint32_t **outData, size_t *outSize, int x, int y, int width, int height,
+                     float scale);

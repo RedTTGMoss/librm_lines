@@ -152,6 +152,23 @@ for file in (files := os.listdir(files_folder)):
     check_decode(result, 'HTML (raw)')
     print(f"HTML (raw) [{len(result)}] Time taken:", time.time() - begin)
 
+    ptr = ctypes.POINTER(ctypes.c_uint32)()
+    size = ctypes.c_size_t()
+
+    lib.getFrame(renderer_id, ctypes.byref(ptr), ctypes.byref(size), 0, 0, 100, 100, 1.0)
+
+    array_type = ctypes.c_uint32 * size.value
+    num_elements = size.value // 4
+    array_type = ctypes.c_uint32 * num_elements
+    data = ctypes.cast(ptr, ctypes.POINTER(array_type)).contents
+    rawFrame = bytes(data)
+
+    if not rawFrame:
+        print(f"Couldn't get frame [{len(rawFrame)}]")
+        exit(-1)
+    else:
+        print(f"Got frame [{len(rawFrame)}]")
+
     begin = time.time()
     size_of_renderer = lib.destroyRenderer(renderer_id)
     destroy_time = time.time() - begin

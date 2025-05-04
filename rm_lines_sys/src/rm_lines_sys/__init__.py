@@ -51,6 +51,9 @@ class LibAnnotations(ctypes.Structure):
     def textToHtml(self, renderer_id: bytes) -> bytes:
         pass
 
+    def getFrame(self, renderer_id: bytes, out_data, out_size, x: int, y: int, width: int, height: int, scale: float):
+        pass
+
 def load_lib() -> Optional[ctypes.CDLL]:
     lib_name = {
         'win32': 'rm_lines.dll',
@@ -135,6 +138,9 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function textToHtml(str) -> str
     _lib.textToHtml.argtypes = [ctypes.c_char_p]
     _lib.textToHtml.restype = ctypes.c_char_p
+
+    # Function getFrame(str, **, *, int, int, int, int, float) -> bytes
+    _lib.getFrame.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.POINTER(ctypes.c_uint32)), ctypes.POINTER(ctypes.c_size_t), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_float]
 
     return _lib
 

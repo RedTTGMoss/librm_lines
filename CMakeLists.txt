@@ -56,3 +56,6 @@ target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp
 if (WIN32)
     target_link_libraries(test PRIVATE DbgHelp)
 endif ()
+
+target_compile_options(test PRIVATE -fsanitize=address)
+target_link_options(test PRIVATE -fsanitize=address)
