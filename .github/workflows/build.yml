@@ -81,7 +81,7 @@ jobs:
       - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install poetry colorama
+          pip install poetry colorama Pillow
 
       - name: Update version
         shell: bash
