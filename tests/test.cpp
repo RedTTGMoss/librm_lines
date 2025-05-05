@@ -298,6 +298,17 @@ int main() {
             if (!processFile(filename.substr(0, filename.length() - 3), file))
                 return -1;
         }
+        // Iterate over the directory entries for draw tests
+        for (const fs::path dirPath = "./draw_files"; const auto &entry: fs::directory_iterator(dirPath)) {
+            std::string filename = entry.path().filename().string();
+            std::string file = entry.path().string();
+            if (!file.ends_with(".rm")) {
+                std::cerr << "File " << file << " is not a LINES file" << std::endl;
+                return -1;
+            }
+            if (!processFile(filename.substr(0, filename.length() - 3), file))
+                return -1;
+        }
     } catch (const fs::filesystem_error &e) {
         std::cerr << "Filesystem error: " << e.what() << std::endl;
     }

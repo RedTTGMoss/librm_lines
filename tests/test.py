@@ -4,7 +4,6 @@ from typing import List
 
 import colorama
 import ctypes
-import mmap
 import os
 
 import shutil
