@@ -49,7 +49,8 @@ inline std::vector<Layer> layersFromSceneTree(SceneTree *tree) {
     for (const auto layerInfo = tree->getGroupChildren(LAYER_INFO_NODE); const auto &child : layerInfo) {
         assert(std::holds_alternative<CrdtSequenceItem<CrdtId> >(child));
         auto item = std::get<CrdtSequenceItem<CrdtId> >(child);
-        assert(item.value.has_value());
+        if(!item.value.has_value())
+            continue;
         auto groupId = item.value.value();
         const auto group = tree->getNode(groupId);
         assert(group != nullptr);

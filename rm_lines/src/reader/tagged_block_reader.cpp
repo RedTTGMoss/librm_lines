@@ -477,7 +477,9 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 // Add this node to its parent
 
                 const auto groupItemBlock = dynamic_cast<SceneGroupItemBlock *>(currentBlock.get());
-                groupItemBlock->item.applyTreeValue(tree, groupItemBlock->item.value.value());
+                if (groupItemBlock->item.value.has_value()) {
+                    groupItemBlock->item.applyTreeValue(tree, groupItemBlock->item.value.value());
+                }
                 tree.addItem(groupItemBlock->item, groupItemBlock->parentId);
                 break;
             }

@@ -108,6 +108,7 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
     for (const auto &node: nodes) {
         if (std::holds_alternative<CrdtSequenceItem<CrdtId>>(node)) {
             const auto subGroupId = std::get<CrdtSequenceItem<CrdtId>>(node);
+            if (!subGroupId.value.has_value()) continue;
             groupLines(layer, groupId, subGroupId.value.value(), offsetX, offsetY);
 
         }
