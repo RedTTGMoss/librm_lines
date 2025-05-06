@@ -224,18 +224,19 @@ bool processFile(const std::string &filename, const std::string &path) {
             textExpandPythonFilePtr << "]";
         }
 
-        uint32_t width = renderer.paperSize.first;
-        uint32_t height = renderer.paperSize.second;
-        auto frameData = new uint32_t[width * height];
-        size_t frameSize = width * height * sizeof(uint32_t);
-
-        logError(std::format("Allocated {} bytes for frame ({} * {} * {})", frameSize, width, height, sizeof(uint32_t)));
-
-        renderer.getFrame(frameData, frameSize, {0, 0}, {width, height}, 1.0f);
-
-        logDebug(std::format("The first color of the frame: 0x{:08X}", frameData[0]));
-
-        delete[] frameData;
+        // TEST GETTING A FRAME
+        // uint32_t width = renderer.paperSize.first;
+        // uint32_t height = renderer.paperSize.second;
+        // auto frameData = new uint32_t[width * height];
+        // size_t frameSize = width * height * sizeof(uint32_t);
+        //
+        // logError(std::format("Allocated {} bytes for frame ({} * {} * {})", frameSize, width, height, sizeof(uint32_t)));
+        //
+        // renderer.getFrame(frameData, frameSize, {0, 0}, {width, height}, 1.0f);
+        //
+        // logDebug(std::format("The first color of the frame: 0x{:08X}", frameData[0]));
+        //
+        // delete[] frameData;
     } catch (const std::runtime_error &e) {
         logError(std::format("Failed to export page \"{}\"", filename));
         logError(std::format("Exception: {}", e.what()));

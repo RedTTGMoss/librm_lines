@@ -53,12 +53,12 @@ DocumentSizeTracker *Renderer::initSizeTracker(CrdtId layerId) {
     return &it->second;
 }
 
-void Renderer::trackX(const CrdtId &layerId, const float posX) {
-    getSizeTracker(layerId)->trackX(posX);
+auto Renderer::trackX(const CrdtId &layerId, const float posX) {
+    return getSizeTracker(layerId)->trackX(posX);
 }
 
-void Renderer::trackY(const CrdtId &layerId, const float posY) {
-    getSizeTracker(layerId)->trackY(posY);
+auto Renderer::trackY(const CrdtId &layerId, const float posY) {
+    return getSizeTracker(layerId)->trackY(posY);
 }
 
 void Renderer::calculateAnchors() {
@@ -98,7 +98,7 @@ void Renderer::calculateAnchors() {
 void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId groupId, int offsetX, int offsetY) {
     const auto nodes = sceneTree->getGroupChildren(groupId);
     if (const auto group = sceneTree->getNode(groupId); group->anchorId.has_value()) {
-        offsetX = group->anchorOriginX.value().value;
+        offsetX += group->anchorOriginX.value().value;
         if (!anchors.contains(group->anchorId.value().value)) {
             logError(std::format("need anchor id {}", group->anchorId.value().value.repr()));
             throw std::runtime_error("fix this file first");
@@ -115,11 +115,19 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
         else if (std::holds_alternative<CrdtSequenceItem<Line>>(node)) {
             auto line = std::get<CrdtSequenceItem<Line>>(node);
             if (!line.value.has_value()) continue;
+            for (const auto point : line.value.value().points) {
+                auto x = point.x + offsetX;
+                auto y = point.y + offsetY;
+                // ReSharper disable once CppNoDiscardExpression
+                trackX(layer.groupId, x);
+                // ReSharper disable once CppNoDiscardExpression
+                trackY(layer.groupId, y);
+            }
             layer.lines.push_back(LineInfo{
                 .line = std::move(line.value.value()),
                 .groupId = groupId,
-                .offsetX = offsetX,
-                .offsetY = offsetY
+                .offsetX = trackX(layer.groupId, offsetX),
+                .offsetY = trackY(layer.groupId, offsetY),
             });
         }
     }

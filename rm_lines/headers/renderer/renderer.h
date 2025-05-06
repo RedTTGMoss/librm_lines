@@ -29,9 +29,9 @@ public:
 
     DocumentSizeTracker *initSizeTracker(CrdtId layerId);
 
-    void trackX(const CrdtId &layerId, float posX);
+    [[nodiscard]] auto trackX(const CrdtId &layerId, float posX);
 
-    void trackY(const CrdtId &layerId, float posY);
+    [[nodiscard]] auto trackY(const CrdtId &layerId, float posY);
 
     void calculateAnchors();
 
