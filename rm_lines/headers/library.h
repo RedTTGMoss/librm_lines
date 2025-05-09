@@ -1,9 +1,18 @@
 #pragma once
 
+// Export macro
 #ifdef _WIN32
     #define EXPORT extern "C" __declspec(dllexport)
 #else
 #define EXPORT extern "C" __attribute__((visibility("default")))
+#endif
+// Branch prediction macros
+#if defined(_MSC_VER)
+#define IS_LIKELY(x)      (x)
+#define IS_UNLIKELY(x)    (x)
+#else
+#define IS_LIKELY(x)      __builtin_expect(!!(x), 1)
+#define IS_UNLIKELY(x)    __builtin_expect(!!(x), 0)
 #endif
 #include <cstdio>
 #include <string>

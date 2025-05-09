@@ -2,14 +2,15 @@
 #include <format>
 
 #include "advanced/text.h"
-#include "renderer/imagebuffer.h"
+#include "renderer/rm_lines_renderer/rm_lines_renderer.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
+
+using ImageBuffer = RMLinesRenderer::ImageBuffer;
 
 Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): sceneTree(sceneTree),
     paperSize({1404, 1872}), landscape(landscape),
     pageType(pageType) {
-
     // Check for new paperSize in scene info block if applicable
     if (sceneTree->sceneInfo.has_value() && sceneTree->sceneInfo.value().paperSize.has_value()) {
         paperSize = sceneTree->sceneInfo.value().paperSize.value();
@@ -22,7 +23,7 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
     prepareTextDocument();
     calculateAnchors();
 
-    for (auto &layer : layers) {
+    for (auto &layer: layers) {
         initSizeTracker(layer.groupId);
         groupLines(layer, LAYER_INFO_NODE, layer.groupId);
     }
@@ -87,7 +88,7 @@ void Renderer::calculateAnchors() {
         // Save the anchor for this paragraph
         anchors[paragraph.startId] = posY;
         for (const auto &formattedText: paragraph.contents) {
-            for (const auto &characterId : formattedText.characterIDs) {
+            for (const auto &characterId: formattedText.characterIDs) {
                 anchors[characterId] = posY;
             }
         }
@@ -106,16 +107,14 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
         offsetY = anchors[group->anchorId.value().value];
     }
     for (const auto &node: nodes) {
-        if (std::holds_alternative<CrdtSequenceItem<CrdtId>>(node)) {
-            const auto subGroupId = std::get<CrdtSequenceItem<CrdtId>>(node);
+        if (std::holds_alternative<CrdtSequenceItem<CrdtId> >(node)) {
+            const auto subGroupId = std::get<CrdtSequenceItem<CrdtId> >(node);
             if (!subGroupId.value.has_value()) continue;
             groupLines(layer, groupId, subGroupId.value.value(), offsetX, offsetY);
-
-        }
-        else if (std::holds_alternative<CrdtSequenceItem<Line>>(node)) {
-            auto line = std::get<CrdtSequenceItem<Line>>(node);
+        } else if (IS_LIKELY(std::holds_alternative<CrdtSequenceItem<Line>>(node))) {
+            auto line = std::get<CrdtSequenceItem<Line> >(node);
             if (!line.value.has_value()) continue;
-            for (const auto point : line.value.value().points) {
+            for (const auto point: line.value.value().points) {
                 auto x = point.x + offsetX;
                 auto y = point.y + offsetY;
                 // ReSharper disable once CppNoDiscardExpression
@@ -226,7 +225,7 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t* data, const size_t dataSize, Vector position, const Vector size, float scale) {
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, const Vector size, float scale) {
     ImageBuffer iBuf;
     iBuf.allocate(size * scale);
     iBuf.fill(0x00000000);

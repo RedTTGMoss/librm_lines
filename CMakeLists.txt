@@ -36,8 +36,8 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/renderer/renderer_export.cpp
         rm_lines/src/advanced/text_sequence.cpp
         rm_lines/src/advanced/text.cpp
-        rm_lines/src/renderer/imagebuffer.cpp
         rm_lines/src/stb_truetype/stb_truetype.cpp
+        rm_lines/src/renderer/rm_lines_renderer/imagebuffer.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp)
