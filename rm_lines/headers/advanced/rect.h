@@ -15,10 +15,31 @@ struct Vector {
         };
     }
 
+    Vector operator+(const Vector &other) const {
+        return {
+            x + other.x,
+            y + other.y
+        };
+    }
+
     Vector operator-(const Vector &other) const {
         return {
             x - other.x,
             y - other.y
+        };
+    }
+
+    Vector operator+(const float &other) const {
+        return {
+            x + other,
+            y + other
+        };
+    }
+
+    Vector operator-(const float &other) const {
+        return {
+            x - other,
+            y - other
         };
     }
 
