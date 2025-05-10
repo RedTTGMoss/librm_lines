@@ -9,18 +9,20 @@ FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download
 FetchContent_Declare(
         cppcodec
         GIT_REPOSITORY https://github.com/tplgy/cppcodec.git
-        GIT_TAG        master
+        GIT_TAG master
 )
 FetchContent_Declare(
         utf8cpp
         GIT_REPOSITORY https://github.com/nemtrif/utfcpp.git
-        GIT_TAG        v4.0.6
+        GIT_TAG v4.0.6
 )
 FetchContent_MakeAvailable(utf8cpp)
 FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(cppcodec)
 
 include_directories(rm_lines/headers)
+
+file(GLOB RENDERER_FILES rm_lines/src/renderer/rm_lines_renderer/*.cpp)
 
 add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_export.cpp
@@ -37,7 +39,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/advanced/text_sequence.cpp
         rm_lines/src/advanced/text.cpp
         rm_lines/src/stb_truetype/stb_truetype.cpp
-        rm_lines/src/renderer/rm_lines_renderer/imagebuffer.cpp
+        ${RENDERER_FILES}
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp)
