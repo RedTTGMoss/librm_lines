@@ -194,10 +194,10 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
     uint64_t numberOfRects;
     if (!reader->readValuint(numberOfRects)) return false;
 
-    rects = std::vector<Rect>(numberOfRects);
+    rects = std::vector<AdvancedMath::Rect>(numberOfRects);
 
     for (uint64_t i = 0; i < numberOfRects; i++) {
-        if (!reader->readBytes(sizeof(Rect), &rects[i])) return false;
+        if (!reader->readBytes(sizeof(AdvancedMath::Rect), &rects[i])) return false;
     }
 
     // Optionally read argbColor, this is only for new highlighters

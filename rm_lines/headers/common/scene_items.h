@@ -87,7 +87,7 @@ struct GlyphRange {
     PenColor color;
     Color argbColor;
     std::string text;
-    std::vector<Rect> rects;
+    std::vector<AdvancedMath::Rect> rects;
 
     bool read(TaggedBlockReader *reader);
 

@@ -1,6 +1,6 @@
 #pragma once
-
-#include "advanced/rect.h"
+using namespace AdvancedMath;
+#include "advanced/math.h"
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
