@@ -22,7 +22,7 @@ FetchContent_MakeAvailable(cppcodec)
 
 include_directories(rm_lines/headers)
 
-file(GLOB RENDERER_FILES rm_lines/src/renderer/rm_lines_renderer/*.cpp)
+file(GLOB RENDERER_FILES rm_lines/src/renderer/rm_lines_stroker/*.cpp)
 
 add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_export.cpp

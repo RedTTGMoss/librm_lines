@@ -2,7 +2,7 @@
 #include <format>
 
 #include "advanced/text.h"
-#include "renderer/rm_lines_renderer/rm_lines_renderer.h"
+#include "renderer/rm_lines_stroker/rm_lines_stroker.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
 
@@ -27,9 +27,6 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
         initSizeTracker(layer.groupId);
         groupLines(layer, LAYER_INFO_NODE, layer.groupId);
     }
-}
-
-Renderer::~Renderer() {
 }
 
 void Renderer::prepareTextDocument() {

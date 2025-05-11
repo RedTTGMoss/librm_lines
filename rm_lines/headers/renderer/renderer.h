@@ -21,7 +21,7 @@ public:
 
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);
 
-    ~Renderer();
+    ~Renderer() = default;
 
     void prepareTextDocument();
 

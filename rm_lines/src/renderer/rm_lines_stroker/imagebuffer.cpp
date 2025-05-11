@@ -1,4 +1,4 @@
-#include "renderer/rm_lines_renderer/imagebuffer.h"
+#include "renderer/rm_lines_stroker/imagebuffer.h"
 
 #include <format>
 
