@@ -7,19 +7,19 @@ namespace RMLinesRenderer {
     struct ClippedRaster {
         using Varyings = typename Raster::Varyings;
 
-        void operator()(Triangle t, Varyings a, Varyings b, Varyings c) = delete;
+        void operator()(Triangle t, Varyings a, Varyings b, Varyings c);
 
-        void clipLeft(Triangle t, Varyings a, Varyings b, Varyings c) = delete;
+        void clipLeft(Triangle t, Varyings a, Varyings b, Varyings c);
 
-        void clipRight(const Triangle &t, Varyings a, Varyings b, Varyings c) = delete;
+        void clipRight(const Triangle &t, Varyings a, Varyings b, Varyings c);
 
-        void clipTop(Triangle t, Varyings a, Varyings b, Varyings c) = delete;
+        void clipTop(Triangle t, Varyings a, Varyings b, Varyings c);
 
-        void clipBottom(Triangle t, Varyings a, Varyings b, Varyings c) = delete;
+        void clipBottom(Triangle t, Varyings a, Varyings b, Varyings c);
 
-        void ySort(Triangle &t, Varyings &a, Varyings &b, Varyings &c) = delete;
+        void ySort(Triangle &t, Varyings &a, Varyings &b, Varyings &c);
 
-        void xSort(Triangle &t, Varyings &a, Varyings &b, Varyings &c) = delete;
+        void xSort(Triangle &t, Varyings &a, Varyings &b, Varyings &c);
 
         Raster raster;
 
