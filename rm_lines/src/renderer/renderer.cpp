@@ -7,6 +7,11 @@
 #define HTML_FOOTER "</body></html>"
 
 using ImageBuffer = RMLinesRenderer::ImageBuffer;
+using VaryingGeneratorLengthWidth = RMLinesRenderer::VaryingGeneratorLengthWidth;
+using CapStyle = RMLinesRenderer::CapStyle;
+using JoinStyle = RMLinesRenderer::JoinStyle;
+using Varying2D = RMLinesRenderer::Varying2D;
+using Varying4D = RMLinesRenderer::Varying4D;
 
 Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): sceneTree(sceneTree),
     paperSize({1404, 1872}), landscape(landscape),
@@ -222,10 +227,51 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, const Vector size, float scale) {
-    ImageBuffer iBuf;
-    iBuf.allocate(size * scale);
-    iBuf.fill(0x00000000);
+struct SimpleFill {
+    typedef Varying2D Varyings;
+    ImageBuffer buffer;
 
-    iBuf.exportRawData(data, dataSize);
+    void operator()(int x, int y, int length, Varying2D v, Varying2D dx) {
+        unsigned int *dst = buffer.scanline(y) + x;
+        for (int i = 0; i < length; ++i) {
+            dst[i] = 0xff000000;
+            v = v + dx;
+        }
+    }
+};
+
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, const Vector size, float scale) {
+    RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<SimpleFill> >,
+        VaryingGeneratorLengthWidth> stroker;
+    const auto iBuf = &stroker.raster.raster.fill.buffer;
+    iBuf->allocate(size * scale);
+    stroker.raster.x0 = position.x;
+    stroker.raster.x1 = position.x + size.x;
+    stroker.raster.y0 = position.y;
+    stroker.raster.y1 = position.y + size.y;
+    stroker.capStyle = CapStyle::RoundCap;
+    stroker.joinStyle = JoinStyle::BevelJoin;
+
+    for (const auto &layer: layers) {
+        for (const auto &line: layer.lines) {
+            bool first = true;
+            for (const auto &point: line.line.points) {
+                // This shouldn't need to have added half width, what's going on here?
+                // We need to make sure this works when the document has expansions
+                // It may need to be document tracker instead of paper size
+                const auto x = point.x + line.offsetX * scale + paperSize.first / 2;
+                const auto y = point.y + line.offsetY * scale;
+                stroker.width = point.pressure / 10;
+                if (first) {
+                    stroker.moveTo(x, y);
+                    first = false;
+                } else {
+                    stroker.lineTo(x, y);
+                }
+            }
+            stroker.finish();
+        }
+    }
+
+    iBuf->exportRawData(data, dataSize);
 }
