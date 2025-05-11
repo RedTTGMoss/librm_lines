@@ -56,7 +56,7 @@ public:
         return y;
     }
 
-    float getFrameWidth() const {
+    [[nodiscard]] float getFrameWidth() const {
         switch (pageType) {
             case NOTEBOOK:
                 return reverseFrameSize ? frameSize.y : frameSize.x;
