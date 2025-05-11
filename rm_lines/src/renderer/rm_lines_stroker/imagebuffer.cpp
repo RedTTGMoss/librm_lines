@@ -15,8 +15,8 @@ namespace RMLinesRenderer {
 
     void ImageBuffer::allocate(const AdvancedMath::Vector size) {
         assert(!data);
-        width = size.x;
-        height = size.y;
+        width = static_cast<uint32_t>(size.x);
+        height = static_cast<uint32_t>(size.y);
         data = std::make_shared<std::vector<uint32_t> >(width * height);
     }
 
@@ -59,8 +59,6 @@ namespace RMLinesRenderer {
             throw std::invalid_argument(std::format("Data pointer size {} is smaller than image size {}", dataSize,
                                                     data->size() * sizeof(uint32_t)));
         }
-        logError(std::format("Exporting {} bytes for size {} [{}x{}]", data->size() * sizeof(uint32_t), data->size(),
-                             width, height));
         std::ranges::copy(*data, dataPtr);
     }
 }

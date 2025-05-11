@@ -28,6 +28,7 @@ def python_error_logger(msg):
 def python_debug_logger(msg):
     print(f"{Fore.LIGHTYELLOW_EX}{msg.decode('utf-8', errors='replace')}{Fore.RESET}")
 
+
 script_folder = os.path.dirname(os.path.abspath(__file__))
 output_folder = os.path.join(script_folder, 'draw_output')
 rm_lines_sys_src_path = os.path.join(script_folder, '..', 'rm_lines_sys', 'src')
@@ -35,7 +36,6 @@ sys.path.append(rm_lines_sys_src_path)
 files_folder = os.path.join(script_folder, 'draw_files')
 
 os.makedirs(output_folder, exist_ok=True)
-
 
 if os.name == 'nt':
     # Windows-specific code
@@ -74,7 +74,9 @@ for file in (files := os.listdir(files_folder)):
     scene_info = lib.getSceneInfo(tree_id)
     if scene_info:
         print(f"Scene info: {scene_info.decode()}")
-    paper_size = json.loads(scene_info.decode()).get('paper_size', (1404, 1872)) if scene_info else (1404, 1872)
+    paper_size = json.loads(scene_info.decode())['paperSize'] or (1404, 1872) if scene_info else (1404, 1872)
+    if scene_info:
+        print(f"Paper size: {paper_size}")
 
     buffer_size = paper_size[0] * paper_size[1]
     buffer = (ctypes.c_uint32 * buffer_size)()

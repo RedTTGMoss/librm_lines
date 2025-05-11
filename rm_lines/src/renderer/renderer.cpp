@@ -13,12 +13,12 @@ using JoinStyle = RMLinesRenderer::JoinStyle;
 using Varying2D = RMLinesRenderer::Varying2D;
 using Varying4D = RMLinesRenderer::Varying4D;
 
-Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): sceneTree(sceneTree),
-    paperSize({1404, 1872}), landscape(landscape),
-    pageType(pageType) {
+Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): paperSize({1404, 1872}),
+    landscape(landscape), pageType(pageType),
+    sceneTree(sceneTree) {
     // Check for new paperSize in scene info block if applicable
     if (sceneTree->sceneInfo.has_value() && sceneTree->sceneInfo.value().paperSize.has_value()) {
-        paperSize = sceneTree->sceneInfo.value().paperSize.value();
+        this->paperSize = sceneTree->sceneInfo.value().paperSize.value();
     }
 
     initSizeTracker(TEXT_LAYER);
@@ -244,11 +244,9 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<SimpleFill> >,
         VaryingGeneratorLengthWidth> stroker;
     const auto iBuf = &stroker.raster.raster.fill.buffer;
-    iBuf->allocate(size * scale);
-    stroker.raster.x0 = position.x;
-    stroker.raster.x1 = position.x + size.x;
-    stroker.raster.y0 = position.y;
-    stroker.raster.y1 = position.y + size.y;
+    iBuf->allocate(size);
+    stroker.raster.x1 = iBuf->width;
+    stroker.raster.y1 = iBuf->height;
     stroker.capStyle = CapStyle::RoundCap;
     stroker.joinStyle = JoinStyle::BevelJoin;
 
@@ -258,10 +256,13 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             for (const auto &point: line.line.points) {
                 // This shouldn't need to have added half width, what's going on here?
                 // We need to make sure this works when the document has expansions
-                // It may need to be document tracker instead of paper size
-                const auto x = point.x + line.offsetX * scale + paperSize.first / 2;
-                const auto y = point.y + line.offsetY * scale;
+                // I can confirm it needs to be paperSize and not the expanded document size tracker size!
+                auto x = position.x + point.x + line.offsetX + paperSize.first / 2;
+                auto y = position.y + point.y + line.offsetY;
+                x *= scale;
+                y *= scale;
                 stroker.width = point.pressure / 10;
+                stroker.width *= scale;
                 if (first) {
                     stroker.moveTo(x, y);
                     first = false;
