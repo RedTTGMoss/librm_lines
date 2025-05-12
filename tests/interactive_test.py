@@ -82,7 +82,7 @@ class GC(pe.GameContext):
             self.items.append(file)
         self.index = 11
         super().__init__()
-        self.sprite = pe.Sprite("/home/red/CAT.png", (100, 100), pos=self.size, pivot='bottomright')
+        self.sprite = pe.Sprite("rm_lines_cat.png", (100, 100))
 
     def prepare_renderer(self):
         tree_id = lib.buildTree(self.item.encode())
@@ -146,7 +146,7 @@ class GC(pe.GameContext):
             return None
         buffer_size = w * h
         buffer = (ctypes.c_uint32 * buffer_size)()
-        lib.getFrame(renderer[1], buffer, buffer_size * 4, x, y, w, h, scale)
+        lib.getFrame(renderer[1], buffer, buffer_size * 4, int(x), int(y), w, h, scale)
         raw_frame = bytes(buffer)
         frame = pe.pygame.image.frombuffer(raw_frame, (w, h), 'RGBA')
         return frame
@@ -154,17 +154,19 @@ class GC(pe.GameContext):
     def loop(self):
         self.text.display()
 
-        drag, offset = self.draggable.check()
-
         delta = (self._scale - self.scale)
         if abs(delta) > 0.01:
             self.scale += delta * self.delta_time * 10
+        self.draggable.move_multiplier = 1 * (2 - self.scale)
+        drag, offset = self.draggable.check()
 
         frame = self.get_frame(*offset, *self.size, self.scale)
         if frame:
             pe.display.blit(frame)
+            self.sprite.alpha = 100
         else:
-            self.sprite.display()
+            self.sprite.alpha = 255
+        self.sprite.display((self.width - 100, self.height - 100))
 
 
 gm = GC()
