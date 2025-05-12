@@ -245,4 +245,6 @@ struct Color {
     uint8_t blue;
 
     json toJson() const;
+
+    uint8_t toARGB() const;
 };

@@ -69,8 +69,10 @@ class GC(pe.GameContext):
         self.loaded = {}
         self.filenames = []
         self._index = 0
-        self._scale = 0.6
+        self._scale = 0.3
         self.scale = 1
+        self.buffer = (None, None, None)
+        self.frame = None
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
 
@@ -109,10 +111,8 @@ class GC(pe.GameContext):
             self.index -= 1
             if self.index < 0:
                 self.index = len(self.items) - 1
-        if pe.event.key_DOWN(pe.K_UP):
-            self._scale += 0.1
-        elif pe.event.key_DOWN(pe.K_DOWN):
-            self._scale -= 0.1
+        if e.type == pe.MOUSEWHEEL:
+            self._scale += e.y * self.delta_time
         super().handle_event(e)
 
     @property
@@ -142,29 +142,44 @@ class GC(pe.GameContext):
     def centery(self):
         return self.height / 2
 
+    @property
+    def buffer_size(self):
+        return self.buffer[0] * self.buffer[1]
+
     def get_frame(self, x, y, w, h, scale):
+        # x, y = (
+        #     x - (w * scale) * 0.5,
+        #     y - (h * scale) * 0.5,
+        # )
         renderer = self.get_renderer()
         if renderer[0] is None:
             return None
-        buffer_size = w * h
-        buffer = (ctypes.c_uint32 * buffer_size)()
-        lib.getFrame(renderer[1], buffer, buffer_size * 4, int(x), int(y), w, h, scale)
-        raw_frame = bytes(buffer)
+        if self.buffer[0] != w or self.buffer[1] != h:
+            buffer_size = w * h
+            self.buffer = (w, h, (ctypes.c_uint32 * buffer_size)())
+        lib.getFrame(renderer[1], self.buffer[2], self.buffer_size * 4, int(x), int(y), w, h, scale)
+        raw_frame = bytes(self.buffer[2])
         frame = pe.pygame.image.frombuffer(raw_frame, (w, h), 'RGBA')
         return frame
+
+    def resize(self, new_size):
+        self.frame = None
 
     def loop(self):
         self.text.display()
 
         delta = (self._scale - self.scale)
         if abs(delta) > 0.01:
-            self.scale += delta * self.delta_time * 10
-        self.draggable.move_multiplier = 1 * (2 - self.scale)
+            self.scale += delta * min(0.1, self.delta_time) * 10
+            self.frame = None
         drag, offset = self.draggable.check()
 
-        frame = self.get_frame(*offset, *self.size, self.scale)
-        if frame:
-            pe.display.blit(frame)
+        if self.frame is None or drag:
+            self.frame = self.get_frame(
+                self.centerx + offset[0], self.centery + offset[1],
+                *self.size, self.scale)
+        if self.frame:
+            pe.display.blit(self.frame)
             self.sprite.alpha = 100
         else:
             self.sprite.alpha = 255

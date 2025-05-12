@@ -82,6 +82,10 @@ json Color::toJson() const {
     return {alpha, red, green, blue};
 }
 
+uint8_t Color::toARGB() const {
+    return alpha << 24 | red << 16 | green << 8 | blue;
+}
+
 json Group::toJson() const {
     json j = toJsonNoItem();
     j["nodeId"] = nodeId.toJson();
