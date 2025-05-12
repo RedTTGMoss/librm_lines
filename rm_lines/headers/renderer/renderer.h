@@ -1,13 +1,23 @@
 #pragma once
 
-#include <scene_tree/scene_tree.h>
-#include <unordered_map>
 
+#include "renderer/rm_lines_stroker/rm_lines_stroker.h"
+#include "renderer/rm_lines_stroker/rm_pens/rm_pen_fill.h"
 #include "advanced/document_size_tracker.h"
-#include "advanced/text.h"
+#include <scene_tree/scene_tree.h>
 #include "advanced/layers.h"
-
+#include "advanced/text.h"
+#include <unordered_map>
 #define TEXT_TOP_Y (-88)
+
+using ImageBuffer = RMLinesRenderer::ImageBuffer;
+using VaryingGeneratorLengthWidth = RMLinesRenderer::VaryingGeneratorLengthWidth;
+using CapStyle = RMLinesRenderer::CapStyle;
+using JoinStyle = RMLinesRenderer::JoinStyle;
+using Varying2D = RMLinesRenderer::Varying2D;
+using Varying4D = RMLinesRenderer::Varying4D;
+
+
 static constexpr CrdtId TEXT_LAYER{7, 1};
 
 class Renderer {
@@ -48,9 +58,11 @@ public:
 
     void toHtml(std::ostream &stream);
 
-    void getFrame(uint32_t* data, size_t dataSize, Vector position, Vector size, float scale);
+    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector size, float scale);
 
 private:
     SceneTree *sceneTree;
     std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
+    RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
+        VaryingGeneratorLengthWidth> stroker;
 };

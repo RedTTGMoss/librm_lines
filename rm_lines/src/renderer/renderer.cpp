@@ -2,17 +2,9 @@
 #include <format>
 
 #include "advanced/text.h"
-#include "renderer/rm_lines_stroker/rm_lines_stroker.h"
-#include "renderer/rm_lines_stroker/rm_pens/rm_pen_fill.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
 
-using ImageBuffer = RMLinesRenderer::ImageBuffer;
-using VaryingGeneratorLengthWidth = RMLinesRenderer::VaryingGeneratorLengthWidth;
-using CapStyle = RMLinesRenderer::CapStyle;
-using JoinStyle = RMLinesRenderer::JoinStyle;
-using Varying2D = RMLinesRenderer::Varying2D;
-using Varying4D = RMLinesRenderer::Varying4D;
 
 Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): paperSize({1404, 1872}),
     landscape(landscape), pageType(pageType),
@@ -95,6 +87,7 @@ void Renderer::calculateAnchors() {
                 anchors[characterId] = posY;
             }
         }
+        // ReSharper disable once CppNoDiscardExpression
         trackY(TEXT_LAYER, posY);
     }
 }
@@ -155,29 +148,29 @@ void Renderer::toMd(std::ostream &stream) const {
     for (const auto &paragraph: textDocument.paragraphs) {
         // Write style prefix based on paragraph style
         switch (paragraph.style.value) {
-            case ParagraphStyle::HEADING:
+            case HEADING:
                 stream << "# ";
                 break;
-            case ParagraphStyle::BOLD:
+            case BOLD:
                 stream << "## ";
                 break;
-            case ParagraphStyle::BULLET:
-            case ParagraphStyle::BULLET2:
+            case BULLET:
+            case BULLET2:
                 stream << "- ";
                 break;
-            case ParagraphStyle::CHECKBOX:
+            case CHECKBOX:
                 stream << "☐ ";
                 break;
-            case ParagraphStyle::CHECKBOX_CHECKED:
+            case CHECKBOX_CHECKED:
                 stream << "**☑** ";
                 break;
-            case ParagraphStyle::PLAIN:
+            case PLAIN:
             default:
                 break;
         }
 
         // Add strikethrough for checked checkboxes
-        if (paragraph.style.value == ParagraphStyle::CHECKBOX_CHECKED) {
+        if (paragraph.style.value == CHECKBOX_CHECKED) {
             stream << "~~";
         }
 
@@ -203,7 +196,7 @@ void Renderer::toMd(std::ostream &stream) const {
         }
 
         // Close strikethrough if needed
-        if (paragraph.style.value == ParagraphStyle::CHECKBOX_CHECKED) {
+        if (paragraph.style.value == CHECKBOX_CHECKED) {
             stream << "~~";
         }
 
@@ -230,8 +223,6 @@ void Renderer::toHtml(std::ostream &stream) {
 
 void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector size,
                         const float scale) {
-    RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
-        VaryingGeneratorLengthWidth> stroker;
     const auto iBuf = &stroker.raster.raster.fill.buffer;
     stroker.raster.raster.fill.stroker = &stroker;
     stroker.raster.raster.fill.scale = scale;
@@ -271,4 +262,5 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
     }
 
     iBuf->exportRawData(data, dataSize);
+    iBuf->release();
 }
