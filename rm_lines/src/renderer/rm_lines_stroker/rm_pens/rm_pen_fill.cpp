@@ -23,9 +23,12 @@ void rMPenFill::newLine() {
         // case FINELINER_1:
         // case FINELINER_2:
         //     break;
-        // case HIGHLIGHTER_1:
-        // case HIGHLIGHTER_2:
-        //     break;
+        case HIGHLIGHTER_1:
+        case HIGHLIGHTER_2:
+            operatorFunction = HighlighterPen;
+            stroker->capStyle = RMLinesRenderer::SquareCap;
+            stroker->width = 15 * scale;
+            break;
         // case MARKER_1:
         // case MARKER_2:
         //     break;
@@ -42,6 +45,7 @@ void rMPenFill::newLine() {
         //     break;
         default:
             operatorFunction = BasicPen;
+            stroker->capStyle = RMLinesRenderer::RoundCap;
             stroker->width = 10 * scale;
             break;
     }
