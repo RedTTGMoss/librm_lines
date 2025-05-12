@@ -228,11 +228,13 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, const Vector size, float scale) {
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector size,
+                        const float scale) {
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         VaryingGeneratorLengthWidth> stroker;
     const auto iBuf = &stroker.raster.raster.fill.buffer;
     stroker.raster.raster.fill.stroker = &stroker;
+    stroker.raster.raster.fill.scale = scale;
     iBuf->allocate(size);
     stroker.raster.x1 = static_cast<float>(iBuf->width);
     stroker.raster.y1 = static_cast<float>(iBuf->height);

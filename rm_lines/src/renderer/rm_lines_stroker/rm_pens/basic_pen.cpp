@@ -1,0 +1,15 @@
+#include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
+
+void BasicPen(rMPenFill *fill, const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
+    unsigned int *dst = fill->buffer.scanline(y) + x;
+    for (int i = 0; i < length; ++i) {
+        if (fill->line->argbColor.has_value()) {
+            const auto [a, r, g, b] = fill->line->argbColor.value();
+            dst[i] = a << 24 | r << 16 | g << 8 | b;
+        } else {
+            dst[i] = 0xff000000;
+        }
+
+        v = v + dx;
+    }
+}

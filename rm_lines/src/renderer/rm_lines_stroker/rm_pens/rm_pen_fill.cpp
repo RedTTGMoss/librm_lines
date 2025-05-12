@@ -1,22 +1,50 @@
 #include "renderer/rm_lines_stroker/rm_pens/rm_pen_fill.h"
 
-void rMPenFill::operator()(const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
-    assert(line && point);
-    unsigned int *dst = buffer.scanline(y) + x;
-    for (int i = 0; i < length; ++i) {
-        if (line->argbColor.has_value()) {
-            const auto [a, r, g, b] = line->argbColor.value();
-            dst[i] = a << 24 | r << 16 | g << 8 | b;
-        } else {
-            dst[i] = 0xff000000;
-        }
+#include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
 
-        v = v + dx;
-    }
+void rMPenFill::operator()(const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
+    assert(line && point && operatorFunction);
+    operatorFunction(this, x, y, length, v, dx);
 }
 
 void rMPenFill::newLine() {
     assert(line);
+
+    switch (line->tool) {
+        // case BALLPOINT_1:
+        // case BALLPOINT_2:
+        //     break;
+        // case CALLIGRAPHY:
+        //     break;
+        // case ERASER:
+        //     break;
+        // case ERASER_AREA:
+        //     break;
+        // case FINELINER_1:
+        // case FINELINER_2:
+        //     break;
+        // case HIGHLIGHTER_1:
+        // case HIGHLIGHTER_2:
+        //     break;
+        // case MARKER_1:
+        // case MARKER_2:
+        //     break;
+        // case MECHANICAL_PENCIL_1:
+        // case MECHANICAL_PENCIL_2:
+        //     break;
+        // case PAINTBRUSH_1:
+        // case PAINTBRUSH_2:
+        //     break;
+        // case PENCIL_1:
+        // case PENCIL_2:
+        //     break;
+        // case SHADER:
+        //     break;
+        default:
+            operatorFunction = BasicPen;
+            stroker->width = 10 * scale;
+            break;
+    }
 }
 
 void rMPenFill::newPoint() {
