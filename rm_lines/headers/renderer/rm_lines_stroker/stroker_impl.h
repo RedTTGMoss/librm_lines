@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <cmath>
+#include <numbers>
 #include <optional>
 
 #include "advanced/math.h"
