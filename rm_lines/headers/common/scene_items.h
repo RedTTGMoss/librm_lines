@@ -12,6 +12,27 @@ using json = nlohmann::json;
 
 class TaggedBlockReader;
 
+enum PenTool {
+    BALLPOINT_1 = 2,
+    BALLPOINT_2 = 15,
+    CALLIGRAPHY = 21,
+    ERASER = 6,
+    ERASER_AREA = 8,
+    FINELINER_1 = 4,
+    FINELINER_2 = 17,
+    HIGHLIGHTER_1 = 5,
+    HIGHLIGHTER_2 = 18,
+    MARKER_1 = 3,
+    MARKER_2 = 16,
+    MECHANICAL_PENCIL_1 = 7,
+    MECHANICAL_PENCIL_2 = 13,
+    PAINTBRUSH_1 = 0,
+    PAINTBRUSH_2 = 12,
+    PENCIL_1 = 1,
+    PENCIL_2 = 14,
+    SHADER = 23
+};
+
 enum PenColor {
     BLACK = 0,
     GRAY = 1,
@@ -53,8 +74,7 @@ struct Point {
 };
 
 struct Line {
-    uint32_t toolId;
-    // TODO: Maybe impl Pen type and add tool here
+    PenTool tool;
     PenColor color;
     double thicknessScale;
     float startingLength;

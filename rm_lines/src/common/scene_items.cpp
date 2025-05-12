@@ -16,10 +16,12 @@ size_t getPointSizeSerialized(uint8_t version) {
     }
 }
 
-bool Line::read(TaggedBlockReader *reader, uint8_t version) {
-    if (!reader->readInt(1, &toolId)) return false;
+bool Line::read(TaggedBlockReader *reader, const uint8_t version) {
+    uint32_t toolId;
     uint32_t colorId;
+    if (!reader->readInt(1, &toolId)) return false;
     if (!reader->readInt(2, &colorId)) return false;
+    tool = static_cast<PenTool>(toolId);
     color = static_cast<PenColor>(colorId);
     if (!reader->readDouble(3, &thicknessScale)) return false;
     if (!reader->readFloat(4, &startingLength)) return false;
@@ -76,7 +78,7 @@ json Line::toJson() const {
     }
 
     return {
-        {"toolId", toolId},
+        {"tool", tool},
         {"color", color},
         {"thicknessScale", thicknessScale},
         {"startingLength", startingLength},
