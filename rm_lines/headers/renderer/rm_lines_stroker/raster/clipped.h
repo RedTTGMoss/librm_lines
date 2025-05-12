@@ -1,6 +1,7 @@
 #pragma once
 #include "advanced/math.h"
 using Triangle = AdvancedMath::Triangle;
+using Vector = AdvancedMath::Vector;
 
 namespace RMLinesRenderer {
     template<typename Raster>

@@ -3,6 +3,7 @@
 
 #include "advanced/text.h"
 #include "renderer/rm_lines_stroker/rm_lines_stroker.h"
+#include "renderer/rm_lines_stroker/rm_pens/rm_pen_fill.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
 
@@ -227,42 +228,35 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-struct SimpleFill {
-    typedef Varying2D Varyings;
-    ImageBuffer buffer;
-
-    void operator()(int x, int y, int length, Varying2D v, Varying2D dx) {
-        unsigned int *dst = buffer.scanline(y) + x;
-        for (int i = 0; i < length; ++i) {
-            dst[i] = 0xff000000;
-            v = v + dx;
-        }
-    }
-};
-
 void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, const Vector size, float scale) {
-    RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<SimpleFill> >,
+    RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         VaryingGeneratorLengthWidth> stroker;
     const auto iBuf = &stroker.raster.raster.fill.buffer;
+    stroker.raster.raster.fill.stroker = &stroker;
     iBuf->allocate(size);
-    stroker.raster.x1 = iBuf->width;
-    stroker.raster.y1 = iBuf->height;
-    stroker.capStyle = CapStyle::RoundCap;
-    stroker.joinStyle = JoinStyle::BevelJoin;
+    stroker.raster.x1 = static_cast<float>(iBuf->width);
+    stroker.raster.y1 = static_cast<float>(iBuf->height);
+
+    // TODO: render the template
+    // TODO: render the text
 
     for (const auto &layer: layers) {
+        // For each layer, each line, each point
         for (const auto &line: layer.lines) {
             bool first = true;
+            stroker.raster.raster.fill.line = &line.line;
+            stroker.raster.raster.fill.newLine();
             for (const auto &point: line.line.points) {
+                stroker.raster.raster.fill.point = &point;
+                stroker.raster.raster.fill.newPoint();
                 // This shouldn't need to have added half width, what's going on here?
                 // We need to make sure this works when the document has expansions
                 // I can confirm it needs to be paperSize and not the expanded document size tracker size!
-                auto x = position.x + point.x + line.offsetX + paperSize.first / 2;
+                auto x = position.x + point.x + line.offsetX + static_cast<float>(paperSize.first) / 2;
                 auto y = position.y + point.y + line.offsetY;
                 x *= scale;
                 y *= scale;
-                stroker.width = point.pressure / 10;
-                stroker.width *= scale;
+
                 if (first) {
                     stroker.moveTo(x, y);
                     first = false;

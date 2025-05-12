@@ -23,6 +23,7 @@ FetchContent_MakeAvailable(cppcodec)
 include_directories(rm_lines/headers)
 
 file(GLOB RENDERER_FILES rm_lines/src/renderer/rm_lines_stroker/*.cpp)
+file(GLOB RM_PENS_FILES rm_lines/src/renderer/rm_lines_stroker/rm_pens/*.cpp)
 
 add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_export.cpp
@@ -40,6 +41,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/advanced/text.cpp
         rm_lines/src/stb_truetype/stb_truetype.cpp
         ${RENDERER_FILES}
+        ${RM_PENS_FILES}
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp)
