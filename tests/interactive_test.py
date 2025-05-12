@@ -62,12 +62,14 @@ class GC(pe.GameContext):
     MODE = pe.display.DISPLAY_MODE_RESIZABLE
     BACKGROUND = pe.colors.whitesmoke
 
+    FPS_LOGGER = True
+
     def __init__(self):
         self.items = []
         self.loaded = {}
         self.filenames = []
         self._index = 0
-        self._scale = 1
+        self._scale = 0.6
         self.scale = 1
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
