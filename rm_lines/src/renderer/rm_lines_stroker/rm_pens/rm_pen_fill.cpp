@@ -17,7 +17,6 @@ void rMPenFill::operator()(const int x, const int y, const int length, Varying2D
 
 void rMPenFill::newLine() {
     assert(line);
-    pen.line = line;
 }
 
 void rMPenFill::newPoint() {
