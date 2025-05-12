@@ -107,10 +107,12 @@ class GC(pe.GameContext):
             self.index += 1
             if self.index >= len(self.items):
                 self.index = 0
+            self.frame = None
         elif pe.event.key_DOWN(pe.K_LEFT):
             self.index -= 1
             if self.index < 0:
                 self.index = len(self.items) - 1
+            self.frame = None
         if e.type == pe.MOUSEWHEEL:
             self._scale += e.y * self.delta_time
         super().handle_event(e)
