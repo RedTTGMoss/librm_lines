@@ -10,10 +10,9 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
         color = rMPallet[fill->line->color].second;
     }
 
-    auto intensity = (
-                         0.1 *
-                         -((static_cast<double>(fill->point->speed) / 4) / 35)
-                     ) + (1 * static_cast<double>(fill->point->pressure) / 255);
+    auto intensity = 0.1 *
+                     -(static_cast<double>(fill->point->speed) / 4 / 35) + 1 * static_cast<double>(fill->point->
+                         pressure) / 255;
 
     // cap between 0 and 1
     intensity = std::max(0.0, std::min(1.0, intensity));
