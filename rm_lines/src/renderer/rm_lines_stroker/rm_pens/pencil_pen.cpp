@@ -10,17 +10,18 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
         color = rMPallet[fill->line->color].second;
     }
 
-    auto instensity = (
-                          0.1 *
-                          -((static_cast<double>(fill->point->speed) / 4) / 35)
-                      ) + (1 * static_cast<double>(fill->point->pressure) / 255);
+    auto intensity = (
+                         0.1 *
+                         -((static_cast<double>(fill->point->speed) / 4) / 35)
+                     ) + (1 * static_cast<double>(fill->point->pressure) / 255);
 
     // cap between 0 and 1
-    instensity = std::max(0.0, std::min(1.0, instensity));
+    intensity = std::max(0.0, std::min(1.0, intensity));
 
     for (int i = 0; i < length; ++i) {
-        float n = stb_perlin_noise3(v.x, v.y, 0.0f, 0, 0, 0);
-        if (n >= instensity)
+        float n = stb_perlin_noise3(v.x, v.y, 0.0f,
+                                    0, 0, 0);
+        if (n >= intensity)
             dst[i] = color.toRGBA();
         v = v + dx;
     }

@@ -225,6 +225,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
                         const float scale) {
     const auto iBuf = &stroker.raster.raster.fill.buffer;
     stroker.raster.raster.fill.stroker = &stroker;
+    stroker.raster.raster.fill.position = &position;
     stroker.raster.raster.fill.scale = scale;
     iBuf->allocate(size);
     stroker.raster.x1 = static_cast<float>(iBuf->width);
