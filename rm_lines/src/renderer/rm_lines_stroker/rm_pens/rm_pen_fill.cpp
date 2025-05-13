@@ -27,7 +27,7 @@ void rMPenFill::newLine() {
         case HIGHLIGHTER_2:
             operatorFunction = HighlighterPen;
             stroker->capStyle = RMLinesRenderer::SquareCap;
-            stroker->width = 15 * scale;
+            stroker->width = 30 * scale;
             break;
         // case MARKER_1:
         // case MARKER_2:
