@@ -4,4 +4,6 @@
 
 void BasicPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);
 
+void PencilPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);
+
 void HighlighterPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);
