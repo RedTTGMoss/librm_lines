@@ -82,8 +82,8 @@ json Color::toJson() const {
     return {alpha, red, green, blue};
 }
 
-uint8_t Color::toARGB() const {
-    return alpha << 24 | red << 16 | green << 8 | blue;
+uint32_t Color::toRGBA() const {
+    return alpha << 24 | blue << 16 | green << 8 | red;
 }
 
 json Group::toJson() const {

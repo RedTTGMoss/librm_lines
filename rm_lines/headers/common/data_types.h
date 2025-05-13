@@ -183,7 +183,7 @@ struct LwwItem {
     explicit LwwItem(T value) : value(value) {
     };
 
-    explicit LwwItem(CrdtId timestamp, T value) : timestamp(timestamp), value(value) {
+    explicit LwwItem(const CrdtId timestamp, T value) : timestamp(timestamp), value(value) {
     };
 
     LwwItem() = default;
@@ -239,12 +239,13 @@ typedef std::pair<CrdtId, LwwItem<ParagraphStyle> > TextFormat;
 json textFormatToJson(const TextFormat &textFormat);
 
 struct Color {
-    uint8_t alpha;
-    uint8_t red;
-    uint8_t green;
+    // BGRA (the bite order is important, it's how it's stored in the file)
     uint8_t blue;
+    uint8_t green;
+    uint8_t red;
+    uint8_t alpha;
 
     json toJson() const;
 
-    uint8_t toARGB() const;
+    uint32_t toRGBA() const;
 };

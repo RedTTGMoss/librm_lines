@@ -5,9 +5,9 @@ void BasicPen(rMPenFill *fill, const int x, const int y, const int length, Varyi
     for (int i = 0; i < length; ++i) {
         if (fill->line->argbColor.has_value()) {
             const auto color = fill->line->argbColor.value();
-            dst[i] = color.toARGB();
+            dst[i] = color.toRGBA();
         } else {
-            dst[i] = 0xff000000;
+            dst[i] = rMPallet[fill->line->color].second.toRGBA();
         }
 
         v = v + dx;
