@@ -13,9 +13,11 @@ void rMPenFill::newLine() {
     baseWidth = line->thicknessScale / 10;
 
     switch (line->tool) {
-        // case BALLPOINT_1:
-        // case BALLPOINT_2:
-        //     break;
+        case BALLPOINT_1:
+        case BALLPOINT_2:
+            operatorFunction = BallpointPen;
+            stroker->capStyle = RMLinesRenderer::RoundCap;
+            break;
         // case CALLIGRAPHY:
         //     break;
         // case ERASER:
@@ -60,8 +62,24 @@ void rMPenFill::newPoint() {
     assert(point);
 
     switch (line->tool) {
+        case BALLPOINT_1:
+        case BALLPOINT_2: {
+            intensity = (0.1 * -((point->speed / 4) / 35)) + (1.2 * point->pressure / 255) + 0.5;
+            // cap between 0 and 1
+            intensity = std::max(0.0, std::min(1.0, intensity));
+            const auto segmentWidth = ((0.5 + point->pressure / 100) + (1 * point->width / 4) - 0.5 * (
+                                           (point->speed / 4) / 50)) * 2 * 2.3;
+            stroker->width = segmentWidth / K * scale;
+            break;
+        }
         case PENCIL_1:
         case PENCIL_2: {
+            intensity = 0.1 *
+                        -(static_cast<double>(point->speed) / 4 / 35) + 1 * static_cast<double>(point->
+                            pressure) / 255;
+
+            // cap between 0 and 1
+            intensity = std::max(0.0, std::min(1.0, intensity));
             const auto segmentWidth = 10 * ((((0.8 * baseWidth) + (0.5 * point->pressure / 255)) * (
                                                  static_cast<float>(point->width) / 3)) -
                                             (

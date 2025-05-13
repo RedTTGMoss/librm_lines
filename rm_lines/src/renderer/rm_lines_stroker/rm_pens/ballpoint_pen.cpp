@@ -1,7 +1,7 @@
 #include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
 #include "stb/stb_perlin.h"
 
-void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
+void BallpointPen(rMPenFill *fill, const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
     unsigned int *dst = fill->buffer.scanline(y) + x;
     Color color;
     if (fill->line->argbColor.has_value()) {
@@ -13,11 +13,7 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
     Varying2D baseV = v - Varying2D(fill->position->x, fill->position->y);
 
     for (int i = 0; i < length; ++i) {
-        float n = stb_perlin_turbulence_noise3(baseV.x,
-                                               baseV.y, 0.0f,
-                                               3, 2, 1);
-        if (n < fill->intensity)
-            dst[i] = color.toRGBA();
+        dst[i] = color.toRGBA();
         v = v + dx;
         baseV = baseV + dx;
     }

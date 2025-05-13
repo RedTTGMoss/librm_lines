@@ -18,6 +18,7 @@ public:
     double baseWidth;
     uint segmentCounter;
     float scale;
+    double intensity;
     OperatorFunction *operatorFunction;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         RMLinesRenderer::VaryingGeneratorLengthWidth> *stroker;

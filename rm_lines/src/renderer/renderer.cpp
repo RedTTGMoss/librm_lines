@@ -224,6 +224,7 @@ void Renderer::toHtml(std::ostream &stream) {
 void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector size,
                         const float scale) {
     const auto iBuf = &stroker.raster.raster.fill.buffer;
+    stroker.joinStyle = JoinStyle::RoundJoin;
     stroker.raster.raster.fill.stroker = &stroker;
     stroker.raster.raster.fill.position = &position;
     stroker.raster.raster.fill.scale = scale;
