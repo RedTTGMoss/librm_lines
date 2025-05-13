@@ -10,7 +10,7 @@ void rMPenFill::operator()(const int x, const int y, const int length, Varying2D
 void rMPenFill::newLine() {
     assert(line);
 
-    baseWidth = line->thicknessScale / 5;
+    baseWidth = line->thicknessScale / 10;
 
     switch (line->tool) {
         // case BALLPOINT_1:
@@ -50,7 +50,7 @@ void rMPenFill::newLine() {
         default:
             operatorFunction = BasicPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;
-            stroker->width = 10 * baseWidth * scale;
+            stroker->width = 20 * baseWidth * scale;
             break;
     }
     segmentCounter = 0;
@@ -62,8 +62,6 @@ void rMPenFill::newPoint() {
     switch (line->tool) {
         case PENCIL_1:
         case PENCIL_2: {
-            if (!segmentCounter % 2)
-                break;
             const auto segmentWidth = 10 * ((((0.8 * baseWidth) + (0.5 * point->pressure / 255)) * (
                                                  static_cast<float>(point->width) / 3)) -
                                             (
