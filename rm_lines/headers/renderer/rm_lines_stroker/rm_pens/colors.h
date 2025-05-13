@@ -17,15 +17,3 @@ constexpr std::pair<PenColor, Color> rMPallet[] = {
     {MAGENTA, Color(210, 127, 192, 255)},
     {YELLOW_2, Color(25, 231, 250, 255)}
 };
-
-inline Color blendADD(const Color color, const Color base, float alpha) {
-    // Blend the color with the base color using additive blending, whist accounting for alpha
-    // the base color here is most probably solid, the color is also solid
-    // but we want to use alpha to add it to the base
-    return {
-        static_cast<uint8_t>(std::min(255, static_cast<int>(color.blue * alpha + base.blue))),
-        static_cast<uint8_t>(std::min(255, static_cast<int>(color.green * alpha + base.green))),
-        static_cast<uint8_t>(std::min(255, static_cast<int>(color.red * alpha + base.red))),
-        static_cast<uint8_t>(std::min(255, static_cast<int>(color.alpha * alpha + base.alpha)))
-    };
-};

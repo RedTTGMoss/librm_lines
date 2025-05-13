@@ -9,7 +9,7 @@ void HighlighterPen(rMPenFill *fill, const int x, const int y, const int length,
         color = rMPallet[fill->line->color].second;
     }
     for (int i = 0; i < length; ++i) {
-        dst[i] = blendADD(color, static_cast<Color>(dst[i]), 0.25).toRGBA();
+        dst[i] = color.toRGBA();
         v = v + dx;
     }
 }
