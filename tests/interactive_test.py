@@ -69,7 +69,7 @@ class GC(pe.GameContext):
         self.loaded = {}
         self.filenames = []
         self._index = 0
-        self._scale = 0.3
+        self._scale = 0.6
         self.scale = 1
         self.buffer = (None, None, None)
         self.frame = None
@@ -179,6 +179,7 @@ class GC(pe.GameContext):
                 *self.size, self.scale)
         if self.frame:
             pe.display.blit(self.frame)
+            self.frame = None
             self.sprite.alpha = 100
         else:
             self.sprite.alpha = 255
