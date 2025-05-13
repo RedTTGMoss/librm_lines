@@ -53,6 +53,7 @@ void rMPenFill::newLine() {
             stroker->width = 10 * baseWidth * scale;
             break;
     }
+    segmentCounter = 0;
 }
 
 void rMPenFill::newPoint() {
@@ -61,17 +62,20 @@ void rMPenFill::newPoint() {
     switch (line->tool) {
         case PENCIL_1:
         case PENCIL_2: {
-            const auto segmentWidth = 10 * ((((0.8 * stroker->width) + (0.5 * point->pressure / 255)) * (
-                                                 point->width / 3)) -
+            if (!segmentCounter % 2)
+                break;
+            const auto segmentWidth = 10 * ((((0.8 * baseWidth) + (0.5 * point->pressure / 255)) * (
+                                                 static_cast<float>(point->width) / 3)) -
                                             (
                                                 0.25 * std::pow(AdvancedMath::directionToTilt(point->direction), 2.1)) -
                                             (
-                                                0.6 * (point->speed / 4) / 10));
+                                                0.6 * (static_cast<float>(point->speed) / 4) / 10));
             const auto maxWidth = baseWidth * MAGIC_PENCIL_SIZE;
-            stroker->width = std::max(3.0, std::min(segmentWidth, maxWidth)) * scale;
+            stroker->width = std::max(3.0, std::min(segmentWidth, maxWidth)) / K * scale;
             break;
         }
         default:
             break;
     }
+    segmentCounter++;
 }

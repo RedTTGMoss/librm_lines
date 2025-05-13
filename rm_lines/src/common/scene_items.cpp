@@ -124,22 +124,22 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
         pressure = _pressure * 255;
     } else if (version == 2) {
         uint16_t _speed;
-        if (!reader->readBytes(sizeof(uint16_t), &speed)) return false;
+        if (!reader->readBytes(sizeof(uint16_t), &_speed)) return false;
         // ReSharper disable once CppLocalVariableMightNotBeInitialized
         speed = _speed;
 
         uint16_t _width;
-        if (!reader->readBytes(sizeof(uint16_t), &width)) return false;
+        if (!reader->readBytes(sizeof(uint16_t), &_width)) return false;
         // ReSharper disable once CppLocalVariableMightNotBeInitialized
         width = _width;
 
         uint8_t _direction;
-        if (!reader->readBytes(sizeof(uint8_t), &direction)) return false;
+        if (!reader->readBytes(sizeof(uint8_t), &_direction)) return false;
         // ReSharper disable once CppLocalVariableMightNotBeInitialized
         direction = _direction;
 
         uint8_t _pressure;
-        if (!reader->readBytes(sizeof(uint8_t), &pressure)) return false;
+        if (!reader->readBytes(sizeof(uint8_t), &_pressure)) return false;
         // ReSharper disable once CppLocalVariableMightNotBeInitialized
         pressure = _pressure;
     } else {

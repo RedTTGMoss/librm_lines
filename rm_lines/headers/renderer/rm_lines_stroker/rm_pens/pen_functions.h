@@ -3,6 +3,7 @@
 #include "renderer/rm_lines_stroker/rm_pens/colors.h"
 
 #define MAGIC_PENCIL_SIZE (44.6 * 2.3)
+#define K 5
 
 void BasicPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);
 

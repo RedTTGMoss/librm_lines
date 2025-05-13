@@ -16,6 +16,7 @@ public:
     const Point *point;
     const Vector *position;
     double baseWidth;
+    uint segmentCounter;
     float scale;
     OperatorFunction *operatorFunction;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
