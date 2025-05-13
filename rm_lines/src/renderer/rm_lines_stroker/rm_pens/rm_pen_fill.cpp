@@ -10,6 +10,8 @@ void rMPenFill::operator()(const int x, const int y, const int length, Varying2D
 void rMPenFill::newLine() {
     assert(line);
 
+    baseWidth = line->thicknessScale / 5;
+
     switch (line->tool) {
         // case BALLPOINT_1:
         // case BALLPOINT_2:
@@ -42,18 +44,34 @@ void rMPenFill::newLine() {
         case PENCIL_2:
             operatorFunction = PencilPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;
-            stroker->width = scale * line->thicknessScale;
             break;
         // case SHADER:
         //     break;
         default:
             operatorFunction = BasicPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;
-            stroker->width = 10 * scale;
+            stroker->width = 10 * baseWidth * scale;
             break;
     }
 }
 
 void rMPenFill::newPoint() {
     assert(point);
+
+    switch (line->tool) {
+        case PENCIL_1:
+        case PENCIL_2: {
+            const auto segmentWidth = 10 * ((((0.8 * stroker->width) + (0.5 * point->pressure / 255)) * (
+                                                 point->width / 3)) -
+                                            (
+                                                0.25 * std::pow(AdvancedMath::directionToTilt(point->direction), 2.1)) -
+                                            (
+                                                0.6 * (point->speed / 4) / 10));
+            const auto maxWidth = baseWidth * MAGIC_PENCIL_SIZE;
+            stroker->width = std::max(3.0, std::min(segmentWidth, maxWidth)) * scale;
+            break;
+        }
+        default:
+            break;
+    }
 }

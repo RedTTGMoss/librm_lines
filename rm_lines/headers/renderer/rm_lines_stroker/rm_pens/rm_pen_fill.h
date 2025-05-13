@@ -15,6 +15,7 @@ public:
     const Line *line;
     const Point *point;
     const Vector *position;
+    double baseWidth;
     float scale;
     OperatorFunction *operatorFunction;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,

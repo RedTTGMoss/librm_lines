@@ -18,11 +18,15 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
     // cap between 0 and 1
     intensity = std::max(0.0, std::min(1.0, intensity));
 
+    Varying2D baseV = v - Varying2D(fill->position->x, fill->position->y);
+
     for (int i = 0; i < length; ++i) {
-        float n = stb_perlin_noise3(v.x, v.y, 0.0f,
+        float n = stb_perlin_noise3(baseV.x,
+                                    baseV.y, 0.0f,
                                     0, 0, 0);
         if (n >= intensity)
             dst[i] = color.toRGBA();
         v = v + dx;
+        baseV = baseV + dx;
     }
 }
