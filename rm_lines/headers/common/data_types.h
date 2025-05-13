@@ -251,5 +251,5 @@ struct Color {
 
     bool operator==(const Color &other) const = default;
 
-    static Color fromRGBA(uint32_t rgbaColor);
+    static Color fromRGBA(const uint32_t *rgbaColor);
 };
