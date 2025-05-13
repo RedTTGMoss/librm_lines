@@ -248,4 +248,8 @@ struct Color {
     json toJson() const;
 
     uint32_t toRGBA() const;
+
+    bool operator==(const Color &other) const = default;
+
+    static Color fromRGBA(uint32_t rgbaColor);
 };

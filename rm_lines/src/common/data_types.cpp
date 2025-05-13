@@ -86,6 +86,15 @@ uint32_t Color::toRGBA() const {
     return alpha << 24 | blue << 16 | green << 8 | red;
 }
 
+Color Color::fromRGBA(uint32_t rgbaColor) {
+    return {
+        static_cast<uint8_t>((rgbaColor >> 16) & 0xFF),
+        static_cast<uint8_t>((rgbaColor >> 8) & 0xFF),
+        static_cast<uint8_t>(rgbaColor & 0xFF),
+        static_cast<uint8_t>((rgbaColor >> 24) & 0xFF)
+    };
+}
+
 json Group::toJson() const {
     json j = toJsonNoItem();
     j["nodeId"] = nodeId.toJson();
