@@ -76,15 +76,12 @@ class GC(pe.GameContext):
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
 
-        for filename in os.listdir(files_draw_folder):
-            self.filenames.append(filename[:-5].replace('_', ' '))
-            file = os.path.join(files_draw_folder, filename)
-            self.items.append(file)
-        for filename in os.listdir(files_folder):
-            self.filenames.append(filename[:-5].replace('_', ' '))
-            file = os.path.join(files_folder, filename)
-            self.items.append(file)
-        self.index = 11
+        for folder in (files_draw_folder, files_folder):
+            for filename in os.listdir(folder):
+                self.filenames.append(filename[:-3].replace('_', ' ') + f' [{len(self.items)}]')
+                file = os.path.join(folder, filename)
+                self.items.append(file)
+        self.index = 8
         super().__init__()
         self.sprite = pe.Sprite("rm_lines_cat.png", (100, 100))
 
