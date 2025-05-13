@@ -41,8 +41,8 @@ void rMPenFill::newLine() {
         case PENCIL_1:
         case PENCIL_2:
             operatorFunction = PencilPen;
-            stroker->capStyle = RMLinesRenderer::SquareCap;
-            stroker->width = 30 * scale;
+            stroker->capStyle = RMLinesRenderer::RoundCap;
+            stroker->width = scale * line->thicknessScale;
             break;
         // case SHADER:
         //     break;
