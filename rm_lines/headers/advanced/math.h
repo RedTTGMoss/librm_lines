@@ -197,6 +197,6 @@ namespace AdvancedMath {
     };
 
     inline double directionToTilt(const uint32_t direction) {
-        return static_cast<double>(direction) * 2 * M_PI / 255;
+        return static_cast<double>(direction) * 2 * std::numbers::pi / 255;
     }
 }

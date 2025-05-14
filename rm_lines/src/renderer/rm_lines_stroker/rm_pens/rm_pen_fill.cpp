@@ -75,16 +75,24 @@ void rMPenFill::newPoint() {
         }
         case PENCIL_1:
         case PENCIL_2: {
+            /* TODO: Improve Pencil intensity between points
+             *
+             * rM might be using an intensity between points, or depending on segmentation
+             * This is a guess, but it would explain weird gaps in this code vs rM version which seems to have fills for
+             * these gaps. There is also some noticeable dither-like effect in the rM version (on some lines).
+             *
+             * These observations can be seen in the pencil test file.
+            */
             intensity = 0.1 *
                         -(static_cast<double>(point->speed) / 4 / 35) + 1 * static_cast<double>(point->
-                            pressure) / 255;
+                            pressure) / 255 - 0.1 * AdvancedMath::directionToTilt(point->direction);
 
             // cap between 0 and 1
             intensity = std::max(0.0f, std::min(1.0f, intensity)) - 0.1f;
-            const float segmentWidth = 10.0f * ((0.8 * baseWidth + 0.5 * point->pressure / 255) * (
-                                                    static_cast<float>(point->width) / 3) -
-                                                0.5 * std::pow(AdvancedMath::directionToTilt(point->direction), 2.1) -
-                                                0.6 * (static_cast<float>(point->speed) / 4) / 10);
+            const float segmentWidth = 10.0f * ((0.8f * baseWidth + 0.5 * point->pressure / 255.0f) * (
+                                                    static_cast<float>(point->width) / 3.0f) -
+                                                0.1f * AdvancedMath::directionToTilt(point->direction) -
+                                                0.6f * (static_cast<float>(point->speed) / 4) / 10);
             const float maxWidth = baseWidth * MAGIC_PENCIL_SIZE;
             stroker->width = std::max(3.0f, std::min(segmentWidth, maxWidth)) / K * scale;
             break;
