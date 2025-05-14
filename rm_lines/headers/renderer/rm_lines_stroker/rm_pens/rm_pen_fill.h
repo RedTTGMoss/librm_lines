@@ -15,10 +15,10 @@ public:
     const Line *line;
     const Point *point;
     const Vector *position;
-    double baseWidth;
+    float baseWidth;
     uint segmentCounter;
     float scale;
-    double intensity;
+    float intensity;
     OperatorFunction *operatorFunction;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         RMLinesRenderer::VaryingGeneratorLengthWidth> *stroker;

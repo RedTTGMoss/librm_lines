@@ -13,10 +13,12 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
     Varying2D baseV = v - Varying2D(fill->position->x, fill->position->y);
 
     for (int i = 0; i < length; ++i) {
-        float n = stb_perlin_turbulence_noise3(baseV.x,
-                                               baseV.y, 0.0f,
-                                               3, 2, 1);
-        if (n < fill->intensity)
+        const float rawNoise = stb_perlin_noise3(baseV.x,
+                                                 baseV.y, 0.0f,
+                                                 0.0f, 0.0f, 0.0f);
+        // const float n = (rawNoise + 1.0f) * 0.5f;
+        const float n = rawNoise;
+        if (fill->intensity == 1.0f || n < std::pow(fill->intensity * 2, 2.3f))
             dst[i] = color.toRGBA();
         v = v + dx;
         baseV = baseV + dx;

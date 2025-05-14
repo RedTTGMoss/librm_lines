@@ -64,11 +64,12 @@ void rMPenFill::newPoint() {
     switch (line->tool) {
         case BALLPOINT_1:
         case BALLPOINT_2: {
-            intensity = (0.1 * -((point->speed / 4) / 35)) + (1.2 * point->pressure / 255) + 0.5;
+            intensity = 0.1 * -(static_cast<float>(point->speed) / 4 / 35) + 1.2 * point->pressure / 255 + 0.5;
             // cap between 0 and 1
-            intensity = std::max(0.0, std::min(1.0, intensity));
-            const auto segmentWidth = ((0.5 + point->pressure / 100) + (1 * point->width / 4) - 0.5 * (
-                                           (point->speed / 4) / 50)) * 2 * 2.3;
+            intensity = std::max(0.0f, std::min(1.0f, intensity));
+            const float segmentWidth = (0.5f + static_cast<float>(point->pressure) / 100.0f + 1.0f * static_cast<float>(
+                                            point->width) / 4 - 0.5f * (
+                                            static_cast<float>(point->speed) / 4 / 50)) * 2.0f * 2.3f;
             stroker->width = segmentWidth / K * scale;
             break;
         }
@@ -79,15 +80,13 @@ void rMPenFill::newPoint() {
                             pressure) / 255;
 
             // cap between 0 and 1
-            intensity = std::max(0.0, std::min(1.0, intensity));
-            const auto segmentWidth = 10 * ((((0.8 * baseWidth) + (0.5 * point->pressure / 255)) * (
-                                                 static_cast<float>(point->width) / 3)) -
-                                            (
-                                                0.25 * std::pow(AdvancedMath::directionToTilt(point->direction), 2.1)) -
-                                            (
-                                                0.6 * (static_cast<float>(point->speed) / 4) / 10));
-            const auto maxWidth = baseWidth * MAGIC_PENCIL_SIZE;
-            stroker->width = std::max(3.0, std::min(segmentWidth, maxWidth)) / K * scale;
+            intensity = std::max(0.0f, std::min(1.0f, intensity)) - 0.1f;
+            const float segmentWidth = 10.0f * ((0.8 * baseWidth + 0.5 * point->pressure / 255) * (
+                                                    static_cast<float>(point->width) / 3) -
+                                                0.5 * std::pow(AdvancedMath::directionToTilt(point->direction), 2.1) -
+                                                0.6 * (static_cast<float>(point->speed) / 4) / 10);
+            const float maxWidth = baseWidth * MAGIC_PENCIL_SIZE;
+            stroker->width = std::max(3.0f, std::min(segmentWidth, maxWidth)) / K * scale;
             break;
         }
         default:
