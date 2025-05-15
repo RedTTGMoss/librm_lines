@@ -70,7 +70,7 @@ void rMPenFill::newPoint() {
         case BALLPOINT_2: {
             intensity = 0.1 * -(static_cast<float>(point->speed) / 4 / 35) + 1.2 * point->pressure / 255 + 0.5;
             // cap between 0 and 1
-            intensity = std::max(0.0f, std::min(1.0f, intensity));
+            intensity = std::abs(std::max(0.0f, std::min(1.0f, intensity)) - 1);
             const float segmentWidth = (0.5f + static_cast<float>(point->pressure) / 100.0f + 1.0f * static_cast<float>(
                                             point->width) / 4 - 0.5f * (
                                             static_cast<float>(point->speed) / 4 / 50)) * 2.0f * 2.3f;
