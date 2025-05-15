@@ -11,12 +11,16 @@ void rMPenFill::newLine() {
     assert(line);
 
     baseWidth = line->thicknessScale / 10;
+    stroker->varying.lengthFactor = 1.0f;
+    stroker->varying.widthFactor = 1.0f;
 
     switch (line->tool) {
         case BALLPOINT_1:
         case BALLPOINT_2:
             operatorFunction = BallpointPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;
+            stroker->varying.lengthFactor = 0.01f;
+            stroker->varying.widthFactor = 0.5f;
             break;
         // case CALLIGRAPHY:
         //     break;

@@ -81,7 +81,7 @@ class GC(pe.GameContext):
                 self.filenames.append(filename[:-3].replace('_', ' ') + f' [{len(self.items)}]')
                 file = os.path.join(folder, filename)
                 self.items.append(file)
-        self.index = 8
+        self.index = 14
         super().__init__()
         self.sprite = pe.Sprite("rm_lines_cat.png", (100, 100))
 
