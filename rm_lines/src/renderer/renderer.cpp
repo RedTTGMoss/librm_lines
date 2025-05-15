@@ -249,7 +249,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
                 // I can confirm it needs to be paperSize and not the expanded document size tracker size!
                 auto x = position.x + point.x + line.offsetX + static_cast<float>(paperSize.first) / 2;
                 auto y = position.y + point.y + line.offsetY;
-                x *= scale;
+                x *= scale; // TODO: Maybe apply a centered scale instead? Scaling the entire document isn't quite right
                 y *= scale;
 
                 if (first) {
