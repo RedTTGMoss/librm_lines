@@ -3,6 +3,11 @@ project(rm_lines)
 
 set(CMAKE_CXX_STANDARD 20)
 
+if (MSVC)
+    # Enable latest C++ standard features and set __cplusplus correctly.
+    add_compile_options(/std:c++latest /Zc:__cplusplus)
+endif ()
+
 include(FetchContent)
 
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
