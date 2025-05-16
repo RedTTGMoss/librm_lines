@@ -34,7 +34,8 @@ void rMPenFill::newLine() {
         case HIGHLIGHTER_1:
         case HIGHLIGHTER_2:
             operatorFunction = HighlighterPen;
-            stroker->capStyle = RMLinesRenderer::SquareCap;
+            stroker->capStyle = RMLinesRenderer::FlatCap;
+            stroker->joinStyle = RMLinesRenderer::BevelJoin;
             stroker->width = 30 * scale;
             break;
         // case MARKER_1:
