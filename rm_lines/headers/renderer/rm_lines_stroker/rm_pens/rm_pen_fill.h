@@ -16,7 +16,7 @@ public:
     const Point *point;
     const Vector *position;
     float baseWidth;
-    uint segmentCounter;
+    unsigned int segmentCounter;
     float scale;
     float intensity;
     OperatorFunction *operatorFunction;
