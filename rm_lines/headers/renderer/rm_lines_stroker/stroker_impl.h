@@ -201,17 +201,17 @@ namespace RMLinesRenderer {
             const float angleLast = std::atan2(lastLeft.y1 - m_lastSegment.y, lastLeft.x1 - m_lastSegment.x);
             const float angleNext = std::atan2(left.y0 - m_lastSegment.y, left.x0 - m_lastSegment.x);
             float angleDelta = angleNext - angleLast;
-            if (angleDelta < -std::numbers::pi_v<float>) {
-                angleDelta += std::numbers::pi_v<float> * 2;
-            } else if (angleDelta > std::numbers::pi_v<float>) {
-                angleDelta -= std::numbers::pi_v<float> * 2;
+            if (angleDelta < -M_PI) {
+                angleDelta += M_PI * 2;
+            } else if (angleDelta > M_PI) {
+                angleDelta -= M_PI * 2;
             }
 
             // Shortcut with a bevel join for 'tiny' angles.
             // ### premature-optimization: Need to verify that this makes sense
             // per-wise and that it at the same time doesn't cause too much of a visual
             // impact...
-            if (std::abs(angleDelta) < std::numbers::pi_v<float> / 10.0f) {
+            if (std::abs(angleDelta) < M_PI / 10.0f) {
                 stroke(Line(left.x0, left.y0, lastLeft.x1, lastLeft.y1),
                        Line(right.x0, right.y0, lastRight.x1, lastRight.y1),
                        leftVarying, rightVarying,
@@ -229,7 +229,7 @@ namespace RMLinesRenderer {
             // Don't really know how long steps we have to take, but let's assume a
             // bit more than 3 gives us good results... Hey, lets just use PI.
             const int steps =
-                    std::min(30, static_cast<int>(std::ceil(std::abs(arcLength / std::numbers::pi_v<float>))));
+                    std::min(30, static_cast<int>(std::ceil(std::abs(arcLength / M_PI))));
             assert(steps > 0);
 
             float llx = lastLeft.x1;
@@ -280,8 +280,8 @@ namespace RMLinesRenderer {
             const float angle = std::atan2(left.y1 - s.y, left.x1 - s.x);
 
             const float radius = s.width / 2;
-            const float arcLength = radius * std::numbers::pi_v<float>; // half a circle...
-            int steps = std::min(30, static_cast<int>(std::ceil(std::abs(arcLength / std::numbers::pi_v<float>))));
+            const float arcLength = radius * M_PI; // half a circle...
+            int steps = std::min(30, static_cast<int>(std::ceil(std::abs(arcLength / M_PI))));
             assert(steps > 0);
 
             float lx = left.x1;
@@ -289,8 +289,8 @@ namespace RMLinesRenderer {
             float rx = right.x1;
             float ry = right.y1;
 
-            const float dt = std::numbers::pi_v<float> / steps;
-            float rt = angle + static_cast<float>(std::numbers::pi_v<float>) - dt;
+            const float dt = M_PI / steps;
+            float rt = angle + static_cast<float>(M_PI - dt);
             float lt = angle + dt;
 
             steps = std::max(1, steps / 2);
