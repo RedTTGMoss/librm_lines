@@ -1,6 +1,8 @@
 #pragma once
+#define _USE_MATH_DEFINES
 
 #include <nlohmann/json.hpp>
+#include "cmath"
 using json = nlohmann::json;
 
 namespace AdvancedMath {
