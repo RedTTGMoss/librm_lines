@@ -92,7 +92,7 @@ void rMPenFill::newPoint() {
                             pressure) / 255 - 0.1 * AdvancedMath::directionToTilt(point->direction);
 
             // cap between 0 and 1
-            intensity = std::max(0.0f, std::min(1.0f, intensity)) - 0.1f;
+            intensity = std::max(0.15f, std::min(1.0f, intensity)) - 0.1f;
             const float segmentWidth = 10.0f * ((0.8f * baseWidth + 0.5 * point->pressure / 255.0f) * (
                                                     static_cast<float>(point->width) / 3.0f) -
                                                 0.1f * AdvancedMath::directionToTilt(point->direction) -
