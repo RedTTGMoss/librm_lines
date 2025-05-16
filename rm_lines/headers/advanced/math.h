@@ -1,6 +1,5 @@
 #pragma once
-#define _USE_MATH_DEFINES // NOLINT(*-reserved-identifier)
-#include "cmath"
+# define M_PI 3.14159265358979323846
 
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
