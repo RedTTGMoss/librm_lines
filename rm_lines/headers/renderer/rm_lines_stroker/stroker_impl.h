@@ -1,11 +1,11 @@
 #pragma once
-
+#include "advanced/math.h"
 #include <cassert>
 #include <cmath>
 #include <numbers>
 #include <optional>
 
-#include "advanced/math.h"
+
 #include "renderer/rm_lines_stroker/stroker.h"
 
 using Vector = AdvancedMath::Vector;

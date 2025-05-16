@@ -1,8 +1,8 @@
 #pragma once
-#define _USE_MATH_DEFINES
+#define _USE_MATH_DEFINES // NOLINT(*-reserved-identifier)
+#include "cmath"
 
 #include <nlohmann/json.hpp>
-#include "cmath"
 using json = nlohmann::json;
 
 namespace AdvancedMath {

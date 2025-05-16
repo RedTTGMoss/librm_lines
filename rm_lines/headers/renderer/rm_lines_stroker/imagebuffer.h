@@ -1,5 +1,6 @@
 #pragma once
 
+#include "advanced/math.h"
 #include <vector>
 #include <cstddef>
 #include <cstdint>
@@ -7,7 +8,7 @@
 #include <algorithm>
 #include <memory>
 
-#include "advanced/math.h"
+
 
 namespace RMLinesRenderer {
     class ImageBuffer {

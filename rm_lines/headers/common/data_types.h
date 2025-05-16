@@ -1,9 +1,9 @@
 #pragma once
 
+#include <advanced/math.h>
 #include <unordered_map>
 #include <optional>
 #include <string>
-#include <advanced/math.h>
 #include <variant>
 #include <format>
 #include <library.h>
