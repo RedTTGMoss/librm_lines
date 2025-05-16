@@ -223,14 +223,16 @@ void Renderer::toHtml(std::ostream &stream) {
 
 void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector size,
                         const float scale) {
-    const auto iBuf = &stroker.raster.raster.fill.buffer;
+    const auto buf = &stroker.raster.raster.fill.buffer;
+    const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
     stroker.joinStyle = JoinStyle::RoundJoin;
     stroker.raster.raster.fill.stroker = &stroker;
     stroker.raster.raster.fill.position = &position;
     stroker.raster.raster.fill.scale = scale;
-    iBuf->allocate(size);
-    stroker.raster.x1 = static_cast<float>(iBuf->width);
-    stroker.raster.y1 = static_cast<float>(iBuf->height);
+    buf->allocate(size);
+    lineBuf->allocate(size);
+    stroker.raster.x1 = static_cast<float>(buf->width);
+    stroker.raster.y1 = static_cast<float>(buf->height);
 
     // TODO: render the template
     // TODO: render the text
@@ -263,6 +265,6 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
         }
     }
 
-    iBuf->exportRawData(data, dataSize);
-    iBuf->release();
+    buf->exportRawData(data, dataSize);
+    stroker.raster.raster.fill.reset();
 }

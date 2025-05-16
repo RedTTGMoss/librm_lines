@@ -239,10 +239,9 @@ typedef std::pair<CrdtId, LwwItem<ParagraphStyle> > TextFormat;
 json textFormatToJson(const TextFormat &textFormat);
 
 struct Color {
-    // BGRA (the bite order is important, it's how it's stored in the file)
-    uint8_t blue;
-    uint8_t green;
     uint8_t red;
+    uint8_t green;
+    uint8_t blue;
     uint8_t alpha;
 
     json toJson() const;
@@ -251,5 +250,13 @@ struct Color {
 
     bool operator==(const Color &other) const = default;
 
+    Color operator*(const Color &other) const;
+
+    Color operator*(float other) const;
+
+    Color operator+(const Color &other) const;
+
     static Color fromRGBA(const uint32_t *rgbaColor);
+
+    void inplaceFromRGBA(const uint32_t *rgbaColor);
 };

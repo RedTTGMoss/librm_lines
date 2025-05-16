@@ -325,7 +325,10 @@ bool TaggedBlockReader::readColor(uint8_t index, Color *result) {
 }
 
 bool TaggedBlockReader::readColor(Color *result) {
-    return readBytes(4, result);
+    uint32_t rawColor;
+    if (!readBytes(sizeof(uint32_t), &rawColor)) return false;
+    result->inplaceFromRGBA(&rawColor);
+    return true;
 }
 
 // Lww

@@ -12,11 +12,14 @@ class rMPenFill {
 public:
     typedef Varying2D Varyings;
     ImageBuffer buffer;
+    ImageBuffer lineBuffer;
     const Line *line;
     const Point *point;
     const Vector *position;
     float baseWidth;
     unsigned int segmentCounter;
+    unsigned int lineCounter;
+    unsigned int pointCounter;
     float scale;
     float intensity;
     OperatorFunction *operatorFunction;
@@ -33,4 +36,6 @@ public:
     void newLine();
 
     void newPoint();
+
+    void reset();
 };

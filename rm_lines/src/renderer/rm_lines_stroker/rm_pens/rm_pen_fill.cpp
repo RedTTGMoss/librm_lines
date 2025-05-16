@@ -60,6 +60,8 @@ void rMPenFill::newLine() {
             break;
     }
     segmentCounter = 0;
+    lineCounter++;
+    pointCounter = 0;
 }
 
 void rMPenFill::newPoint() {
@@ -105,4 +107,14 @@ void rMPenFill::newPoint() {
             break;
     }
     segmentCounter++;
+    pointCounter++;
+}
+
+void rMPenFill::reset() {
+    segmentCounter = 0;
+    lineCounter = 0;
+    pointCounter = 0;
+
+    buffer.release();
+    lineBuffer.release();
 }
