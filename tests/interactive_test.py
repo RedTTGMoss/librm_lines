@@ -60,7 +60,7 @@ lib.setDebugLogger(python_debug_logger)
 class GC(pe.GameContext):
     AREA = (500, 500)
     MODE = pe.display.DISPLAY_MODE_RESIZABLE
-    BACKGROUND = pe.colors.whitesmoke
+    BACKGROUND = pe.colors.white
 
     FPS_LOGGER = True
 
