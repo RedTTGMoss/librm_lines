@@ -125,7 +125,7 @@ Color Color::fromRGBA(const uint32_t *rgbaColor) {
 }
 
 void Color::inplaceFromRGBA(const uint32_t *rgbaColor) {
-    // Reading from rM file (BGRA)
+    // Reading from rM file (ARGB)
     red = static_cast<uint8_t>((*rgbaColor >> 16) & 0xFF);
     green = static_cast<uint8_t>((*rgbaColor >> 8) & 0xFF);
     blue = static_cast<uint8_t>(*rgbaColor & 0xFF);
