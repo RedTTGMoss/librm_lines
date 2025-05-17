@@ -11,6 +11,11 @@ void rMPenFill::newLine() {
     assert(line);
 
     baseWidth = line->thicknessScale / 10;
+    if (line->argbColor.has_value()) {
+        baseColor = line->argbColor.value();
+    } else {
+        baseColor = rMPallet[line->color].second;
+    }
     stroker->varying.lengthFactor = 1.0f;
     stroker->varying.widthFactor = 1.0f;
 

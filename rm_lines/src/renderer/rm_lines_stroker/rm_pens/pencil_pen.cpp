@@ -3,12 +3,6 @@
 
 void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
     unsigned int *dst = fill->buffer.scanline(y) + x;
-    Color color;
-    if (fill->line->argbColor.has_value()) {
-        color = fill->line->argbColor.value();
-    } else {
-        color = rMPallet[fill->line->color].second;
-    }
 
     Varying2D baseV = v - Varying2D(fill->position->x, fill->position->y);
 
@@ -19,7 +13,7 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
         // const float n = (rawNoise + 1.0f) * 0.5f;
         const float n = rawNoise;
         if (fill->intensity == 1.0f || n < std::pow(fill->intensity * 2, 2.3f))
-            dst[i] = color.toRGBA();
+            dst[i] = fill->baseColor.toRGBA();
         v = v + dx;
         baseV = baseV + dx;
     }

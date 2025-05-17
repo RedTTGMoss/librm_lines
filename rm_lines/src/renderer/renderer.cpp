@@ -227,9 +227,11 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
     stroker.joinStyle = JoinStyle::RoundJoin;
     stroker.raster.raster.fill.stroker = &stroker;
+    // ReSharper disable once CppDFALocalValueEscapesFunction
     stroker.raster.raster.fill.position = &position;
     stroker.raster.raster.fill.scale = scale;
     buf->allocate(size);
+    buf->fill(0x00FFFFFF);
     lineBuf->allocate(size);
     stroker.raster.x1 = static_cast<float>(buf->width);
     stroker.raster.y1 = static_cast<float>(buf->height);
