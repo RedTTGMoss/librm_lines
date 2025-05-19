@@ -175,7 +175,7 @@ namespace AdvancedMath {
 
         Triangle(const float a0, const float a1,
                  const float b0, const float b1,
-                 const float c0, const float c1) : a(a0, a1), b(b0, b1), c(c0, c1) {
+                 const float c0, const float c1) : a{a0, a1}, b{b0, b1}, c{c0, c1} {
         }
 
         [[nodiscard]] json toJson() const {
