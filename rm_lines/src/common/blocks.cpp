@@ -262,7 +262,7 @@ json SceneLineItemBlock::toJson() const {
 
 bool RootTextBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &blockId)) return false;
-    if (blockId != CrdtId(0, 0)) return false;
+    if (blockId != CrdtId{0, 0}) return false;
     reader->getTag();
     if (!reader->readSubBlock(2)) return false; // Section one
 

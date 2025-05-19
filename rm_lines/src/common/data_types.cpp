@@ -63,13 +63,13 @@ json CrdtId::toJson() const {
 }
 
 CrdtId CrdtId::operator++(int) {
-    return CrdtId(first, ++second);
+    return CrdtId{first, ++second};
 }
 
 Group::Group(const CrdtId nodeId)
     : nodeId(nodeId),
-      label(LwwItem<std::string>(CrdtId(0, 0), "")),
-      visible(LwwItem<bool>(CrdtId(0, 0), true)) {
+      label(LwwItem<std::string>(CrdtId{0, 0}, "")),
+      visible(LwwItem<bool>(CrdtId{0, 0}, true)) {
 }
 
 json textFormatToJson(const TextFormat &textFormat) {
