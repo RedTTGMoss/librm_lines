@@ -11,6 +11,14 @@ namespace AdvancedMath {
         float x;
         float y;
 
+        Vector() = default;
+
+        template<typename T1, typename T2, typename = std::enable_if_t<
+            std::is_arithmetic_v<T1> && std::is_arithmetic_v<T2>> >
+        explicit Vector(T1 x, T2 y)
+            : x(static_cast<float>(x)), y(static_cast<float>(y)) {
+        }
+
         [[nodiscard]] json toJson() const {
             return {
                 {"x", x},
@@ -19,28 +27,28 @@ namespace AdvancedMath {
         }
 
         Vector operator+(const Vector &other) const {
-            return {
+            return Vector{
                 x + other.x,
                 y + other.y
             };
         }
 
         Vector operator-(const Vector &other) const {
-            return {
+            return Vector{
                 x - other.x,
                 y - other.y
             };
         }
 
         Vector operator+(const float &other) const {
-            return {
+            return Vector{
                 x + other,
                 y + other
             };
         }
 
         Vector operator-(const float &other) const {
-            return {
+            return Vector{
                 x - other,
                 y - other
             };
@@ -55,14 +63,14 @@ namespace AdvancedMath {
         }
 
         Vector half() const {
-            return {
+            return Vector{
                 x / 2,
                 y / 2
             };
         }
 
         Vector operator*(const float m) const {
-            return {
+            return Vector{
                 x * m,
                 y * m
             };
@@ -73,8 +81,13 @@ namespace AdvancedMath {
         float w;
         float h;
 
-        explicit Rect(const float x = 0, const float y = 0, const float w = 0,
-                      const float h = 0) : Vector(x, y), w(w), h(h) {
+        Rect() = default;
+
+        template<typename T1, typename T2, typename T3, typename T4, typename = std::enable_if_t<
+            std::is_arithmetic_v<T1> && std::is_arithmetic_v<T2> &&
+            std::is_arithmetic_v<T3> && std::is_arithmetic_v<T4>> >
+        explicit Rect(T1 x, T2 y, T3 w, T4 h)
+            : Vector(x, y), w(static_cast<float>(w)), h(static_cast<float>(h)) {
         }
 
         [[nodiscard]] json toJson() const {
@@ -141,7 +154,7 @@ namespace AdvancedMath {
         }
 
         Vector getCenter() const {
-            return {
+            return Vector{
                 x + w / 2,
                 y + h / 2
             };
