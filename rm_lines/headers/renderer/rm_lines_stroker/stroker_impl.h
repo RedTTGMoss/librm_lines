@@ -80,7 +80,7 @@ namespace RMLinesRenderer {
             return;
         }
 
-        const Line line(m_lastSegment.x, m_lastSegment.y, x, y);
+        const Line line{m_lastSegment.x, m_lastSegment.y, x, y};
         const float len = line.length();
         const float ndx = (line.y0 - line.y1) / len;
         const float ndy = (line.x1 - line.x0) / len;
@@ -127,7 +127,7 @@ namespace RMLinesRenderer {
         assert(m_lastSegment.x != x || m_lastSegment.y != y);
         assert(slant.has_value());
 
-        const Line line(m_lastSegment.x, m_lastSegment.y, x, y);
+        const Line line{m_lastSegment.x, m_lastSegment.y, x, y};
         const float len = line.length();
 
         // line normal
@@ -271,7 +271,7 @@ namespace RMLinesRenderer {
         }
 
         if (!endCap) {
-            const Line tmp(left.x1, left.y1, left.x0, left.y0);
+            const Line tmp{left.x1, left.y1, left.x0, left.y0};
             left = Line(right.x1, right.y1, right.x0, right.y0);
             right = tmp;
         }
