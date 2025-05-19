@@ -26,11 +26,11 @@ public:
     }
 
     DocumentSizeTracker(const float frameWidth, const float frameHeight, const PageType pageType) : DocumentSizeTracker(
-        Vector{frameWidth, frameHeight}, pageType) {
+        Vector(frameWidth, frameHeight), pageType) {
     }
 
     DocumentSizeTracker(const IntPair frameSize, const PageType pageType) : DocumentSizeTracker(
-        Vector{frameSize.first, frameSize.second}, pageType) {
+        Vector(frameSize.first, frameSize.second), pageType) {
     }
 
     ~DocumentSizeTracker() = default;

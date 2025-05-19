@@ -74,7 +74,7 @@ namespace AdvancedMath {
         float h;
 
         explicit Rect(const float x = 0, const float y = 0, const float w = 0,
-                      const float h = 0) : Vector{x, y}, w(w), h(h) {
+                      const float h = 0) : Vector(x, y), w(w), h(h) {
         }
 
         [[nodiscard]] json toJson() const {
