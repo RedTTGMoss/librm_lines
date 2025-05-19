@@ -197,5 +197,5 @@ void getFrame(const char *rendererId, uint32_t *data, const size_t dataSize, con
         logError("Invalid treeId provided");
         return;
     }
-    renderer->getFrame(data, dataSize, Vector(x, y), Vector(width, height), scale);
+    renderer->getFrame(data, dataSize, Vector{x, y}, Vector{width, height}, scale);
 }

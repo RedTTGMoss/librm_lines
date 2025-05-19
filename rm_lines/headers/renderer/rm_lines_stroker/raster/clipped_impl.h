@@ -97,8 +97,8 @@ namespace RMLinesRenderer {
             Varyings vac = a + (c - a) * dac;
             float xab = t.a.x + (t.b.x - t.a.x) * dab;
             float xac = t.a.x + (t.c.x - t.a.x) * dac;
-            clipBottom(Triangle(Vector(xab, y0), Vector(xac, y0), t.b), vab, vac, b);
-            clipBottom(Triangle(Vector(xac, y0), t.b, t.c), vac, b, c);
+            clipBottom(Triangle(Vector{xab, y0}, Vector{xac, y0}, t.b), vab, vac, b);
+            clipBottom(Triangle(Vector{xac, y0}, t.b, t.c), vac, b, c);
         } else if (y0 < t.c.y) {
             float dy = y0 - t.c.y;
             float dca = dy / (t.a.y - t.c.y);
@@ -107,7 +107,7 @@ namespace RMLinesRenderer {
             Varyings vcb = c + (b - c) * dcb;
             float xca = t.c.x + (t.a.x - t.c.x) * dca;
             float xcb = t.c.x + (t.b.x - t.c.x) * dcb;
-            clipBottom(Triangle(Vector(xca, y0), Vector(xcb, y0), t.c), vca, vcb, c);
+            clipBottom(Triangle(Vector{xca, y0}, Vector{xcb, y0}, t.c), vca, vcb, c);
         }
     }
 
@@ -129,8 +129,8 @@ namespace RMLinesRenderer {
             Varyings vcb = c + (b - c) * dcb;
             float xca = t.c.x + (t.a.x - t.c.x) * dca;
             float xcb = t.c.x + (t.b.x - t.c.x) * dcb;
-            raster(Triangle(t.a, t.b, Vector(xca, y1)), a, b, vca);
-            raster(Triangle(t.b, Vector(xca, y1), Vector(xcb, y1)), b, vca, vcb);
+            raster(Triangle(t.a, t.b, Vector{xca, y1}), a, b, vca);
+            raster(Triangle(t.b, Vector{xca, y1}, Vector{xcb, y1}), b, vca, vcb);
         } else if (y1 > t.a.y) {
             float dy = y1 - t.a.y;
             float dab = dy / (t.b.y - t.a.y);
@@ -139,7 +139,7 @@ namespace RMLinesRenderer {
             Varyings vac = a + (c - a) * dac;
             float xab = t.a.x + (t.b.x - t.a.x) * dab;
             float xac = t.a.x + (t.c.x - t.a.x) * dac;
-            raster(Triangle(t.a, Vector(xac, y1), Vector(xab, y1)), a, vac, vab);
+            raster(Triangle(t.a, Vector{xac, y1}, Vector{xab, y1}), a, vac, vab);
         }
     }
 
@@ -158,8 +158,8 @@ namespace RMLinesRenderer {
             Varyings vac = a + (c - a) * dac;
             float yab = t.a.y + (t.b.y - t.a.y) * dab;
             float yac = t.a.y + (t.c.y - t.a.y) * dac;
-            clipRight(Triangle(Vector(x0, yab), Vector(x0, yac), t.b), vab, vac, b);
-            clipRight(Triangle(Vector(x0, yac), t.b, t.c), vac, b, c);
+            clipRight(Triangle(Vector{x0, yab}, Vector{x0, yac}, t.b), vab, vac, b);
+            clipRight(Triangle(Vector{x0, yac}, t.b, t.c), vac, b, c);
         } else if (x0 < t.c.x) {
             float dx = x0 - t.c.x;
             float dca = dx / (t.a.x - t.c.x);
@@ -168,7 +168,7 @@ namespace RMLinesRenderer {
             Varyings vcb = c + (b - c) * dcb;
             float yca = t.c.y + (t.a.y - t.c.y) * dca;
             float ycb = t.c.y + (t.b.y - t.c.y) * dcb;
-            clipRight(Triangle(Vector(x0, yca), Vector(x0, ycb), t.c), vca, vcb, c);
+            clipRight(Triangle(Vector{x0, yca}, Vector{x0, ycb}, t.c), vca, vcb, c);
         }
     }
 
@@ -189,8 +189,8 @@ namespace RMLinesRenderer {
             Varyings vcb = c + (b - c) * dcb;
             float yca = t.c.y + (t.a.y - t.c.y) * dca;
             float ycb = t.c.y + (t.b.y - t.c.y) * dcb;
-            clipTop(Triangle(t.b, Vector(x1, yca), Vector(x1, ycb)), b, vca, vcb);
-            clipTop(Triangle(t.a, t.b, Vector(x1, yca)), a, b, vca);
+            clipTop(Triangle(t.b, Vector{x1, yca}, Vector{x1, ycb}), b, vca, vcb);
+            clipTop(Triangle(t.a, t.b, Vector{x1, yca}), a, b, vca);
         } else if (x1 > t.a.x) {
             float dx = x1 - t.a.x;
             float dab = dx / (t.b.x - t.a.x);
@@ -199,7 +199,7 @@ namespace RMLinesRenderer {
             Varyings vac = a + (c - a) * dac;
             float yab = t.a.y + (t.b.y - t.a.y) * dab;
             float yac = t.a.y + (t.c.y - t.a.y) * dac;
-            clipTop(Triangle(t.a, Vector(x1, yac), Vector(x1, yab)), a, vac, vab);
+            clipTop(Triangle(t.a, Vector{x1, yac}, Vector{x1, yab}), a, vac, vab);
         }
     }
 }

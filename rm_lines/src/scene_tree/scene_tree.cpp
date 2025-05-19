@@ -2,7 +2,7 @@
 
 SceneTree::SceneTree() {
     // Add the root node
-    addNode(CrdtId(0, 1), CrdtId(0, 0));
+    addNode(CrdtId{0, 1}, CrdtId{0, 0});
 }
 
 void SceneTree::addNode(const CrdtId &nodeId, const CrdtId &parentId) {

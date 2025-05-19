@@ -418,14 +418,14 @@ namespace RMLinesRenderer {
             }
         }
 
-        raster(Triangle(Vector(left.x0, left.y0),
-                        Vector(left.x1, left.y1),
-                        Vector(right.x0, right.y0)),
+        raster(Triangle(Vector{left.x0, left.y0},
+                        Vector{left.x1, left.y1},
+                        Vector{right.x0, right.y0}),
                lastLeftVarying, leftVarying, lastRightVarying);
 
-        raster(Triangle(Vector(right.x0, right.y0),
-                        Vector(left.x1, left.y1),
-                        Vector(right.x1, right.y1)),
+        raster(Triangle(Vector{right.x0, right.y0},
+                        Vector{left.x1, left.y1},
+                        Vector{right.x1, right.y1}),
                lastRightVarying, leftVarying, rightVarying);
 
         triangleCount += 2;
