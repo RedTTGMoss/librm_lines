@@ -4,7 +4,7 @@
 void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
     unsigned int *dst = fill->buffer.scanline(y) + x;
 
-    Varying2D baseV = v - Varying2D(fill->position->x, fill->position->y);
+    Varying2D baseV = v - Varying2D{fill->position->x, fill->position->y};
 
     for (int i = 0; i < length; ++i) {
         const float rawNoise = stb_perlin_noise3(baseV.x,

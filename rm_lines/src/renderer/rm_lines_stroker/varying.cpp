@@ -12,12 +12,12 @@ VaryingNoop VaryingGeneratorNoop::right(float, float) {
 
 
 Varying2D VaryingGeneratorLengthWidth::left(const float strokeLength, const float strokeWidth) const {
-    return Varying2D(strokeLength * lengthFactor, strokeWidth * widthFactor);
+    return Varying2D{strokeLength * lengthFactor, strokeWidth * widthFactor};
 }
 
 
 Varying2D VaryingGeneratorLengthWidth::right(const float strokeLength, const float strokeWidth) const {
-    return Varying2D(strokeLength * lengthFactor, -strokeWidth * widthFactor);
+    return Varying2D{strokeLength * lengthFactor, -strokeWidth * widthFactor};
 }
 
 

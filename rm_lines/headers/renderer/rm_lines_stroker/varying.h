@@ -43,78 +43,78 @@ namespace RMLinesRenderer {
     };
 
 
-    inline Varying2D operator+(const Varying2D a, const Varying2D b) { return Varying2D(a.x + b.x, a.y + b.y); }
-    inline Varying2D operator+(const Varying2D a, const float u) { return Varying2D(a.x + u, a.y + u); }
-    inline Varying2D operator+(const float u, const Varying2D a) { return Varying2D(u + a.x, u + a.y); }
-    inline Varying2D operator-(const Varying2D a, const Varying2D b) { return Varying2D(a.x - b.x, a.y - b.y); }
-    inline Varying2D operator-(const Varying2D a, const float u) { return Varying2D(a.x - u, a.y - u); }
-    inline Varying2D operator-(const float u, const Varying2D a) { return Varying2D(u - a.x, u - a.y); }
-    inline Varying2D operator*(const Varying2D a, const float u) { return Varying2D(a.x * u, a.y * u); }
-    inline Varying2D operator*(const float u, const Varying2D a) { return Varying2D(u * a.x, u * a.y); }
+    inline Varying2D operator+(const Varying2D a, const Varying2D b) { return Varying2D{a.x + b.x, a.y + b.y}; }
+    inline Varying2D operator+(const Varying2D a, const float u) { return Varying2D{a.x + u, a.y + u}; }
+    inline Varying2D operator+(const float u, const Varying2D a) { return Varying2D{u + a.x, u + a.y}; }
+    inline Varying2D operator-(const Varying2D a, const Varying2D b) { return Varying2D{a.x - b.x, a.y - b.y}; }
+    inline Varying2D operator-(const Varying2D a, const float u) { return Varying2D{a.x - u, a.y - u}; }
+    inline Varying2D operator-(const float u, const Varying2D a) { return Varying2D{u - a.x, u - a.y}; }
+    inline Varying2D operator*(const Varying2D a, const float u) { return Varying2D{a.x * u, a.y * u}; }
+    inline Varying2D operator*(const float u, const Varying2D a) { return Varying2D{u * a.x, u * a.y}; }
 
     inline Varying2D operator/(const Varying2D a, const float u) {
-        if (IS_UNLIKELY(u == 0)) return Varying2D(0, 0);
-        return Varying2D(a.x / u, a.y / u);
+        if (IS_UNLIKELY(u == 0)) return Varying2D{0, 0};
+        return Varying2D{a.x / u, a.y / u};
     }
 
 
     inline Varying3D operator+(const Varying3D a, const Varying3D b) {
-        return Varying3D(a.x + b.x, a.y + b.y, a.z + b.z);
+        return Varying3D{a.x + b.x, a.y + b.y, a.z + b.z};
     }
 
-    inline Varying3D operator+(const Varying3D a, const float u) { return Varying3D(a.x + u, a.y + u, a.z + u); }
-    inline Varying3D operator+(const float u, const Varying3D a) { return Varying3D(u + a.x, u + a.y, u + a.z); }
+    inline Varying3D operator+(const Varying3D a, const float u) { return Varying3D{a.x + u, a.y + u, a.z + u}; }
+    inline Varying3D operator+(const float u, const Varying3D a) { return Varying3D{u + a.x, u + a.y, u + a.z}; }
 
     inline Varying3D operator-(const Varying3D a, const Varying3D b) {
-        return Varying3D(a.x - b.x, a.y - b.y, a.z - b.z);
+        return Varying3D{a.x - b.x, a.y - b.y, a.z - b.z};
     }
 
-    inline Varying3D operator-(const Varying3D a, const float u) { return Varying3D(a.x - u, a.y - u, a.z - u); }
-    inline Varying3D operator-(const float u, const Varying3D a) { return Varying3D(u - a.x, u - a.y, u - a.z); }
-    inline Varying3D operator*(const Varying3D a, const float u) { return Varying3D(a.x * u, a.y * u, a.z * u); }
-    inline Varying3D operator*(const float u, const Varying3D a) { return Varying3D(u * a.x, u * a.y, u * a.z); }
+    inline Varying3D operator-(const Varying3D a, const float u) { return Varying3D{a.x - u, a.y - u, a.z - u}; }
+    inline Varying3D operator-(const float u, const Varying3D a) { return Varying3D{u - a.x, u - a.y, u - a.z}; }
+    inline Varying3D operator*(const Varying3D a, const float u) { return Varying3D{a.x * u, a.y * u, a.z * u}; }
+    inline Varying3D operator*(const float u, const Varying3D a) { return Varying3D{u * a.x, u * a.y, u * a.z}; }
 
     inline Varying3D operator/(const Varying3D a, const float u) {
-        if (IS_UNLIKELY(u == 0)) return Varying3D(0, 0);
-        return Varying3D(a.x / u, a.y / u, a.z / u);
+        if (IS_UNLIKELY(u == 0)) return Varying3D{0, 0};
+        return Varying3D{a.x / u, a.y / u, a.z / u};
     }
 
 
     inline Varying4D operator+(const Varying4D a, const Varying4D b) {
-        return Varying4D(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
+        return Varying4D{a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w};
     }
 
     inline Varying4D operator+(const Varying4D a, const float u) {
-        return Varying4D(a.x + u, a.y + u, a.z + u, a.w + u);
+        return Varying4D{a.x + u, a.y + u, a.z + u, a.w + u};
     }
 
     inline Varying4D operator+(const float u, const Varying4D a) {
-        return Varying4D(u + a.x, u + a.y, u + a.z, u + a.w);
+        return Varying4D{u + a.x, u + a.y, u + a.z, u + a.w};
     }
 
     inline Varying4D operator-(const Varying4D a, const Varying4D b) {
-        return Varying4D(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
+        return Varying4D{a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w};
     }
 
     inline Varying4D operator-(const Varying4D a, const float u) {
-        return Varying4D(a.x - u, a.y - u, a.z - u, a.w - u);
+        return Varying4D{a.x - u, a.y - u, a.z - u, a.w - u};
     }
 
     inline Varying4D operator-(const float u, const Varying4D a) {
-        return Varying4D(u - a.x, u - a.y, u - a.z, u - a.w);
+        return Varying4D{u - a.x, u - a.y, u - a.z, u - a.w};
     }
 
     inline Varying4D operator*(const Varying4D a, const float u) {
-        return Varying4D(a.x * u, a.y * u, a.z * u, a.w * u);
+        return Varying4D{a.x * u, a.y * u, a.z * u, a.w * u};
     }
 
     inline Varying4D operator*(const float u, const Varying4D a) {
-        return Varying4D(u * a.x, u * a.y, u * a.z, u * a.w);
+        return Varying4D{u * a.x, u * a.y, u * a.z, u * a.w};
     }
 
     inline Varying4D operator/(const Varying4D a, const float u) {
-        if (IS_UNLIKELY(u == 0)) return Varying4D(0, 0, 0, 0);
-        return Varying4D(a.x / u, a.y / u, a.z / u, a.w / u);
+        if (IS_UNLIKELY(u == 0)) return Varying4D{0, 0, 0, 0};
+        return Varying4D{a.x / u, a.y / u, a.z / u, a.w / u};
     }
 
 
