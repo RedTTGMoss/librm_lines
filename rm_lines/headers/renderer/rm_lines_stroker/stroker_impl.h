@@ -89,14 +89,18 @@ namespace RMLinesRenderer {
         const float lhw = m_lastSegment.width / 2;
 
 
-        const Line right(line.x0 + ndx * lhw,
-                         line.y0 + ndy * lhw,
-                         line.x1 + ndx * chw,
-                         line.y1 + ndy * chw);
-        const Line left(line.x0 - ndx * lhw,
-                        line.y0 - ndy * lhw,
-                        line.x1 - ndx * chw,
-                        line.y1 - ndy * chw);
+        const Line right{
+            line.x0 + ndx * lhw,
+            line.y0 + ndy * lhw,
+            line.x1 + ndx * chw,
+            line.y1 + ndy * chw
+        };
+        const Line left{
+            line.x0 - ndx * lhw,
+            line.y0 - ndy * lhw,
+            line.x1 - ndx * chw,
+            line.y1 - ndy * chw
+        };
 
         if (m_lastSegment.type == LineToSegment) {
             join(m_lastLeft, m_lastRight, left, right, m_lastSegment.leftVarying, m_lastSegment.rightVarying);
@@ -144,25 +148,33 @@ namespace RMLinesRenderer {
         const float slantDotNormal = ndx * slant->nx + ndy * slant->ny;
         const float effectiveWidth = std::abs(slantDotNormal) * width;
 
-        Line right(line.x0 + slant->nx * lhw,
-                   line.y0 + slant->ny * lhw,
-                   line.x1 + slant->nx * chw,
-                   line.y1 + slant->ny * chw);
-        Line left(line.x0 - slant->nx * lhw,
-                  line.y0 - slant->ny * lhw,
-                  line.x1 - slant->nx * chw,
-                  line.y1 - slant->ny * chw);
+        Line right{
+            line.x0 + slant->nx * lhw,
+            line.y0 + slant->ny * lhw,
+            line.x1 + slant->nx * chw,
+            line.y1 + slant->ny * chw
+        };
+        Line left{
+            line.x0 - slant->nx * lhw,
+            line.y0 - slant->ny * lhw,
+            line.x1 - slant->nx * chw,
+            line.y1 - slant->ny * chw
+        };
 
         if (effectiveWidth < slant->minimumWidth) {
             const float mw2 = slant->minimumWidth / 2.0f;
-            right = Line(line.x0 + ndx * mw2,
-                         line.y0 + ndy * mw2,
-                         line.x1 + ndx * mw2,
-                         line.y1 + ndy * mw2);
-            left = Line(line.x0 - ndx * mw2,
-                        line.y0 - ndy * mw2,
-                        line.x1 - ndx * mw2,
-                        line.y1 - ndy * mw2);
+            right = Line{
+                line.x0 + ndx * mw2,
+                line.y0 + ndy * mw2,
+                line.x1 + ndx * mw2,
+                line.y1 + ndy * mw2
+            };
+            left = Line{
+                line.x0 - ndx * mw2,
+                line.y0 - ndy * mw2,
+                line.x1 - ndx * mw2,
+                line.y1 - ndy * mw2
+            };
         }
 
         if (m_lastSegment.type == LineToSegment) {
