@@ -192,8 +192,8 @@ namespace RMLinesRenderer {
     void Stroker<Rasterizer, VaryingGenerator>::join(Line lastLeft, const Line lastRight, Line left, const Line right,
                                                      Varyings leftVarying, Varyings rightVarying) {
         if (joinStyle == BevelJoin) {
-            stroke(Line(lastLeft.x1, lastLeft.y1, left.x0, left.y0),
-                   Line(lastRight.x1, lastRight.y1, right.x0, right.y0),
+            stroke(Line{lastLeft.x1, lastLeft.y1, left.x0, left.y0},
+                   Line{lastRight.x1, lastRight.y1, right.x0, right.y0},
                    leftVarying, rightVarying,
                    leftVarying, rightVarying,
                    true);
@@ -212,8 +212,8 @@ namespace RMLinesRenderer {
             // per-wise and that it at the same time doesn't cause too much of a visual
             // impact...
             if (std::abs(angleDelta) < M_PI / 10.0f) {
-                stroke(Line(left.x0, left.y0, lastLeft.x1, lastLeft.y1),
-                       Line(right.x0, right.y0, lastRight.x1, lastRight.y1),
+                stroke(Line{left.x0, left.y0, lastLeft.x1, lastLeft.y1},
+                       Line{right.x0, right.y0, lastRight.x1, lastRight.y1},
                        leftVarying, rightVarying,
                        leftVarying, rightVarying,
                        true);
@@ -246,8 +246,8 @@ namespace RMLinesRenderer {
                 const float rx = m_lastSegment.x - ct;
                 const float ry = m_lastSegment.y - st;
 
-                stroke(Line(llx, lly, lx, ly),
-                       Line(lrx, lry, rx, ry),
+                stroke(Line{llx, lly, lx, ly},
+                       Line{lrx, lry, rx, ry},
                        leftVarying, rightVarying,
                        leftVarying, rightVarying,
                        true);
@@ -272,7 +272,7 @@ namespace RMLinesRenderer {
 
         if (!endCap) {
             const Line tmp{left.x1, left.y1, left.x0, left.y0};
-            left = Line(right.x1, right.y1, right.x0, right.y0);
+            left = Line{right.x1, right.y1, right.x0, right.y0};
             right = tmp;
         }
 
@@ -301,8 +301,8 @@ namespace RMLinesRenderer {
                 const float nrx = radius * std::cos(rt) + s.x;
                 const float nry = radius * std::sin(rt) + s.y;
 
-                stroke(Line(lx, ly, nlx, nly),
-                       Line(rx, ry, nrx, nry),
+                stroke(Line{lx, ly, nlx, nly},
+                       Line{rx, ry, nrx, nry},
                        s.leftVarying, s.rightVarying,
                        s.leftVarying, s.rightVarying);
 
@@ -332,8 +332,8 @@ namespace RMLinesRenderer {
             const float rx = right.x1 + normalizedRightDifX * w2;
             const float ry = right.y1 + normalizedRightDifY * w2;
 
-            stroke(Line(left.x1, left.y1, lx, ly),
-                   Line(right.x1, right.y1, rx, ry),
+            stroke(Line{left.x1, left.y1, lx, ly},
+                   Line{right.x1, right.y1, rx, ry},
                    s.leftVarying, s.rightVarying,
                    s.leftVarying, s.rightVarying);
         }
@@ -387,8 +387,8 @@ namespace RMLinesRenderer {
 
     template<typename Rasterizer, typename VaryingGenerator>
     void Stroker<Rasterizer, VaryingGenerator>::reset() {
-        m_firstLeft = Line();
-        m_firstRight = Line();
+        m_firstLeft = Line{};
+        m_firstRight = Line{};
         m_lastSegment = Segment();
         m_firstSegment = Segment();
         triangleCount = 0;
@@ -413,7 +413,7 @@ namespace RMLinesRenderer {
 
             if ((right.x1 - right.x0) * (left.x1 - left.x0) + (right.y1 - right.y0) * (left.y1 - left.y0) < 0) {
                 // If opposite, flip the right line and its varyings...
-                right = Line(right.x1, right.y1, right.x0, right.y0);
+                right = Line{right.x1, right.y1, right.x0, right.y0};
                 std::swap(lastRightVarying, rightVarying);
             }
         }
