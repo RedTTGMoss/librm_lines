@@ -1,6 +1,7 @@
 #include "common/data_types.h"
 
 #include <memory>
+#include <sstream>
 #include <common/crdt_sequence_item.h>
 
 std::string formatTextItem(TextItem textItem) {

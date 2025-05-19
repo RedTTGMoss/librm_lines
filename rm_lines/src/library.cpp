@@ -1,5 +1,6 @@
 #include "library.h"
 #include <iostream>
+#include <sstream>
 
 // Logger
 EXPORT void setLogger(const LogFunc logger) {

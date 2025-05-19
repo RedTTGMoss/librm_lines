@@ -2,6 +2,7 @@
 #include <scene_tree/scene_tree_export.h>
 #include <format>
 #include <fstream>
+#include <sstream>
 
 std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendererMap;
 
