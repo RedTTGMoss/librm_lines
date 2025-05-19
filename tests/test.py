@@ -67,7 +67,8 @@ if os.name == 'nt':
     sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf-8', errors='replace')
 else:
     # Unix-specific code (Linux, macOS)
-    lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'librm_lines.so')
+    lib_path = os.path.join(os.path.dirname(script_folder), 'build',
+                            f'librm_lines.{"so" if os.name == "posix" else "dylib"}')
 
 shutil.copy(lib_path, copy_to := os.path.join('..', 'rm_lines_sys', 'src', 'rm_lines_sys', os.path.basename(lib_path)))
 print(f"Copied the dynamic library from {lib_path} to {os.path.realpath(copy_to)} for {os.name}")

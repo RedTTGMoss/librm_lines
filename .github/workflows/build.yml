@@ -27,7 +27,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ 'ubuntu', 'windows' ]
+        os: [ 'ubuntu', 'windows', 'macos' ]
         include:
           - os: 'ubuntu'
             target: 'x86_64-unknown-linux-gnu'
@@ -38,6 +38,11 @@ jobs:
             target: 'x86_64-pc-windows-gnu'
             cpp_compiler: 'x86_64-w64-mingw32-g++'
             c_compiler: 'x86_64-w64-mingw32-gcc'
+            build_type: 'Release'
+          - os: 'macos'
+            target: 'x86_64-apple-darwin'
+            cpp_compiler: 'clang++'
+            c_compiler: 'clang'
             build_type: 'Release'
     steps:
       - uses: actions/checkout@v4
