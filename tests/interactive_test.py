@@ -106,7 +106,9 @@ class GC(pe.GameContext):
         if self.buffer[0] != w or self.buffer[1] != h:
             buffer_size = w * h
             self.buffer = (w, h, (ctypes.c_uint32 * buffer_size)())
-        lib.getFrame(renderer[1], self.buffer[2], self.buffer_size * 4, int(x), int(y), w, h, scale, False)
+        lib.getFrame(renderer[1], self.buffer[2], self.buffer_size * 4, int(x), int(y), int(w / scale), int(h / scale),
+                     w, h,
+                     False)
         raw_frame = bytes(self.buffer[2])
         frame = pe.pygame.image.frombuffer(raw_frame, (w, h), 'RGBA')
         return frame

@@ -57,8 +57,8 @@ class LibAnnotations(ctypes.Structure):
     def textToHtml(self, renderer_id: bytes) -> bytes:
         pass
 
-    def getFrame(self, renderer_id: bytes, data_buffer, data_size, x: int, y: int, width: int, height: int,
-                 scale: float, antialias: bool):
+    def getFrame(self, renderer_id: bytes, data_buffer, data_size, x: int, y: int, frame_width: int, frame_height: int,
+                 width: int, height: int, antialias: bool):
         pass
 
 
@@ -147,9 +147,9 @@ def load_lib() -> Optional[ctypes.CDLL]:
     _lib.textToHtml.argtypes = [ctypes.c_char_p]
     _lib.textToHtml.restype = ctypes.c_char_p
 
-    # Function getFrame(str, *, size_t, int, int, int, int, float, bool)
+    # Function getFrame(str, *, size_t, (x)int, (y)int, (fw)int, (fh)int, (w)int, (h)int, bool)
     _lib.getFrame.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_size_t, ctypes.c_int,
-                              ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_float, ctypes.c_bool]
+                              ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_bool]
 
     return _lib
 

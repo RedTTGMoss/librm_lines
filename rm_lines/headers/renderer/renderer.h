@@ -8,6 +8,8 @@
 #include "advanced/layers.h"
 #include "advanced/text.h"
 #include <unordered_map>
+
+#include "rm_lines_stroker/templates/template_functions.h"
 #define TEXT_TOP_Y (-88)
 
 using ImageBuffer = RMLinesRenderer::ImageBuffer;
@@ -20,6 +22,8 @@ using Varying4D = RMLinesRenderer::Varying4D;
 
 static constexpr CrdtId TEXT_LAYER{7, 1};
 
+typedef void TemplateOperationFunction(rMPenFill *);
+
 class Renderer {
 public:
     TextDocument textDocument = TextDocument();
@@ -28,6 +32,7 @@ public:
     IntPair paperSize;
     bool landscape;
     PageType pageType;
+    TemplateOperationFunction *templateFunction = Blank;
 
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);
 
@@ -58,7 +63,10 @@ public:
 
     void toHtml(std::ostream &stream);
 
-    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector size, float scale, bool antialias);
+    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector frameSize, Vector bufferSize,
+                  bool antialias);
+
+    void setTemplate(const std::string &templateName);
 
 private:
     SceneTree *sceneTree;

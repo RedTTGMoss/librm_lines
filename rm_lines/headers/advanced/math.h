@@ -75,6 +75,20 @@ namespace AdvancedMath {
                 y * m
             };
         }
+
+        Vector operator/(const float d) const {
+            return Vector{
+                x / d,
+                y / d
+            };
+        }
+
+        Vector operator/(const Vector other) const {
+            return Vector{
+                x / other.x,
+                y / other.y
+            };
+        }
     };
 
     struct Rect : Vector {

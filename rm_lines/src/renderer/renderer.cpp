@@ -2,6 +2,7 @@
 #include <format>
 
 #include "advanced/text.h"
+#include "renderer/rm_lines_stroker/templates/template_functions.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
 
@@ -221,22 +222,23 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector size,
-                        const float scale, const bool antialias) {
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector frameSize,
+                        const Vector bufferSize, const bool antialias) {
     const auto buf = &stroker.raster.raster.fill.buffer;
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
+    const auto scale = bufferSize / frameSize;
     stroker.joinStyle = JoinStyle::RoundJoin;
     stroker.raster.raster.fill.stroker = &stroker;
     // ReSharper disable once CppDFALocalValueEscapesFunction
     stroker.raster.raster.fill.position = &position;
-    stroker.raster.raster.fill.scale = scale;
-    buf->allocate(size);
+    stroker.raster.raster.fill.scale = std::min(scale.x, scale.y);
+    buf->allocate(bufferSize);
     buf->fill(0x00FFFFFF);
-    lineBuf->allocate(size);
+    lineBuf->allocate(bufferSize);
     stroker.raster.x1 = static_cast<float>(buf->width);
     stroker.raster.y1 = static_cast<float>(buf->height);
 
-    // TODO: render the template
+    templateFunction(&stroker.raster.raster.fill);
     // TODO: render the text
 
     for (const auto &layer: layers) {
@@ -253,8 +255,9 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
                 // I can confirm it needs to be paperSize and not the expanded document size tracker size!
                 auto x = position.x + point.x + line.offsetX + static_cast<float>(paperSize.first) / 2;
                 auto y = position.y + point.y + line.offsetY;
-                x *= scale; // TODO: Maybe apply a centered scale instead? Scaling the entire document isn't quite right
-                y *= scale;
+                // TODO: Maybe apply a centered scale instead? Scaling the entire document isn't quite right
+                x *= scale.x;
+                y *= scale.y;
 
                 if (first) {
                     stroker.moveTo(x, y);
@@ -269,4 +272,12 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
 
     buf->exportRawData(data, dataSize, antialias, 1);
     stroker.raster.raster.fill.reset();
+}
+
+void Renderer::setTemplate(const std::string &templateName) {
+    if (templateName == "Blank") {
+        templateFunction = Blank;
+    } else {
+        templateFunction = Blank;
+    }
 }

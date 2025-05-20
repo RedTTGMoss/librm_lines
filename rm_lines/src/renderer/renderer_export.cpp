@@ -190,13 +190,21 @@ const char *textToHtml(const char *rendererId) {
     return result.c_str();
 }
 
-void getFrame(const char *rendererId, uint32_t *data, const size_t dataSize, const int x, const int y, const int width,
-              const int height,
-              const float scale, const bool antialias) {
+void getFrame(
+    const char *rendererId, uint32_t *data, const size_t dataSize,
+    const int x, const int y,
+    const int frameWidth, const int frameHeight,
+    const int width, const int height, const bool antialias) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
         logError("Invalid treeId provided");
         return;
     }
-    renderer->getFrame(data, dataSize, Vector(x, y), Vector(width, height), scale, antialias);
+    renderer->getFrame(
+        data, dataSize,
+        Vector(x, y),
+        Vector(frameWidth, frameHeight),
+        Vector(width, height),
+        antialias
+    );
 }

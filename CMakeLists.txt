@@ -24,6 +24,7 @@ include_directories(rm_lines/headers)
 
 file(GLOB RENDERER_FILES rm_lines/src/renderer/rm_lines_stroker/*.cpp)
 file(GLOB RM_PENS_FILES rm_lines/src/renderer/rm_lines_stroker/rm_pens/*.cpp)
+file(GLOB RM_TEMPLATE_FILES rm_lines/src/renderer/rm_lines_stroker/templates/*.cpp)
 file(GLOB STB rm_lines/src/stb/*.cpp)
 
 add_library(rm_lines SHARED rm_lines/src/library.cpp
@@ -43,6 +44,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         ${STB}
         ${RENDERER_FILES}
         ${RM_PENS_FILES}
+        ${RM_TEMPLATE_FILES}
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp)
