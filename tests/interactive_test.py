@@ -30,7 +30,7 @@ class GC(pe.GameContext):
                 self.filenames.append(filename[:-3].replace('_', ' ') + f' [{len(self.items)}]')
                 file = os.path.join(folder, filename)
                 self.items.append(file)
-        self.index = 14
+        self.index = 24
         super().__init__()
         self.sprite = pe.Sprite("rm_lines_cat.png", (100, 100))
 
@@ -106,7 +106,7 @@ class GC(pe.GameContext):
         if self.buffer[0] != w or self.buffer[1] != h:
             buffer_size = w * h
             self.buffer = (w, h, (ctypes.c_uint32 * buffer_size)())
-        lib.getFrame(renderer[1], self.buffer[2], self.buffer_size * 4, int(x), int(y), w, h, scale)
+        lib.getFrame(renderer[1], self.buffer[2], self.buffer_size * 4, int(x), int(y), w, h, scale, False)
         raw_frame = bytes(self.buffer[2])
         frame = pe.pygame.image.frombuffer(raw_frame, (w, h), 'RGBA')
         return frame

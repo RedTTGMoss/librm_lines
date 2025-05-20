@@ -222,7 +222,7 @@ void Renderer::toHtml(std::ostream &stream) {
 }
 
 void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector size,
-                        const float scale) {
+                        const float scale, const bool antialias) {
     const auto buf = &stroker.raster.raster.fill.buffer;
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
     stroker.joinStyle = JoinStyle::RoundJoin;
@@ -267,6 +267,6 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
         }
     }
 
-    buf->exportRawData(data, dataSize);
+    buf->exportRawData(data, dataSize, antialias, 1);
     stroker.raster.raster.fill.reset();
 }

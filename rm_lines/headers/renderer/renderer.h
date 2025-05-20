@@ -58,7 +58,7 @@ public:
 
     void toHtml(std::ostream &stream);
 
-    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector size, float scale);
+    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector size, float scale, bool antialias);
 
 private:
     SceneTree *sceneTree;

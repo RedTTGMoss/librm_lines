@@ -9,7 +9,6 @@
 #include <memory>
 
 
-
 namespace RMLinesRenderer {
     class ImageBuffer {
     public:
@@ -29,7 +28,7 @@ namespace RMLinesRenderer {
 
         void fill(uint32_t value) const;
 
-        void exportRawData(uint32_t *dataPtr, size_t dataSize) const;
+        void exportRawData(uint32_t *dataPtr, size_t dataSize, bool antialias, int smoothRadius = 1) const;
 
         size_t width = 0;
         size_t height = 0;

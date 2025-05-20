@@ -86,7 +86,7 @@ for file in (files := os.listdir(files_folder)):
     buffer_size = paper_size[0] * paper_size[1]
     buffer = (ctypes.c_uint32 * buffer_size)()
 
-    lib.getFrame(renderer_id, buffer, buffer_size * 4, 0, 0, *paper_size, 1)
+    lib.getFrame(renderer_id, buffer, buffer_size * 4, 0, 0, *paper_size, 1, True)
     raw_frame = bytes(buffer)
 
     if not raw_frame:

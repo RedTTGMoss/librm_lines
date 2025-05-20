@@ -29,4 +29,4 @@ EXPORT const char *textToHtml(const char *rendererId);
 
 EXPORT void getFrame(const char *rendererId, uint32_t *data, size_t dataSize, int x, int y, int width,
                      int height,
-                     float scale);
+                     float scale, bool antialias);
