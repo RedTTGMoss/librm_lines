@@ -25,7 +25,7 @@ for dir in (files_draw_folder, files_folder):
         buffer_size = paper_size[0] * paper_size[1]
         buffer = (ctypes.c_uint32 * buffer_size)()
 
-        lib.getFrame(renderer_id, buffer, buffer_size * 4, 0, 0, *paper_size, *paper_size, False)
+        lib.getFrame(renderer_id, buffer, buffer_size * 4, 0, 0, *paper_size, *paper_size, True)
         raw_frame = bytes(buffer)
 
         if not raw_frame:
@@ -34,8 +34,6 @@ for dir in (files_draw_folder, files_folder):
         else:
             print(f"Got frame [{len(raw_frame)}]")
             image = Image.frombytes('RGBA', paper_size, raw_frame, 'raw', 'RGBA')
-            # Apply antialiasing by resizing to the same dimensions using LANCZOS.
-            image = image.resize(image.size, resample=Image.Resampling.LANCZOS)
             image.save(output_path, 'PNG')
 
         lib.destroyRenderer(renderer_id)
