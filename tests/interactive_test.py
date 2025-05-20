@@ -1,60 +1,9 @@
-import ctypes
-import io
-import os
-import shutil
-import sys
 import threading
 
+from tests_base import *
 import pygameextra as pe
-from colorama import Fore
-from pygameextra import event
 
 pe.init()
-
-
-@ctypes.CFUNCTYPE(None, ctypes.c_char_p)
-def python_logger(msg):
-    print(msg.decode('utf-8', errors='replace'))
-
-
-@ctypes.CFUNCTYPE(None, ctypes.c_char_p)
-def python_error_logger(msg):
-    print(f"{Fore.RED}{msg.decode('utf-8', errors='replace')}{Fore.RESET}")
-
-
-@ctypes.CFUNCTYPE(None, ctypes.c_char_p)
-def python_debug_logger(msg):
-    print(f"{Fore.LIGHTYELLOW_EX}{msg.decode('utf-8', errors='replace')}{Fore.RESET}")
-
-
-script_folder = os.path.dirname(os.path.abspath(__file__))
-output_folder = os.path.join(script_folder, 'draw_output')
-rm_lines_sys_src_path = os.path.join(script_folder, '..', 'rm_lines_sys', 'src')
-sys.path.append(rm_lines_sys_src_path)
-files_draw_folder = os.path.join(script_folder, 'draw_files')
-files_folder = os.path.join(script_folder, 'files')
-
-os.makedirs(output_folder, exist_ok=True)
-
-if os.name == 'nt':
-    # Windows-specific code
-    for sub_path in ('', 'Debug', 'Release'):
-        lib_path = os.path.join(os.path.dirname(script_folder), 'build', sub_path, 'rm_lines.dll')
-        if os.path.exists(lib_path):
-            break
-    sys.stdout = io.TextIOWrapper(sys.stdout.detach(), encoding='utf-8', errors='replace')
-else:
-    # Unix-specific code (Linux, macOS)
-    lib_path = os.path.join(os.path.dirname(script_folder), 'build', 'librm_lines.so')
-
-shutil.copy(lib_path, copy_to := os.path.join('..', 'rm_lines_sys', 'src', 'rm_lines_sys', os.path.basename(lib_path)))
-print(f"Copied the dynamic library from {lib_path} to {os.path.realpath(copy_to)} for {os.name}")
-
-from rm_lines_sys import lib
-
-lib.setLogger(python_logger)
-lib.setErrorLogger(python_error_logger)
-lib.setDebugLogger(python_debug_logger)
 
 
 class GC(pe.GameContext):
@@ -100,7 +49,7 @@ class GC(pe.GameContext):
             return None, None
         return renderer
 
-    def handle_event(self, e: event.Event):
+    def handle_event(self, e: pe.event.Event):
         if pe.event.key_DOWN(pe.K_RIGHT):
             self.index += 1
             if self.index >= len(self.items):
