@@ -143,7 +143,7 @@ jobs:
         shell: bash
         run: |
           file=$(ls artifact/*.whl)
-          new_name=$(echo "$file" | sed 's/cp3[0-9]\+-cp3[0-9]\+/py3-none/')
+          new_name=$(python -c "import sys, re; print(re.sub(r'cp3\d+-cp3\d+', 'py3-none', sys.argv[1]))" "$file")
           mv "$file" "$new_name"
 
       - name: Upload Artifacts
