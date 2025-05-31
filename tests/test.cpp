@@ -260,6 +260,14 @@ void loggerError(const char *msg) {
     std::cerr << msg << std::endl;
 }
 
+void runColorAssertTest() {
+    constexpr Color initialColor(150, 0, 55, 255);
+    const auto rgbaColor = initialColor.toRGBA();
+    const Color fromRgbaColor = Color::fromRGBA(&rgbaColor);
+
+    assert(initialColor == fromRgbaColor);
+}
+
 int main() {
     // Initialize the library
     setLogger(loggerDefault);
@@ -271,6 +279,8 @@ int main() {
         logError("Please run this test from the tests directory.");
         return -1;
     }
+
+    runColorAssertTest();
 
     // Make sure the output directories exist
     fs::create_directories(DIR_OUT);
