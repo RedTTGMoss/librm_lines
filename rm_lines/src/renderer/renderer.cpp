@@ -2,6 +2,7 @@
 #include <format>
 
 #include "advanced/text.h"
+#include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
 #include "renderer/rm_lines_stroker/templates/template_functions.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
@@ -268,7 +269,67 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             }
             stroker.finish();
         }
+        // DocumentSizeTracker *sizeTracker = getSizeTracker(layer.groupId);
+        // try {
+        //     auto x = static_cast<size_t>(sizeTracker->getFrameWidth()) / 2;
+        //     auto y = static_cast<size_t>(sizeTracker->getFrameHeight()) / 2;
+        //
+        //     x += position.x;
+        //     y += position.y;
+        //     x *= scale.x;
+        //     y *= scale.y;
+        //
+        //     auto x2 = static_cast<size_t>(paperSize.first) / 2;
+        //     auto y2 = static_cast<size_t>(paperSize.second) / 2;
+        //
+        //     x2 += position.x;
+        //     y2 += position.y;
+        //     x2 *= scale.x;
+        //     y2 *= scale.y;
+        //
+        //     if (x >= buf->width || y >= buf->height) {
+        //         throw std::runtime_error(std::format("Invalid size tracker center: {}x{}", x, y));
+        //     }
+        //     const auto red = Color(255, 0, 0, 255).toRGBA();
+        //     const auto green = Color(0, 255, 0, 255).toRGBA();
+        //     const auto line = buf->scanline(y);
+        //     const auto line2 = buf->scanline(y2);
+        //
+        //     auto left = position.x * scale.x, top = position.y * scale.y;
+        //     auto right = (position.x + paperSize.first) * scale.x, bottom = (position.y + paperSize.second) * scale.y;
+        //
+        //     Line testLine;
+        //     Point testPoint;
+        //     testLine.tool = BALLPOINT_1;
+        //     testLine.color = BLACK;
+        //
+        //     stroker.raster.raster.fill.line = &testLine;
+        //     stroker.raster.raster.fill.point = &testPoint;
+        //     stroker.raster.raster.fill.newLine();
+        //     stroker.moveTo(left, top);
+        //     stroker.lineTo(right, top);
+        //     stroker.lineTo(right, bottom);
+        //     stroker.lineTo(left, bottom);
+        //     stroker.lineTo(left, top);
+        //     stroker.lineTo(right, bottom);
+        //     stroker.moveTo(right, top);
+        //     stroker.lineTo(left, bottom);
+        //     stroker.finish();
+        //
+        //
+        //     for (size_t i = 0; i < buf->width; ++i) {
+        //         line[i] = red;
+        //         line2[i] = green;
+        //     }
+        //     for (size_t i = 0; i < buf->height; ++i) {
+        //         const auto xline = buf->scanline(i);
+        //         xline[x] = red;
+        //         xline[x2] = green;
+        //     }
+        // } catch (const std::exception &e) {
+        // }
     }
+
 
     buf->exportRawData(data, dataSize, antialias, 1);
     stroker.raster.raster.fill.reset();
