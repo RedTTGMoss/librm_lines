@@ -208,3 +208,13 @@ void getFrame(
         antialias
     );
 }
+
+void getSizeTracker(const char *rendererId, const int l, const int r) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid treeId provided");
+        return;
+    }
+    CrdtId layerId(l, r);
+    renderer->getSizeTracker(layerId);
+}

@@ -34,3 +34,5 @@ EXPORT void getFrame(
     int width, int height,
     bool antialias
 );
+
+EXPORT void getSizeTracker(const char *rendererId, int l, int r);
