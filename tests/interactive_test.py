@@ -12,6 +12,9 @@ class GC(pe.GameContext):
     BACKGROUND = pe.colors.white
 
     FPS_LOGGER = True
+    LANDSCAPES = (
+        'Landscape',
+    )
 
     def __init__(self):
         self.items = []
@@ -34,18 +37,19 @@ class GC(pe.GameContext):
         super().__init__()
         self.sprite = pe.Sprite("rm_lines_cat.png", (100, 100))
 
-    def prepare_renderer(self):
-        tree_id = lib.buildTree(self.item.encode())
-        renderer_id = lib.makeRenderer(tree_id, 0, False)
-        self.loaded[self.item] = (tree_id, renderer_id)
+    def prepare_renderer(self, item: str, index: int):
+        tree_id = lib.buildTree(item.encode())
+        renderer_id = lib.makeRenderer(tree_id, 0, any(
+            self.filenames[index].startswith(landscape) for landscape in self.LANDSCAPES
+        ))
+        self.loaded[item] = (tree_id, renderer_id)
 
     def get_renderer(self):
         renderer = self.loaded.get(self.item)
 
         if renderer is None:
-            threading.Thread(target=self.prepare_renderer, daemon=True).start()
-            # self.prepare_renderer()
             self.loaded[self.item] = (None, None)
+            threading.Thread(target=self.prepare_renderer, args=(self.item, self.index), daemon=True).start()
             return None, None
         return renderer
 
