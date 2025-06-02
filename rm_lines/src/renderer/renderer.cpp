@@ -269,65 +269,66 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             }
             stroker.finish();
         }
-        // DocumentSizeTracker *sizeTracker = getSizeTracker(layer.groupId);
-        // try {
-        //     auto x = static_cast<size_t>(sizeTracker->getFrameWidth()) / 2;
-        //     auto y = static_cast<size_t>(sizeTracker->getFrameHeight()) / 2;
-        //
-        //     x += position.x;
-        //     y += position.y;
-        //     x *= scale.x;
-        //     y *= scale.y;
-        //
-        //     auto x2 = static_cast<size_t>(paperSize.first) / 2;
-        //     auto y2 = static_cast<size_t>(paperSize.second) / 2;
-        //
-        //     x2 += position.x;
-        //     y2 += position.y;
-        //     x2 *= scale.x;
-        //     y2 *= scale.y;
-        //
-        //     if (x >= buf->width || y >= buf->height) {
-        //         throw std::runtime_error(std::format("Invalid size tracker center: {}x{}", x, y));
-        //     }
-        //     const auto red = Color(255, 0, 0, 255).toRGBA();
-        //     const auto green = Color(0, 255, 0, 255).toRGBA();
-        //     const auto line = buf->scanline(y);
-        //     const auto line2 = buf->scanline(y2);
-        //
-        //     auto left = position.x * scale.x, top = position.y * scale.y;
-        //     auto right = (position.x + paperSize.first) * scale.x, bottom = (position.y + paperSize.second) * scale.y;
-        //
-        //     Line testLine;
-        //     Point testPoint;
-        //     testLine.tool = BALLPOINT_1;
-        //     testLine.color = BLACK;
-        //
-        //     stroker.raster.raster.fill.line = &testLine;
-        //     stroker.raster.raster.fill.point = &testPoint;
-        //     stroker.raster.raster.fill.newLine();
-        //     stroker.moveTo(left, top);
-        //     stroker.lineTo(right, top);
-        //     stroker.lineTo(right, bottom);
-        //     stroker.lineTo(left, bottom);
-        //     stroker.lineTo(left, top);
-        //     stroker.lineTo(right, bottom);
-        //     stroker.moveTo(right, top);
-        //     stroker.lineTo(left, bottom);
-        //     stroker.finish();
-        //
-        //
-        //     for (size_t i = 0; i < buf->width; ++i) {
-        //         line[i] = red;
-        //         line2[i] = green;
-        //     }
-        //     for (size_t i = 0; i < buf->height; ++i) {
-        //         const auto xline = buf->scanline(i);
-        //         xline[x] = red;
-        //         xline[x2] = green;
-        //     }
-        // } catch (const std::exception &e) {
-        // }
+        if (getDebugMode()) {
+            const DocumentSizeTracker *sizeTracker = getSizeTracker(layer.groupId);
+            auto x = static_cast<size_t>(sizeTracker->getFrameWidth()) / 2;
+            auto y = static_cast<size_t>(sizeTracker->getFrameHeight()) / 2;
+
+            x += position.x;
+            y += position.y;
+            x *= scale.x;
+            y *= scale.y;
+
+            auto x2 = static_cast<size_t>(paperSize.first) / 2;
+            auto y2 = static_cast<size_t>(paperSize.second) / 2;
+
+            x2 += position.x;
+            y2 += position.y;
+            x2 *= scale.x;
+            y2 *= scale.y;
+
+            auto left = position.x * scale.x, top = position.y * scale.y;
+            auto right = (position.x + paperSize.first) * scale.x, bottom =
+                    (position.y + paperSize.second) * scale.y;
+            if (landscape) {
+                // Landscape mode, swap x and y
+                std::swap(x, y);
+                std::swap(x2, y2);
+                std::swap(left, top);
+                std::swap(right, bottom);
+            }
+
+            // Make basic test tool and a point
+
+            stroker.raster.raster.fill.baseColor = Color(0, 0, 0, 255);
+            stroker.raster.raster.fill.debugTool();
+
+
+            // Draw a rect and cross
+            stroker.moveTo(left, top);
+            stroker.lineTo(right, top);
+            stroker.lineTo(right, bottom);
+            stroker.lineTo(left, bottom);
+            stroker.lineTo(left, top);
+            stroker.lineTo(right, bottom);
+            stroker.moveTo(right, top);
+            stroker.lineTo(left, bottom);
+            stroker.finish();
+
+            stroker.raster.raster.fill.baseColor = Color(255, 0, 0, 255);
+            stroker.moveTo(x, 0);
+            stroker.lineTo(x, buf->height);
+            stroker.moveTo(0, y);
+            stroker.lineTo(buf->width, y);
+            stroker.finish();
+
+            stroker.raster.raster.fill.baseColor = Color(0, 255, 0, 255);
+            stroker.moveTo(x2, 0);
+            stroker.lineTo(x2, buf->height);
+            stroker.moveTo(0, y2);
+            stroker.lineTo(buf->width, y2);
+            stroker.finish();
+        }
     }
 
 

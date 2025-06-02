@@ -45,6 +45,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         ${RENDERER_FILES}
         ${RM_PENS_FILES}
         ${RM_TEMPLATE_FILES}
+        rm_lines/src/renderer/rm_lines_stroker/rm_pens/debug_pen.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp)

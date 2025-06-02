@@ -61,6 +61,14 @@ class LibAnnotations(ctypes.Structure):
                  width: int, height: int, antialias: bool):
         pass
 
+    def setDebugMode(self, mode: bool):
+        """Set debug mode for the library."""
+        pass
+
+    def getDebugMode(self) -> bool:
+        """Get the current debug mode status."""
+        pass
+
 
 def load_lib() -> Optional[ctypes.CDLL]:
     lib_name = {
@@ -150,6 +158,12 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function getFrame(str, *, size_t, (x)int, (y)int, (fw)int, (fh)int, (w)int, (h)int, bool)
     _lib.getFrame.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_size_t, ctypes.c_int,
                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_bool]
+
+    # Function setDebugMode(bool)
+    _lib.setDebugMode.argtypes = [ctypes.c_bool]
+
+    # Function getDebugMode() -> bool
+    _lib.setDebugMode.restype = ctypes.c_bool
 
     return _lib
 

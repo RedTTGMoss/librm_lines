@@ -3,7 +3,7 @@
 #include <sstream>
 
 // Logger
-EXPORT void setLogger(const LogFunc logger) {
+void setLogger(const LogFunc logger) {
     globalLogger = logger;
 }
 
@@ -14,7 +14,7 @@ void logMessage(const std::string &msg) {
 }
 
 // Error logger
-EXPORT void setErrorLogger(const LogFunc errorLogger) {
+void setErrorLogger(const LogFunc errorLogger) {
     globalErrorLogger = errorLogger;
 }
 
@@ -27,12 +27,20 @@ void logError(const std::string &msg) {
 }
 
 // Debug logger
-EXPORT void setDebugLogger(const LogFunc debugLogger) {
+void setDebugLogger(const LogFunc debugLogger) {
     globalDebugLogger = debugLogger;
 }
 
+void setDebugMode(const bool debug) {
+    debugMode = debug;
+}
+
+bool getDebugMode() {
+    return debugMode;
+}
+
 void logDebug(const std::string &msg) {
-    if (globalDebugLogger) {
+    if (globalDebugLogger && debugMode) {
         globalDebugLogger(msg.c_str());
     }
 }

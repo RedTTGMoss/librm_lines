@@ -5,6 +5,8 @@ import pygameextra as pe
 
 pe.init()
 
+lib.setDebugMode(True)
+
 
 class GC(pe.GameContext):
     AREA = (500, 500)

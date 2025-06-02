@@ -40,6 +40,11 @@ void logError(const std::string &msg);
 static LogFunc globalDebugLogger = nullptr;
 EXPORT void setDebugLogger(LogFunc debugLogger);
 
+// Debug mode
+static bool debugMode = false;
+EXPORT void setDebugMode(bool debug);
+EXPORT bool getDebugMode();
+
 void logDebug(const std::string &msg);
 
 off_t getFileSize(FILE *file);

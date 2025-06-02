@@ -39,4 +39,6 @@ public:
     void newPoint();
 
     void reset();
+
+    void debugTool(float width = 5.0f);
 };

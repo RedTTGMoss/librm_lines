@@ -124,3 +124,16 @@ void rMPenFill::reset() {
     buffer.release();
     lineBuffer.release();
 }
+
+void rMPenFill::debugTool(const float width) {
+    operatorFunction = DebugPen;
+    stroker->capStyle = RMLinesRenderer::CapStyle::FlatCap;
+    stroker->joinStyle = RMLinesRenderer::BevelJoin;
+    stroker->width = width;
+
+    constexpr auto testLine = Line();
+    line = &testLine;
+
+    constexpr auto testPoint = Point();
+    point = &testPoint;
+}
