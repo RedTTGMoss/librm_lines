@@ -129,7 +129,7 @@ void rMPenFill::debugTool(const float width) {
     operatorFunction = DebugPen;
     stroker->capStyle = RMLinesRenderer::CapStyle::FlatCap;
     stroker->joinStyle = RMLinesRenderer::BevelJoin;
-    stroker->width = width;
+    stroker->width = width * stroker->raster.raster.fill.scale;
 
     constexpr auto testLine = Line();
     line = &testLine;

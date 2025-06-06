@@ -279,8 +279,19 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             x *= scale.x;
             y *= scale.y;
 
-            auto x2 = static_cast<size_t>(paperSize.first) / 2;
-            auto y2 = static_cast<size_t>(paperSize.second) / 2;
+            uint32_t width, height;
+
+            if (landscape) {
+                // Landscape mode, swap x and y
+                width = paperSize.second;
+                height = paperSize.first;
+            } else {
+                width = paperSize.first;
+                height = paperSize.second;
+            }
+
+            auto x2 = static_cast<size_t>(width) / 2;
+            auto y2 = static_cast<size_t>(height) / 2;
 
             x2 += position.x;
             y2 += position.y;
@@ -288,19 +299,13 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             y2 *= scale.y;
 
             auto left = position.x * scale.x, top = position.y * scale.y;
-            auto right = (position.x + paperSize.first) * scale.x, bottom =
-                    (position.y + paperSize.second) * scale.y;
-            if (landscape) {
-                // Landscape mode, swap x and y
-                std::swap(x, y);
-                std::swap(x2, y2);
-                std::swap(left, top);
-                std::swap(right, bottom);
-            }
+            auto right = (position.x + width) * scale.x, bottom =
+                    (position.y + height) * scale.y;
+
 
             // Make basic test tool and a point
 
-            stroker.raster.raster.fill.baseColor = Color(0, 0, 0, 255);
+            stroker.raster.raster.fill.baseColor = Color(0, 0, 150, 255);
             stroker.raster.raster.fill.debugTool();
 
 
@@ -315,14 +320,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             stroker.lineTo(left, bottom);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(255, 0, 0, 255);
+            stroker.raster.raster.fill.baseColor = Color(150, 0, 0, 255);
             stroker.moveTo(x, 0);
             stroker.lineTo(x, buf->height);
             stroker.moveTo(0, y);
             stroker.lineTo(buf->width, y);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(0, 255, 0, 255);
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 0, 255);
             stroker.moveTo(x2, 0);
             stroker.lineTo(x2, buf->height);
             stroker.moveTo(0, y2);
