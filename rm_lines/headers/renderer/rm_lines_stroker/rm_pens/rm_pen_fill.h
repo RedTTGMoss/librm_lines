@@ -8,6 +8,9 @@ using ImageBuffer = RMLinesRenderer::ImageBuffer;
 
 typedef void OperatorFunction(rMPenFill *, int x, int y, int length, Varying2D v, Varying2D dx);
 
+static auto TestLine = Line();
+static auto TestPoint = Point();
+
 class rMPenFill {
 public:
     typedef Varying2D Varyings;

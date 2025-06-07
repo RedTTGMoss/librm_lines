@@ -1,5 +1,4 @@
 #include "renderer/rm_lines_stroker/rm_pens/rm_pen_fill.h"
-
 #include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
 
 void rMPenFill::operator()(const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
@@ -131,9 +130,6 @@ void rMPenFill::debugTool(const float width) {
     stroker->joinStyle = RMLinesRenderer::BevelJoin;
     stroker->width = width * stroker->raster.raster.fill.scale;
 
-    constexpr auto testLine = Line();
-    line = &testLine;
-
-    constexpr auto testPoint = Point();
-    point = &testPoint;
+    line = &TestLine;
+    point = &TestPoint;
 }
