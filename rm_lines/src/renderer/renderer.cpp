@@ -66,8 +66,8 @@ void Renderer::calculateAnchors() {
     anchors.clear();
 
     // Map special anchors
-    anchors[ANCHOR_ID_START] = 270 / paperSize.second;
-    anchors[ANCHOR_ID_END] = 700 / paperSize.second;
+    anchors[ANCHOR_ID_START] = 0;
+    anchors[ANCHOR_ID_END] = paperSize.second;
 
     // Check for the root text
     if (!sceneTree->rootText) return;
@@ -79,13 +79,15 @@ void Renderer::calculateAnchors() {
     // Calculate the anchors
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
-        yOffset += LineHeights[paragraph.style.value].second / paperSize.second;
+        auto styleHeight = static_cast<float>(LineHeights[paragraph.style.value].second);
+        yOffset += styleHeight;
 
         posX += 0;
-        posY += yOffset;
+        posY = yOffset;
 
         // Save the anchor for this paragraph
         anchors[paragraph.startId] = posY;
+        // logDebug(std::format("Anchor for paragraph {}: {}", paragraph.startId.repr(), posY));
         for (const auto &formattedText: paragraph.contents) {
             for (const auto &characterId: formattedText.characterIDs) {
                 anchors[characterId] = posY;
@@ -316,8 +318,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             // Make basic test tool and a point
 
             stroker.raster.raster.fill.baseColor = Color(150, 0, 150, 255);
-            stroker.raster.raster.fill.debugTool();
-
+            stroker.raster.raster.fill.debugTool(5.0f);
 
             // Draw a rect and cross of the frame
             stroker.moveTo(left, top);
@@ -360,8 +361,13 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             stroker.lineTo(buf->width, y2);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(150, 150, 0, 255);
+            bool alternate = true;
             for (auto anchor: anchors | std::views::values) {
+                if (alternate)
+                    stroker.raster.raster.fill.baseColor = Color(150, 200, 0, 200);
+                else
+                    stroker.raster.raster.fill.baseColor = Color(150, 150, 255, 200);
+                alternate = !alternate;
                 stroker.moveTo(0, (position.y + anchor) * scale.y);
                 stroker.lineTo(buf->width, (position.y + anchor) * scale.y);
                 stroker.finish();
