@@ -340,7 +340,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.lineTo(left, bottom);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(0, 150, 150, 255);
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 150);
             top = (position.y + sizeTracker->getTop()) * scale.y;
             bottom = (position.y + sizeTracker->getBottom()) * scale.y;
             left = (position.x + sizeTracker->getLeft()) * scale.x;
@@ -356,14 +356,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.lineTo(left, bottom);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(150, 0, 0, 255);
+            stroker.raster.raster.fill.baseColor = Color(150, 0, 0);
             stroker.moveTo(x, 0);
             stroker.lineTo(x, buf->height);
             stroker.moveTo(0, y);
             stroker.lineTo(buf->width, y);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(0, 150, 0, 255);
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 0);
             stroker.moveTo(x2, 0);
             stroker.lineTo(x2, buf->height);
             stroker.moveTo(0, y2);
