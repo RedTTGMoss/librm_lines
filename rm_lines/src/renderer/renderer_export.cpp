@@ -209,12 +209,17 @@ void getFrame(
     );
 }
 
-void getSizeTracker(const char *rendererId, const int l, const int r) {
+const char *getSizeTracker(const char *rendererId, const char *stringlayerId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
         logError("Invalid treeId provided");
-        return;
+        return "";
     }
-    CrdtId layerId(l, r);
-    renderer->getSizeTracker(layerId);
+    const CrdtId layerId(stringlayerId);
+    const json j = renderer->getSizeTracker(layerId)->toJson();
+
+    static std::string result;
+    result = j.dump();
+
+    return result.c_str();
 }

@@ -63,12 +63,28 @@ json CrdtId::toJson() const {
 }
 
 CrdtId CrdtId::operator++(int) {
-    return CrdtId{first, ++second};
+    return CrdtId(first, ++second);
+}
+
+CrdtId::CrdtId(const char *id) : CrdtId(std::string(id)) {
+}
+
+CrdtId::CrdtId(const std::string &string) {
+    const auto pos = string.find(':');
+    if (pos == std::string::npos) {
+        throw std::invalid_argument("Invalid CrdtId format, expected 'first:second'");
+    }
+    try {
+        first = static_cast<uint8_t>(std::stoul(string.substr(0, pos)));
+        second = std::stoull(string.substr(pos + 1));
+    } catch (const std::exception &e) {
+        throw std::invalid_argument(std::format("Failed to parse CrdtId from string '{}': {}", string, e.what()));
+    }
 }
 
 Group::Group(const CrdtId nodeId)
     : nodeId(nodeId),
-      label(LwwItem<std::string>(CrdtId{0, 0}, "")),
+      label(LwwItem<std::string>(CrdtId(0, 0), "")),
       visible(LwwItem<bool>(CrdtId{0, 0}, true)) {
 }
 

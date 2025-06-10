@@ -25,8 +25,8 @@ enum FormattingOptions {
     ITALIC_OFF = 4,
 };
 
-constexpr CrdtId ANCHOR_ID_START = {0, 281474976710654};
-constexpr CrdtId ANCHOR_ID_END = {0, 281474976710655};
+constexpr CrdtId ANCHOR_ID_START(0, 281474976710654);
+constexpr CrdtId ANCHOR_ID_END(0, 281474976710655);
 
 struct TextFormattingOptions {
     bool bold = false;

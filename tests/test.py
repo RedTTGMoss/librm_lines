@@ -49,9 +49,15 @@ for file in (files := os.listdir(files_folder)):
     if paragraphs:
         print(f"Paragraphs: {paragraphs.decode()}")
     # Get the paragraphs
-    layers = lib.getLayers(renderer_id)
-    if layers:
-        print(f"Layers: {layers.decode()}")
+    raw_layers = lib.getLayers(renderer_id)
+    if raw_layers:
+        str_layers = raw_layers.decode()
+        print(f"Layers: {str_layers}")
+        layers = json.loads(raw_layers.decode()) if str_layers else []
+        for layer in layers:
+            raw_size_tracker = lib.getSizeTracker(renderer_id, layer['groupId'].encode())
+            if raw_size_tracker:
+                print(f"Size tracker for layer {layer['groupId']}: {raw_size_tracker.decode()}")
 
     begin = time.time()
     success = lib.textToMdFile(renderer_id, md_output_path.encode())

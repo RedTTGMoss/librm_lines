@@ -98,6 +98,8 @@ public:
         return track.getRight() + offset.x;
     }
 
+    json toJson() const;
+
 private:
     Vector documentCenter;
     Rect documentCap;
@@ -107,3 +109,14 @@ private:
     PageType pageType;
     bool landscape;
 };
+
+inline json DocumentSizeTracker::toJson() const {
+    return {
+        {"l", getLeft()},
+        {"r", getRight()},
+        {"t", getTop()},
+        {"b", getBottom()},
+        {"fw", getFrameWidth()},
+        {"fh", getFrameHeight()}
+    };
+}

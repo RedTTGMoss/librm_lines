@@ -35,4 +35,4 @@ EXPORT void getFrame(
     bool antialias
 );
 
-EXPORT void getSizeTracker(const char *rendererId, int l, int r);
+EXPORT const char *getSizeTracker(const char *rendererId, const char *layerId);

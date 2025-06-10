@@ -28,6 +28,15 @@ struct CrdtId {
     [[nodiscard]] json toJson() const;
 
     CrdtId operator++(int);
+
+    CrdtId() = default;
+
+    explicit CrdtId(const char *id);
+
+    constexpr explicit CrdtId(const uint8_t first, const uint64_t second) : first(first), second(second) {
+    }
+
+    explicit CrdtId(const std::string &string);
 };
 
 template<>
@@ -44,7 +53,7 @@ enum Side {
 };
 
 
-static constexpr CrdtId END_MARKER{0, 0};
+static constexpr CrdtId END_MARKER(0, 0);
 
 
 template<typename T>
