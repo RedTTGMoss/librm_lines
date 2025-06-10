@@ -257,10 +257,10 @@ struct Color {
 
     uint32_t toRGBA() const;
 
-    explicit Color(const uint8_t r = 0,
-                   const uint8_t g = 0,
-                   const uint8_t b = 0,
-                   const uint8_t a = 255) : red(r), green(g), blue(b), alpha(a) {
+    constexpr explicit Color(const uint8_t r = 0,
+                             const uint8_t g = 0,
+                             const uint8_t b = 0,
+                             const uint8_t a = 255) : red(r), green(g), blue(b), alpha(a) {
     }
 
     bool operator==(const Color &other) const = default;
