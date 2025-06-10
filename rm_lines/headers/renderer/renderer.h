@@ -70,6 +70,7 @@ public:
 
 private:
     SceneTree *sceneTree;
+    Vector frameSize;
     std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         VaryingGeneratorLengthWidth> stroker;

@@ -43,5 +43,5 @@ public:
 
     void reset();
 
-    void debugTool(float width = 10.0f);
+    void debugTool(float width = 7.0f);
 };

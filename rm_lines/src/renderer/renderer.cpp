@@ -15,6 +15,9 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
     if (sceneTree->sceneInfo.has_value() && sceneTree->sceneInfo.value().paperSize.has_value()) {
         this->paperSize = sceneTree->sceneInfo.value().paperSize.value();
     }
+    this->frameSize = landscape
+                          ? Vector(paperSize.second, paperSize.first)
+                          : Vector(paperSize.first, paperSize.second);
 
     initSizeTracker(TEXT_LAYER);
 
@@ -46,8 +49,7 @@ DocumentSizeTracker *Renderer::getSizeTracker(const CrdtId layerId) {
 }
 
 DocumentSizeTracker *Renderer::initSizeTracker(CrdtId layerId) {
-    auto [it, inserted] = sizeTrackers.emplace(layerId, DocumentSizeTracker(paperSize, pageType));
-    it->second.reverseFrameSize = landscape;
+    auto [it, inserted] = sizeTrackers.emplace(layerId, DocumentSizeTracker(paperSize, pageType, landscape));
     return &it->second;
 }
 
@@ -117,7 +119,6 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
                 auto y = point.y + offsetY;
                 // ReSharper disable once CppNoDiscardExpression
                 trackX(layer.groupId, x);
-                // ReSharper disable once CppNoDiscardExpression
                 trackY(layer.groupId, y);
             }
             layer.lines.push_back(LineInfo{
@@ -128,6 +129,15 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
             });
         }
     }
+    auto sizeTracker = getSizeTracker(layer.groupId);
+    // Layer size tracker debug
+    // logDebug(std::format(
+    //     "Size tracker for layer {}: FS: {}x{} TR: {}->{}x{}->{}",
+    //     layer.groupId.repr(),
+    //     sizeTracker->getFrameWidth(), sizeTracker->getFrameHeight(),
+    //     sizeTracker->getLeft(), sizeTracker->getRight(),
+    //     sizeTracker->getTop(), sizeTracker->getBottom()
+    // ));
 }
 
 json Renderer::getParagraphs() const {
@@ -254,7 +264,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
                 // This shouldn't need to have added half width, what's going on here?
                 // We need to make sure this works when the document has expansions
                 // I can confirm it needs to be paperSize and not the expanded document size tracker size!
-                auto x = position.x + point.x + line.offsetX + static_cast<float>(paperSize.first) / 2;
+                auto x = position.x + point.x + line.offsetX + this->frameSize.x / 2;
                 auto y = position.y + point.y + line.offsetY;
                 // TODO: Maybe apply a centered scale instead? Scaling the entire document isn't quite right
                 x *= scale.x;
@@ -305,11 +315,27 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
 
             // Make basic test tool and a point
 
-            stroker.raster.raster.fill.baseColor = Color(0, 0, 150, 255);
+            stroker.raster.raster.fill.baseColor = Color(150, 0, 150, 255);
             stroker.raster.raster.fill.debugTool();
 
 
-            // Draw a rect and cross
+            // Draw a rect and cross of the frame
+            stroker.moveTo(left, top);
+            stroker.lineTo(right, top);
+            stroker.lineTo(right, bottom);
+            stroker.lineTo(left, bottom);
+            stroker.lineTo(left, top);
+            stroker.lineTo(right, bottom);
+            stroker.moveTo(right, top);
+            stroker.lineTo(left, bottom);
+            stroker.finish();
+
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 150, 255);
+            top = (position.y + sizeTracker->getTop()) * scale.y;
+            bottom = (position.y + sizeTracker->getBottom()) * scale.y;
+            left = (position.x + sizeTracker->getLeft()) * scale.x;
+            right = (position.x + sizeTracker->getRight()) * scale.x;
+
             stroker.moveTo(left, top);
             stroker.lineTo(right, top);
             stroker.lineTo(right, bottom);
