@@ -359,6 +359,13 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector posi
             stroker.moveTo(0, y2);
             stroker.lineTo(buf->width, y2);
             stroker.finish();
+
+            stroker.raster.raster.fill.baseColor = Color(150, 150, 0, 255);
+            for (auto anchor: anchors | std::views::values) {
+                stroker.moveTo(0, (position.y + anchor) * scale.y);
+                stroker.lineTo(buf->width, (position.y + anchor) * scale.y);
+                stroker.finish();
+            }
         }
     }
 
