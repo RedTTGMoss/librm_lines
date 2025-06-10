@@ -1,3 +1,4 @@
+import atexit
 import threading
 
 from tests_base import *
@@ -37,8 +38,20 @@ class GC(pe.GameContext):
                 file = os.path.join(folder, filename)
                 self.items.append(file)
         self.index = 42
+        if os.path.exists('pos'):
+            try:
+                with open('pos', 'r') as f:
+                    self.index = int(f.read())
+            except:
+                pass
+        atexit.register(self.save_index)
         super().__init__()
         self.sprite = pe.Sprite("rm_lines_cat.png", (100, 100))
+
+    def save_index(self):
+        with open('pos', 'w') as f:
+            f.write(str(self.index))
+        print(f"Saved index: {self.index}")
 
     def prepare_renderer(self, item: str, index: int):
         tree_id = lib.buildTree(item.encode())
@@ -113,9 +126,15 @@ class GC(pe.GameContext):
         if self.buffer[0] != w or self.buffer[1] != h:
             buffer_size = w * h
             self.buffer = (w, h, (ctypes.c_uint32 * buffer_size)())
-        lib.getFrame(renderer[1], self.buffer[2], self.buffer_size * 4, int(x), int(y), int(w / scale), int(h / scale),
-                     w, h,
-                     False)
+        lib.getFrame(
+            renderer[1],  # Renderer ID
+            self.buffer[2],  # Buffer
+            self.buffer_size * 4,  # Buffer size in bytes
+            int(x), int(y),  # Position
+            int(w / scale), int(h / scale),  # Frame size
+            w, h,  # Buffer size
+            False
+        )
         raw_frame = bytes(self.buffer[2])
         frame = pe.pygame.image.frombuffer(raw_frame, (w, h), 'RGBA')
         return frame
