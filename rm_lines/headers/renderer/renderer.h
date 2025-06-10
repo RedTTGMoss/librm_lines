@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "rm_lines_stroker/templates/template_functions.h"
-#define TEXT_TOP_Y (-88)
+#define TEXT_TOP_Y (180)
 
 using ImageBuffer = RMLinesRenderer::ImageBuffer;
 using VaryingGeneratorLengthWidth = RMLinesRenderer::VaryingGeneratorLengthWidth;

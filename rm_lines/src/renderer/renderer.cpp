@@ -66,7 +66,7 @@ void Renderer::calculateAnchors() {
     anchors.clear();
 
     // Map special anchors
-    anchors[ANCHOR_ID_START] = 0;
+    anchors[ANCHOR_ID_START] = TEXT_TOP_Y; // You expect this to be 0 but actually the text area starts a bit lower
     anchors[ANCHOR_ID_END] = paperSize.second;
 
     // Check for the root text
@@ -235,11 +235,20 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t *data, const size_t dataSize, const Vector position, const Vector frameSize,
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, const Vector frameSize,
                         const Vector bufferSize, const bool antialias) {
     const auto buf = &stroker.raster.raster.fill.buffer;
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
     const auto scale = bufferSize / frameSize;
+
+    // Align the position to scale properly to the center of the requested frame
+    // The scale is automatically calculated by the provided bufferSize and frameSize
+    // In this case the frameSize could be let's say smaller but the buffer is larger and the scale is 2
+    // To compensate for this we need to align the position to the center of the frame
+    // If this isn't done the scaling will look as if from the top left corner
+    position.x = (position.x + frameSize.x / 2) * scale.x;
+    position.y = (position.y + frameSize.y / 2) * scale.y;
+
     stroker.joinStyle = JoinStyle::RoundJoin;
     stroker.raster.raster.fill.stroker = &stroker;
     // ReSharper disable once CppDFALocalValueEscapesFunction
