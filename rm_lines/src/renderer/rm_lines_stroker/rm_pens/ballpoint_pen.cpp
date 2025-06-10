@@ -9,12 +9,12 @@ void BallpointPen(rMPenFill *fill, const int x, const int y, const int length, V
     for (int i = 0; i < length; ++i) {
         const float rawNoise = stb_perlin_fbm_noise3(v.x, v.y, 0, 2.0, 0.5, 6);
         if (const float n = (rawNoise + 1.0f) * 0.5f; n < fill->intensity) {
-            Color color = {
+            Color color(
                 fill->baseColor.red,
                 fill->baseColor.green,
                 fill->baseColor.blue,
                 static_cast<uint8_t>(255.0f * std::max(n, fill->intensity))
-            };
+            );
             dst[i] = color.toRGBA();
         }
         v = v + dx;
