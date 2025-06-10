@@ -105,40 +105,40 @@ uint32_t Color::toRGBA() const {
 }
 
 Color Color::operator*(const Color &other) const {
-    return {
+    return Color(
         static_cast<uint8_t>(red / 255.0f * other.red / 255.0f * 255),
         static_cast<uint8_t>(green / 255.0f * other.green / 255.0f * 255),
         static_cast<uint8_t>(blue / 255.0f * other.blue / 255.0f * 255),
         static_cast<uint8_t>(alpha / 255.0f * other.alpha / 255.0f * 255)
-    };
+    );
 }
 
 Color Color::operator*(float other) const {
-    return {
+    return Color(
         static_cast<uint8_t>(red * other),
         static_cast<uint8_t>(green * other),
         static_cast<uint8_t>(blue * other),
         static_cast<uint8_t>(alpha * other)
-    };
+    );
 }
 
 Color Color::operator+(const Color &other) const {
-    return {
+    return Color(
         std::min<uint8_t>(red + other.red, 255),
         std::min<uint8_t>(green + other.green, 255),
         std::min<uint8_t>(blue + other.blue, 255),
         std::min<uint8_t>(alpha + other.alpha, 255)
-    };
+    );
 }
 
 Color Color::fromRGBA(const uint32_t *rgbaColor) {
     // Reading from buffer (RGBA)
-    return {
+    return Color(
         static_cast<uint8_t>(*rgbaColor & 0xFF),
         static_cast<uint8_t>((*rgbaColor >> 8) & 0xFF),
         static_cast<uint8_t>((*rgbaColor >> 16) & 0xFF),
         static_cast<uint8_t>((*rgbaColor >> 24) & 0xFF)
-    };
+    );
 }
 
 void Color::inplaceFromRGBA(const uint32_t *rgbaColor) {
