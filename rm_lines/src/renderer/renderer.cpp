@@ -235,7 +235,7 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, const Vector frameSize,
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, Vector frameSize,
                         const Vector bufferSize, const bool antialias) {
     const auto buf = &stroker.raster.raster.fill.buffer;
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
@@ -246,8 +246,16 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     // In this case the frameSize could be let's say smaller but the buffer is larger and the scale is 2
     // To compensate for this we need to align the position to the center of the frame
     // If this isn't done the scaling will look as if from the top left corner
-    position.x = (position.x + frameSize.x / 2) * scale.x;
-    position.y = (position.y + frameSize.y / 2) * scale.y;
+
+    // Align to 0, 0
+    position += frameSize / 2;
+    position -= bufferSize / 2;
+
+    // Align to the scale
+    position -= Vector(
+        frameSize.x * (scale.x - 1), // Scale of 1 means no change, so we subtract 1 from the scale
+        frameSize.y * (scale.y - 1)
+    ) / 2;
 
     stroker.joinStyle = JoinStyle::RoundJoin;
     stroker.raster.raster.fill.stroker = &stroker;

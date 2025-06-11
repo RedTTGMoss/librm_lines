@@ -1,6 +1,8 @@
 import atexit
 import threading
 
+from pygameextra import Rect
+
 from tests_base import *
 import pygameextra as pe
 
@@ -126,12 +128,17 @@ class GC(pe.GameContext):
         if self.buffer[0] != w or self.buffer[1] != h:
             buffer_size = w * h
             self.buffer = (w, h, (ctypes.c_uint32 * buffer_size)())
+        rect = Rect(x, y, w, h)
+        rect.x -= w / 2
+        rect.y -= h / 2
+        if scale != 1:
+            rect.scale_by_ip(scale - 1, scale - 1)
         lib.getFrame(
             renderer[1],  # Renderer ID
             self.buffer[2],  # Buffer
             self.buffer_size * 4,  # Buffer size in bytes
-            int(x), int(y),  # Position
-            int(w / scale), int(h / scale),  # Frame size
+            *rect.topleft,  # Position
+            *rect.size,  # Frame size
             w, h,  # Buffer size
             False
         )

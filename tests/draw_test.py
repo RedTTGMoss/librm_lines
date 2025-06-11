@@ -1,3 +1,5 @@
+from pygameextra import Rect
+
 from tests_base import *
 
 for dir in (files_draw_folder, files_folder):
@@ -35,6 +37,24 @@ for dir in (files_draw_folder, files_folder):
             print(f"Got frame [{len(raw_frame)}]")
             image = Image.frombytes('RGBA', paper_size, raw_frame, 'raw', 'RGBA')
             image.save(output_path, 'PNG')
+
+        rect = Rect(0, 0, *paper_size)
+        combined = Image.new('RGB', (paper_size[0] * 3, paper_size[1]))
+        print("Creating a scaling combined frame test...")
+        for i, rect in enumerate((rect.scale_by(2, 2), rect, rect.scale_by(0.5, 0.5))):
+            lib.getFrame(renderer_id, buffer, buffer_size * 4, *rect.topleft, *rect.size, *paper_size, True)
+            raw_frame = bytes(buffer)
+            image = Image.frombytes('RGBA', paper_size, raw_frame, 'raw', 'RGBA')
+            combined.paste(image, (paper_size[0] * i, 0))
+        for y in range(combined.height):
+            combined.putpixel((paper_size[0] - 1, y), (150, 0, 0, 255))
+            combined.putpixel((paper_size[0], y), (255, 0, 0, 255))
+            combined.putpixel((paper_size[0] + 1, y), (150, 0, 0, 255))
+            combined.putpixel((paper_size[0] * 2 - 1, y), (0, 0, 150, 255))
+            combined.putpixel((paper_size[0] * 2, y), (0, 0, 255, 255))
+            combined.putpixel((paper_size[0] * 2 + 1, y), (0, 0, 150, 255))
+
+        combined.save(os.path.join(zoom_output_folder, file.replace('.rm', '.png')), 'PNG')
 
         lib.destroyRenderer(renderer_id)
         lib.destroyTree(tree_id)
