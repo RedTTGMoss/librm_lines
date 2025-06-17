@@ -39,9 +39,11 @@ for dir in (files_draw_folder, files_folder):
             image.save(output_path, 'PNG')
 
         rect = Rect(0, 0, *paper_size)
-        combined = Image.new('RGB', (paper_size[0] * 3, paper_size[1]))
+        tophalf = Rect(0, 0, paper_size[0] // 2, paper_size[1] // 2)
+        bottomhalf = Rect(paper_size[0] // 2, paper_size[1] // 2, paper_size[0] // 2, paper_size[1] // 2)
+        combined = Image.new('RGB', (paper_size[0] * 4, paper_size[1]))
         print("Creating a scaling combined frame test...")
-        for i, rect in enumerate((rect.scale_by(2, 2), rect, rect.scale_by(0.5, 0.5))):
+        for i, rect in enumerate((rect, tophalf, bottomhalf, rect.scale_by(2, 2))):
             lib.getFrame(renderer_id, buffer, buffer_size * 4, *rect.topleft, *rect.size, *paper_size, True)
             raw_frame = bytes(buffer)
             image = Image.frombytes('RGBA', paper_size, raw_frame, 'raw', 'RGBA')

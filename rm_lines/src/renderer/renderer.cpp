@@ -241,21 +241,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
     const auto scale = bufferSize / frameSize;
 
-    // Align the position to scale properly to the center of the requested frame
-    // The scale is automatically calculated by the provided bufferSize and frameSize
-    // In this case the frameSize could be let's say smaller but the buffer is larger and the scale is 2
-    // To compensate for this we need to align the position to the center of the frame
-    // If this isn't done the scaling will look as if from the top left corner
-
-    // Align to 0, 0
-    position += frameSize / 2;
-    position -= bufferSize / 2;
-
-    // Align to the scale
-    position -= Vector(
-        frameSize.x * (scale.x - 1), // Scale of 1 means no change, so we subtract 1 from the scale
-        frameSize.y * (scale.y - 1)
-    ) / 2;
+    position *= -1; // It's technically an offset
 
     stroker.joinStyle = JoinStyle::RoundJoin;
     stroker.raster.raster.fill.stroker = &stroker;

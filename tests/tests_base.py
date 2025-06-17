@@ -80,3 +80,4 @@ from rm_lines_sys import lib
 lib.setLogger(python_logger)
 lib.setErrorLogger(python_error_logger)
 lib.setDebugLogger(python_debug_logger)
+# lib.setDebugMode(True)

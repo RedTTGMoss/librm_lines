@@ -105,6 +105,11 @@ namespace AdvancedMath {
             y *= other.y;
         }
 
+        void operator*=(const float &other) {
+            x *= other;
+            y *= other;
+        }
+
         void operator/=(const Vector &other) {
             x /= other.x;
             y /= other.y;
