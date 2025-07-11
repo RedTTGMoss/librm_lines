@@ -3,6 +3,7 @@
 #include <format>
 #include <fstream>
 #include <sstream>
+#include <optional>
 
 std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendererMap;
 
@@ -35,7 +36,15 @@ bool removeRenderer(const std::string &uuid) {
 
 EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bool landscape) {
     const auto tree = getSceneTree(treeId);
-    const auto renderer = std::make_shared<Renderer>(tree.get(), static_cast<PageType>(pageType), landscape);
+
+    std::shared_ptr<Renderer> renderer;
+
+    try {
+        renderer = std::make_shared<Renderer>(tree.get(), static_cast<PageType>(pageType), landscape);
+    } catch (const std::exception &e) {
+        logError(std::format("{}\nFailed to create renderer: {}", getStackTrace(), e.what()));
+        return "";
+    }
 
     static std::string result;
 

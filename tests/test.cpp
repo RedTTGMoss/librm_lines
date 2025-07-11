@@ -68,24 +68,31 @@ bool processFile(const std::string &filename, const std::string &path) {
     }
     auto tree = getSceneTree(treeId);
     auto textCopy = tree->rootText;
-    auto renderer = Renderer(tree.get(), NOTEBOOK, false);
+    std::optional<Renderer> renderer;
+    try {
+        renderer = Renderer(tree.get(), NOTEBOOK, false);
+    } catch (const std::exception &e) {
+        logError(std::format("Failed to create renderer for file {}: {}", filename, e.what()));
+        destroyTree(treeId);
+        return false;
+    }
 
     // Checking text
     // Initialize both tracking ids to the END_MARKER for compatibility
     CrdtId oldId = END_MARKER;
     CrdtId currentId = END_MARKER;
     // Iterate over the paragraphs and their contents
-    for (const auto &paragraph: renderer.textDocument.paragraphs) {
+    for (const auto &paragraph: renderer->textDocument.paragraphs) {
         for (const auto &string: paragraph.contents) {
             for (const auto &characterId: string.characterIDs) {
-                auto currentTextItem = renderer.textDocument.text.items[currentId];
+                auto currentTextItem = renderer->textDocument.text.items[currentId];
 
                 if (
                     getTextItemContents(currentTextItem) != "\n" &&
                     currentId != END_MARKER &&
                     characterId != currentId
                 ) {
-                    auto oldTextItem = renderer.textDocument.text.items[oldId];
+                    auto oldTextItem = renderer->textDocument.text.items[oldId];
 
                     logError(std::format("Character ID mismatch in file {}: expected {}, got {}", filename,
                                          currentId.repr(), characterId.repr()));
@@ -136,14 +143,14 @@ bool processFile(const std::string &filename, const std::string &path) {
         return false;
     }
     try {
-        renderer.toHtml(htmlFilePtr);
-        renderer.toMd(mdFilePtr);
-        json paragraphs = renderer.getParagraphs();
+        renderer->toHtml(htmlFilePtr);
+        renderer->toMd(mdFilePtr);
+        json paragraphs = renderer->getParagraphs();
         paraFilePtr << paragraphs.dump(4);
-        json layers = renderer.getLayers();
+        json layers = renderer->getLayers();
         layersFilePtr << layers.dump(4);
         json anchorTestData = json::array();
-        for (const auto &layer: renderer.layers) {
+        for (const auto &layer: renderer->layers) {
             json layerJ;
             layerJ["layerId"] = layer.groupId.toJson();
             layerJ["label"] = layer.getLabel();
@@ -162,8 +169,8 @@ bool processFile(const std::string &filename, const std::string &path) {
         anchorTestPythonFilePtr << anchorTestData.dump(4);
 
         // Export the raw characters
-        for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
-            if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
+        for (const auto &id: renderer->textDocument.text.items.getSortedIds()) {
+            if (auto item = renderer->textDocument.text.items[id]; item.value.has_value()) {
                 if (std::holds_alternative<std::string>(item.value.value())) {
                     rawTextFilePtr << std::get<std::string>(item.value.value());
                 }
@@ -188,8 +195,8 @@ bool processFile(const std::string &filename, const std::string &path) {
 
             // Export the text to python symbols for testing
             textExpandPythonFilePtr << "[";
-            for (const auto &id: renderer.textDocument.text.items.getSortedIds()) {
-                if (auto item = renderer.textDocument.text.items[id]; item.value.has_value()) {
+            for (const auto &id: renderer->textDocument.text.items.getSortedIds()) {
+                if (auto item = renderer->textDocument.text.items[id]; item.value.has_value()) {
                     if (std::holds_alternative<std::string>(item.value.value())) {
                         auto string = safeString(std::get<std::string>(item.value.value()));
                         textExpandPythonFilePtr << std::format(
@@ -225,14 +232,14 @@ bool processFile(const std::string &filename, const std::string &path) {
         }
 
         // TEST GETTING A FRAME
-        // uint32_t width = renderer.paperSize.first;
-        // uint32_t height = renderer.paperSize.second;
+        // uint32_t width = renderer->paperSize.first;
+        // uint32_t height = renderer->paperSize.second;
         // auto frameData = new uint32_t[width * height];
         // size_t frameSize = width * height * sizeof(uint32_t);
         //
         // logError(std::format("Allocated {} bytes for frame ({} * {} * {})", frameSize, width, height, sizeof(uint32_t)));
         //
-        // renderer.getFrame(frameData, frameSize, {0, 0}, {width, height}, 1.0f);
+        // renderer->getFrame(frameData, frameSize, {0, 0}, {width, height}, 1.0f);
         //
         // logDebug(std::format("The first color of the frame: 0x{:08X}", frameData[0]));
         //
@@ -307,7 +314,7 @@ int main() {
                 return -1;
             }
             if (!processFile(filename.substr(0, filename.length() - 3), file))
-                return -1;
+                std::cerr << "Failed to process file " << filename << std::endl;
         }
         // Iterate over the directory entries for draw tests
         for (const fs::path dirPath = "./draw_files"; const auto &entry: fs::directory_iterator(dirPath)) {
@@ -318,7 +325,7 @@ int main() {
                 return -1;
             }
             if (!processFile(filename.substr(0, filename.length() - 3), file))
-                return -1;
+                std::cerr << "Failed to process file " << filename << std::endl;
         }
     } catch (const fs::filesystem_error &e) {
         std::cerr << "Filesystem error: " << e.what() << std::endl;

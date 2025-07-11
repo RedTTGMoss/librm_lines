@@ -57,9 +57,15 @@ class GC(pe.GameContext):
 
     def prepare_renderer(self, item: str, index: int):
         tree_id = lib.buildTree(item.encode())
+        if not tree_id:
+            print(f"Failed to build tree for {item}")
+            return
         renderer_id = lib.makeRenderer(tree_id, 0, any(
             self.filenames[index].startswith(landscape) for landscape in self.LANDSCAPES
         ))
+        if not renderer_id:
+            print(f"Failed to make renderer for {item}")
+            return
         self.loaded[item] = (tree_id, renderer_id)
 
     def get_renderer(self):

@@ -12,6 +12,7 @@ for file in (files := os.listdir(files_folder)):
     html_output_path = os.path.join(html_output_folder, file.replace('.rm', '.html'))
 
     print("Processing file:", file)
+    bugged_file = file.startswith('Bugged ')
     begin = time.time()
     tree_id = lib.buildTree(os.path.join(files_folder, file).encode())
     total_time += (process_time := time.time() - begin)
@@ -39,7 +40,12 @@ for file in (files := os.listdir(files_folder)):
     begin = time.time()
     renderer_id = lib.makeRenderer(tree_id, 1, False)
     if not renderer_id:
+        if bugged_file:
+            print(f"File {file} is bugged, looks about right, exception handled.")
+            continue
         raise Exception("Failed to make renderer")
+    elif bugged_file:
+        raise Exception(f"File {file} is bugged, but renderer was created.")
 
     total_time += (renderer_time := time.time() - begin)
     print(f"It took {renderer_time:.04f} to initialize the renderer")
