@@ -38,10 +38,6 @@ enum PenColor {
     GRAY = 1,
     WHITE = 2,
 
-    YELLOW = 3,
-    GREEN = 4,
-    PINK = 5,
-
     BLUE = 6,
     RED = 7,
 
@@ -53,11 +49,10 @@ enum PenColor {
     // that might contain additional color information.
     HIGHLIGHT = 9,
 
-    GREEN_2 = 10,
+    GREEN = 10,
     CYAN = 11,
     MAGENTA = 12,
-
-    YELLOW_2 = 13,
+    YELLOW = 13,
 };
 
 struct Point {
