@@ -251,6 +251,13 @@ json SceneGroupItemBlock::toJson() const {
 bool SceneLineItemBlock::readValue(TaggedBlockReader *reader) {
     version = reader->currentBlockInfo.currentVersion;
 
+    // Copy CRDT metadata from parent's item to child's item
+    auto& parentItem = SceneItemBlock::item;
+    item.itemId = parentItem.itemId;
+    item.leftId = parentItem.leftId;
+    item.rightId = parentItem.rightId;
+    item.deletedLength = parentItem.deletedLength;
+
     item.value = std::make_optional<Line>();
     return item.value.value().read(reader, version);
 }
@@ -314,6 +321,13 @@ json RootTextBlock::toJson() const {
 }
 
 bool SceneGlyphItemBlock::readValue(TaggedBlockReader *reader) {
+    // Copy CRDT metadata from parent's item to child's item
+    auto& parentItem = SceneItemBlock::item;
+    item.itemId = parentItem.itemId;
+    item.leftId = parentItem.leftId;
+    item.rightId = parentItem.rightId;
+    item.deletedLength = parentItem.deletedLength;
+
     item.value = std::make_optional<GlyphRange>();
     return item.value.value().read(reader);
 }
