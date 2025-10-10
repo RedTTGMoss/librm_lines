@@ -73,9 +73,19 @@ jobs:
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -S ${{ github.workspace }}
 
-      - name: Build
-        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+      - name: Build shared library
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rm_lines
+
+      - name: Build static library
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}-static
+          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -DBUILD_SHARED_LIBS=OFF
+          -S ${{ github.workspace }}
+          &&
+          cmake --build ${{ steps.strings.outputs.build-output-dir }}-static --config ${{ matrix.build_type }} --target rm_lines
 
       - name: Set up python
         uses: actions/setup-python@v4
@@ -124,20 +134,30 @@ jobs:
       - name: Gather files into temp dir
         shell: bash
         run: |
-          mkdir -p artifact
+          mkdir -p artifact/lib artifact/include
           mv rm_lines_sys/dist/*.whl artifact/
-          
+
+          cp -r rm_lines/headers artifact/include/
+
           case "${{ matrix.os }}" in
             ubuntu*)
-              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" artifact/
+              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" artifact/lib/
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" artifact/lib/
               ;;
             macos*)
-              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" artifact/
+              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" artifact/lib/
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" artifact/lib/
               ;;
             windows*)
-              mv "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" artifact/
+              mv "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" artifact/lib/
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/${{ matrix.build_type }}/rm_lines.lib" artifact/lib/
               ;;
           esac
+
+          cd artifact
+          tar czf ../librm_lines-${{ matrix.os }}-${{ matrix.target }}.tar.gz lib/ include/
+          cd ..
+          mv librm_lines-${{ matrix.os }}-${{ matrix.target }}.tar.gz artifact/
 
       - name: Rename wheel to be Python-agnostic
         shell: bash
@@ -152,9 +172,12 @@ jobs:
           name: ${{ runner.os }}-${{ matrix.target }}
           path: |
             artifact/*.whl
-            artifact/librm_lines.so
-            artifact/librm_lines.dylib
-            artifact/rm_lines.dll
+            artifact/*.tar.gz
+            artifact/lib/librm_lines.so
+            artifact/lib/librm_lines.dylib
+            artifact/lib/rm_lines.dll
+            artifact/lib/librm_lines.a
+            artifact/lib/rm_lines.lib
           retention-days: 5
 
   create-draft-release:
@@ -178,28 +201,28 @@ jobs:
           draft: true
           files: artifacts/**/*
 
-  publish-to-pypi:
-    name: >-
-      Publish Python 🐍 distribution 📦 to PyPI
-    if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
-    needs:
-      - build-sys
-    runs-on: ubuntu-latest
-    environment:
-      name: pypi
-      url: https://pypi.org/p/rm_lines_sys
-    permissions:
-      id-token: write  # IMPORTANT: mandatory for trusted publishing
+  # publish-to-pypi:
+  #   name: >-
+  #     Publish Python 🐍 distribution 📦 to PyPI
+  #   if: startsWith(github.ref, 'refs/tags/')  # only publish to PyPI on tag pushes
+  #   needs:
+  #     - build-sys
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: pypi
+  #     url: https://pypi.org/p/rm_lines_sys
+  #   permissions:
+  #     id-token: write  # IMPORTANT: mandatory for trusted publishing
 
-    steps:
-      - name: Download all the dists
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts/
-      - name: Move wheels to dist
-        shell: bash
-        run: |
-          mkdir -p dist
-          find artifacts -type f -name "*.whl" -exec mv {} dist/ \;
-      - name: Publish distribution 📦 to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+  #   steps:
+  #     - name: Download all the dists
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         path: artifacts/
+  #     - name: Move wheels to dist
+  #       shell: bash
+  #       run: |
+  #         mkdir -p dist
+  #         find artifacts -type f -name "*.whl" -exec mv {} dist/ \;
+  #     - name: Publish distribution 📦 to PyPI
+  #       uses: pypa/gh-action-pypi-publish@release/v1
