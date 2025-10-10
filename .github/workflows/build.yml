@@ -27,13 +27,30 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: [ 'ubuntu', 'windows', 'macos' ]
         include:
           - os: 'ubuntu'
             target: 'x86_64-unknown-linux-gnu'
             cpp_compiler: 'g++'
             c_compiler: 'gcc'
             build_type: 'Release'
+          - os: 'ubuntu'
+            target: 'aarch64-unknown-linux-gnu'
+            cpp_compiler: 'aarch64-linux-gnu-g++'
+            c_compiler: 'aarch64-linux-gnu-gcc'
+            build_type: 'Release'
+            is_cross: true
+          - os: 'ubuntu'
+            target: 'armv7-unknown-linux-gnueabihf'
+            cpp_compiler: 'arm-linux-gnueabihf-g++'
+            c_compiler: 'arm-linux-gnueabihf-gcc'
+            build_type: 'Release'
+            is_cross: true
+          - os: 'ubuntu'
+            target: 'arm-unknown-linux-gnueabihf'
+            cpp_compiler: 'arm-linux-gnueabihf-g++'
+            c_compiler: 'arm-linux-gnueabihf-gcc'
+            build_type: 'Release'
+            is_cross: true
           - os: 'windows'
             target: 'x86_64-pc-windows-gnu'
             cpp_compiler: 'x86_64-w64-mingw32-g++'
@@ -44,8 +61,20 @@ jobs:
             cpp_compiler: 'clang++'
             c_compiler: 'clang'
             build_type: 'Release'
+          - os: 'macos'
+            target: 'aarch64-apple-darwin'
+            cpp_compiler: 'clang++'
+            c_compiler: 'clang'
+            build_type: 'Release'
+            cmake_flags: '-DCMAKE_OSX_ARCHITECTURES=arm64'
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install cross-compilers for ARM
+        if: matrix.is_cross
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-aarch64-linux-gnu g++-aarch64-linux-gnu gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf
 
       - name: Fetch tags for current commit
         run: git fetch --tags --depth=1
@@ -71,6 +100,7 @@ jobs:
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          ${{ matrix.cmake_flags }}
           -S ${{ github.workspace }}
 
       - name: Build shared library
@@ -83,6 +113,7 @@ jobs:
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
           -DBUILD_SHARED_LIBS=OFF
+          ${{ matrix.cmake_flags }}
           -S ${{ github.workspace }}
           &&
           cmake --build ${{ steps.strings.outputs.build-output-dir }}-static --config ${{ matrix.build_type }} --target rm_lines
@@ -120,12 +151,14 @@ jobs:
           sed -i -e "s|0.0.0+replaced-by-ci|${version}|g" rm_lines_sys/pyproject.toml
 
       - name: Run test & copy shared library to sys
+        if: ${{ !matrix.is_cross }}
         shell: bash
         run: |
           cd tests
           python test.py
 
       - name: Build with poetry
+        if: ${{ !matrix.is_cross }}
         shell: bash
         run: |
           cd rm_lines_sys
@@ -135,7 +168,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p artifact/lib artifact/include
-          mv rm_lines_sys/dist/*.whl artifact/
+          [ -d rm_lines_sys/dist ] && mv rm_lines_sys/dist/*.whl artifact/ || true
 
           cp -r rm_lines/headers artifact/include/
 
@@ -160,6 +193,7 @@ jobs:
           mv librm_lines-${{ matrix.os }}-${{ matrix.target }}.tar.gz artifact/
 
       - name: Rename wheel to be Python-agnostic
+        if: ${{ !matrix.is_cross }}
         shell: bash
         run: |
           file=$(ls artifact/*.whl)
