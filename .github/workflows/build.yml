@@ -163,6 +163,10 @@ jobs:
         shell: bash
         run: |
           cd rm_lines_sys
+          # Set platform tag based on target architecture
+          if [[ "${{ matrix.target }}" == *"x86_64"* ]]; then
+            export _PYTHON_HOST_PLATFORM="macosx-10.9-x86_64"
+          fi
           poetry build -f wheel
 
       - name: Gather files into temp dir
