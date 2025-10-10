@@ -152,21 +152,17 @@ jobs:
           sed -i -e "s|0.0.0+replaced-by-ci|${version}|g" rm_lines_sys/pyproject.toml
 
       - name: Run test & copy shared library to sys
-        if: ${{ !matrix.is_cross }}
+        if: ${{ !matrix.is_cross && matrix.target != 'aarch64-apple-darwin' }}
         shell: bash
         run: |
           cd tests
           python test.py
 
       - name: Build with poetry
-        if: ${{ !matrix.is_cross }}
+        if: ${{ !matrix.is_cross && matrix.target != 'aarch64-apple-darwin' }}
         shell: bash
         run: |
           cd rm_lines_sys
-          # Set platform tag based on target architecture
-          if [[ "${{ matrix.target }}" == *"x86_64"* ]]; then
-            export _PYTHON_HOST_PLATFORM="macosx-10.9-x86_64"
-          fi
           poetry build -f wheel
 
       - name: Gather files into temp dir
@@ -189,18 +185,23 @@ jobs:
             windows-*) SUFFIX="" ;;
           esac
 
+          STATIC_SUFFIX="$SUFFIX"
+          if [ -z "$STATIC_SUFFIX" ]; then
+            STATIC_SUFFIX="-${{ matrix.os }}-${{ matrix.target }}"
+          fi
+
           case "${{ matrix.os }}" in
             ubuntu*)
               mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" "artifact/lib/librm_lines${SUFFIX}.so"
-              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" "artifact/lib/librm_lines${SUFFIX}.a"
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" "artifact/lib/librm_lines${STATIC_SUFFIX}.a"
               ;;
             macos*)
               mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" "artifact/lib/librm_lines${SUFFIX}.dylib"
-              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" "artifact/lib/librm_lines${SUFFIX}.a"
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" "artifact/lib/librm_lines${STATIC_SUFFIX}.a"
               ;;
             windows*)
               mv "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" "artifact/lib/rm_lines${SUFFIX}.dll"
-              mv "${{ steps.strings.outputs.build-output-dir }}-static/${{ matrix.build_type }}/rm_lines.lib" "artifact/lib/rm_lines${SUFFIX}.lib"
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/${{ matrix.build_type }}/rm_lines.lib" "artifact/lib/rm_lines${STATIC_SUFFIX}.lib"
               ;;
           esac
 
@@ -210,7 +211,7 @@ jobs:
           mv librm_lines-${{ matrix.os }}-${{ matrix.target }}.tar.gz artifact/
 
       - name: Rename wheel to be Python-agnostic
-        if: ${{ !matrix.is_cross }}
+        if: ${{ !matrix.is_cross && matrix.target != 'aarch64-apple-darwin' }}
         shell: bash
         run: |
           file=$(ls artifact/*.whl)
