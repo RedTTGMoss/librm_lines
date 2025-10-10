@@ -173,13 +173,16 @@ jobs:
 
           cp -r rm_lines/headers artifact/include/
 
-          # Determine suffix for non-x86_64 architectures
+          # Determine suffix with OS and architecture
           SUFFIX=""
-          case "${{ matrix.target }}" in
-            *x86_64*) SUFFIX="" ;;
-            *aarch64*) SUFFIX="-aarch64" ;;
-            *armv7*) SUFFIX="-armv7" ;;
-            *arm-*) SUFFIX="-armv6" ;;
+          case "${{ matrix.os }}-${{ matrix.target }}" in
+            ubuntu-*x86_64*) SUFFIX="" ;;
+            ubuntu-*aarch64*) SUFFIX="-linux-aarch64" ;;
+            ubuntu-*armv7*) SUFFIX="-linux-armv7" ;;
+            ubuntu-*arm-*) SUFFIX="-linux-armv6" ;;
+            macos-*x86_64*) SUFFIX="" ;;
+            macos-*aarch64*) SUFFIX="-darwin-aarch64" ;;
+            windows-*) SUFFIX="" ;;
           esac
 
           case "${{ matrix.os }}" in
