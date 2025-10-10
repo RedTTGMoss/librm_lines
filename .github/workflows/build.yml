@@ -173,18 +173,27 @@ jobs:
 
           cp -r rm_lines/headers artifact/include/
 
+          # Determine suffix for non-x86_64 architectures
+          SUFFIX=""
+          case "${{ matrix.target }}" in
+            *x86_64*) SUFFIX="" ;;
+            *aarch64*) SUFFIX="-aarch64" ;;
+            *armv7*) SUFFIX="-armv7" ;;
+            *arm-*) SUFFIX="-armv6" ;;
+          esac
+
           case "${{ matrix.os }}" in
             ubuntu*)
-              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" artifact/lib/
-              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" artifact/lib/
+              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.so" "artifact/lib/librm_lines${SUFFIX}.so"
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" "artifact/lib/librm_lines${SUFFIX}.a"
               ;;
             macos*)
-              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" artifact/lib/
-              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" artifact/lib/
+              mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" "artifact/lib/librm_lines${SUFFIX}.dylib"
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/librm_lines.a" "artifact/lib/librm_lines${SUFFIX}.a"
               ;;
             windows*)
-              mv "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" artifact/lib/
-              mv "${{ steps.strings.outputs.build-output-dir }}-static/${{ matrix.build_type }}/rm_lines.lib" artifact/lib/
+              mv "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" "artifact/lib/rm_lines${SUFFIX}.dll"
+              mv "${{ steps.strings.outputs.build-output-dir }}-static/${{ matrix.build_type }}/rm_lines.lib" "artifact/lib/rm_lines${SUFFIX}.lib"
               ;;
           esac
 
@@ -208,11 +217,7 @@ jobs:
           path: |
             artifact/*.whl
             artifact/*.tar.gz
-            artifact/lib/librm_lines.so
-            artifact/lib/librm_lines.dylib
-            artifact/lib/rm_lines.dll
-            artifact/lib/librm_lines.a
-            artifact/lib/rm_lines.lib
+            artifact/lib/*
           retention-days: 5
 
   create-draft-release:
