@@ -27,7 +27,7 @@ file(GLOB RM_PENS_FILES rm_lines/src/renderer/rm_lines_stroker/rm_pens/*.cpp)
 file(GLOB RM_TEMPLATE_FILES rm_lines/src/renderer/rm_lines_stroker/templates/*.cpp)
 file(GLOB STB rm_lines/src/stb/*.cpp)
 
-add_library(rm_lines SHARED rm_lines/src/library.cpp
+add_library(rm_lines rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_export.cpp
         rm_lines/src/reader/tagged_block_reader.cpp
         rm_lines/src/v5/reader.cpp
