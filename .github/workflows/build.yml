@@ -205,10 +205,26 @@ jobs:
               ;;
           esac
 
-          cd artifact
-          tar czf ../librm_lines-${{ matrix.os }}-${{ matrix.target }}.tar.gz lib/ include/
-          cd ..
-          mv librm_lines-${{ matrix.os }}-${{ matrix.target }}.tar.gz artifact/
+          find artifact -name '.DS_Store' -delete
+
+          mkdir -p artifact/pkg/lib artifact/pkg/include
+          cp -R artifact/include/. artifact/pkg/include/
+
+          for lib in artifact/lib/*; do
+            base=$(basename "$lib")
+            case "$base" in
+              librm_lines*.so) dest="librm_lines.so" ;;
+              librm_lines*.dylib) dest="librm_lines.dylib" ;;
+              librm_lines*.a) dest="librm_lines.a" ;;
+              rm_lines*.dll) dest="rm_lines.dll" ;;
+              rm_lines*.lib) dest="rm_lines.lib" ;;
+              *) dest="$base" ;;
+            esac
+            cp "$lib" "artifact/pkg/lib/$dest"
+          done
+
+          tar czf artifact/librm_lines-${{ matrix.os }}-${{ matrix.target }}.tar.gz -C artifact/pkg lib include
+          rm -rf artifact/pkg
 
       - name: Rename wheel to be Python-agnostic
         if: ${{ !matrix.is_cross && matrix.target != 'aarch64-apple-darwin' }}
