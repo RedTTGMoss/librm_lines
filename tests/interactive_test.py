@@ -25,7 +25,9 @@ class GC(pe.GameContext):
     )
     TEMPLATES = (
         'Blank',
-        'P Grid medium'
+        'P Grid large',
+        'P Grid medium',
+        'P Grid small'
     )
 
     def __init__(self):
@@ -198,6 +200,7 @@ class GC(pe.GameContext):
         if renderer[0] is None:
             return
         lib.setTemplate(renderer[1], template.encode())
+        self.frame = None
 
 
 gm = GC()

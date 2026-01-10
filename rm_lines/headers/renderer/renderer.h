@@ -8,10 +8,9 @@
 #include "advanced/layers.h"
 #include "advanced/text.h"
 #include <unordered_map>
-
-#include "rm_lines_stroker/templates/template_functions.h"
 #define TEXT_TOP_Y (180)
 
+class Renderer;
 using ImageBuffer = RMLinesRenderer::ImageBuffer;
 using VaryingGeneratorLengthWidth = RMLinesRenderer::VaryingGeneratorLengthWidth;
 using CapStyle = RMLinesRenderer::CapStyle;
@@ -22,7 +21,7 @@ using Varying4D = RMLinesRenderer::Varying4D;
 
 static constexpr CrdtId TEXT_LAYER{7, 1};
 
-typedef void TemplateOperationFunction(rMPenFill *);
+typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 
 class Renderer {
 public:
@@ -32,7 +31,8 @@ public:
     IntPair paperSize;
     bool landscape;
     PageType pageType;
-    TemplateOperationFunction *templateFunction = Blank;
+    TemplateOperationFunction *templateFunction = nullptr;
+    std::string templateName = "Blank";
 
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);
 
@@ -67,6 +67,11 @@ public:
                   bool antialias);
 
     void setTemplate(const std::string &templateName);
+
+    RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
+        VaryingGeneratorLengthWidth> *getStroker() {
+        return &stroker;
+    }
 
 private:
     SceneTree *sceneTree;

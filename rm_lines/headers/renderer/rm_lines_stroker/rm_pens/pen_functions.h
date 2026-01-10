@@ -16,3 +16,5 @@ void HighlighterPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Vary
 void ShaderPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);
 
 void DebugPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);
+
+void TemplatePen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);

@@ -2,7 +2,7 @@
 
 // Export macro
 #ifdef _WIN32
-    #define EXPORT extern "C" __declspec(dllexport)
+#define EXPORT extern "C" __declspec(dllexport)
 #else
 #define EXPORT extern "C" __attribute__((visibility("default")))
 #endif
@@ -15,6 +15,7 @@
 #define IS_UNLIKELY(x)    __builtin_expect(!!(x), 0)
 #endif
 #include <cstdio>
+#include <cstdint>
 #include <string>
 // ReSharper disable once CppUnusedIncludeDirective
 #include <fcntl.h>
@@ -43,7 +44,14 @@ EXPORT void setDebugLogger(LogFunc debugLogger);
 // Debug mode
 static bool debugMode = false;
 EXPORT void setDebugMode(bool debug);
+
 EXPORT bool getDebugMode();
+
+// FNV-1a hash algorithm for compile-time string hashing
+// Produces better distribution than simple polynomial hashing
+constexpr uint32_t hashString(const char *str, const uint32_t hash = 2166136261u) {
+    return *str ? hashString(str + 1, (hash ^ static_cast<uint32_t>(*str)) * 16777619u) : hash;
+}
 
 void logDebug(const std::string &msg);
 

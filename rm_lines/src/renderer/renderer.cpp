@@ -30,7 +30,7 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
         initSizeTracker(layer.groupId);
         groupLines(layer, LAYER_INFO_NODE, layer.groupId);
     }
- // setTemplate()
+    setTemplate("Blank");
 }
 
 void Renderer::prepareTextDocument() {
@@ -255,7 +255,6 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     stroker.raster.x1 = static_cast<float>(buf->width);
     stroker.raster.y1 = static_cast<float>(buf->height);
 
-    templateFunction(&stroker.raster.raster.fill);
     // TODO: render the text
 
     for (const auto &layer: layers) {
@@ -379,16 +378,27 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
         }
     }
 
+    templateFunction(&stroker.raster.raster.fill, this);
 
     buf->exportRawData(data, dataSize, antialias, 1);
     stroker.raster.raster.fill.reset();
 }
 
 void Renderer::setTemplate(const std::string &templateName) {
+    this->templateName = templateName;
     logDebug(std::format("Template name: {}", templateName));
-    if (templateName == "Blank") {
-        templateFunction = Blank;
-    } else {
-        templateFunction = Blank;
+    switch (hashString(templateName.c_str())) {
+        case hashString("Blank"):
+            templateFunction = Blank;
+            break;
+        case hashString("P Grid large"):
+        case hashString("P Grid medium"):
+        case hashString("P Grid small"):
+            templateFunction = GridBase;
+            break;
+        default:
+            logError(std::format("Unknown template name: {}", templateName));
+            templateFunction = Blank;
+            break;
     }
 }

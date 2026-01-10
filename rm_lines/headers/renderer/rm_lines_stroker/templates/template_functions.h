@@ -2,7 +2,8 @@
 
 #include "renderer/rm_lines_stroker/rm_pens/rm_pen_fill.h"
 #include "renderer/rm_lines_stroker/rm_pens/colors.h"
+#include "renderer/renderer.h"
 
-void Blank(rMPenFill *fill);
+void Blank(rMPenFill *fill, Renderer *renderer);
 
-void GridBase(rMPenFill *fill, Vector offset, float scale);
+void GridBase(rMPenFill *fill, Renderer *renderer);
