@@ -166,7 +166,7 @@ class GC(pe.GameContext):
 
         if self.frame is None or drag:
             self.frame = self.get_frame(
-                self.centerx + offset[0], self.centery + offset[1],
+                self.centerx - offset[0], self.centery - offset[1],
                 *self.size, self.scale)
         if self.frame:
             pe.display.blit(self.frame)
