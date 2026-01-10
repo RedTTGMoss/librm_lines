@@ -47,11 +47,7 @@ enum PenColor {
 
     GRAY_OVERLAP = 8,
 
-
-    // All highlight colors share the same value.
-    // There is also yet unknown extra data in the block
-    // that might contain additional color information.
-    HIGHLIGHT = 9,
+    ARGB = 9,
 
     GREEN_2 = 10,
     CYAN = 11,

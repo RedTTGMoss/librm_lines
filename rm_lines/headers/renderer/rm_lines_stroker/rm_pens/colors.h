@@ -2,21 +2,24 @@
 #include "common/scene_items.h"
 #include "common/data_types.h"
 
-constexpr std::pair<PenColor, Color> rMPallet[] = {
-    {BLACK, Color(0, 0, 0, 255)},
-    {GRAY, Color(125, 125, 125, 255)},
-    {WHITE, Color(255, 255, 255, 255)},
-    {YELLOW, Color(255, 255, 99, 255)},
-    {GREEN, Color(0, 255, 0, 255)},
-    {PINK, Color(255, 20, 147, 255)},
-    {BLUE, Color(0, 98, 204, 255)},
-    {RED, Color(217, 7, 7, 255)},
-    {GRAY_OVERLAP, Color(125, 125, 125, 255)},
-    {GREEN_2, Color(145, 218, 113, 255)},
-    {CYAN, Color(116, 210, 232, 255)},
-    {MAGENTA, Color(192, 127, 210, 255)},
-    {YELLOW_2, Color(250, 231, 25, 255)}
-};
+constexpr Color getColorFromPalette(const PenColor penColor) {
+    switch (penColor) {
+        case BLACK: return Color(0, 0, 0, 255);
+        case GRAY: return Color(125, 125, 125, 255);
+        case WHITE: return Color(255, 255, 255, 255);
+        case YELLOW: return Color(255, 255, 99, 255);
+        case GREEN: return Color(0, 255, 0, 255);
+        case PINK: return Color(255, 20, 147, 255);
+        case BLUE: return Color(0, 98, 204, 255);
+        case RED: return Color(217, 7, 7, 255);
+        case GRAY_OVERLAP: return Color(125, 125, 125, 255);
+        case GREEN_2: return Color(145, 218, 113, 255);
+        case CYAN: return Color(116, 210, 232, 255);
+        case MAGENTA: return Color(192, 127, 210, 255);
+        case YELLOW_2: return Color(250, 231, 25, 255);
+        default: return Color(0, 0, 0, 255);
+    }
+}
 
 inline Color blendMultiply(const Color base, const Color blend, const float blend_amount) {
     if (IS_LIKELY(base.alpha == 0)) {

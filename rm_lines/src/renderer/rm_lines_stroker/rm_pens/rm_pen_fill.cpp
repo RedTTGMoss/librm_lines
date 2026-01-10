@@ -13,7 +13,7 @@ void rMPenFill::newLine() {
     if (line->argbColor.has_value()) {
         baseColor = line->argbColor.value();
     } else {
-        baseColor = rMPallet[line->color].second;
+        baseColor = getColorFromPalette(line->color);
     }
     stroker->varying.lengthFactor = 1.0f;
     stroker->varying.widthFactor = 1.0f;
