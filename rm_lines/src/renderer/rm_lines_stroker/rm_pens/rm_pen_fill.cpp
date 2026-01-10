@@ -67,6 +67,7 @@ void rMPenFill::newLine() {
     segmentCounter = 0;
     lineCounter++;
     pointCounter = 0;
+    previousIntensity = 0.0f;
 }
 
 void rMPenFill::newPoint() {
@@ -94,18 +95,25 @@ void rMPenFill::newPoint() {
              *
              * These observations can be seen in the pencil test file.
             */
-            intensity = 0.1 *
-                        -(static_cast<double>(point->speed) / 4 / 35) + 1 * static_cast<double>(point->
-                            pressure) / 255 - 0.1 * AdvancedMath::directionToTilt(point->direction);
+            // Store previous intensity for lerping
+            float point_intensity = 0.1 *
+                                    -(static_cast<double>(point->speed) / 4 / 35) + 1 * static_cast<double>(point->
+                                        pressure) / 255 - 0.1 * AdvancedMath::directionToTilt(point->direction) +
+                                    0.02 * (static_cast<double>(point->width) / 44.6f);
+            point_intensity = std::max(0.01f, std::min(1.0f, point_intensity));
+            if (pointCounter == 1) {
+                previousIntensity = point_intensity;
+            } else {
+                previousIntensity = intensity;
+            }
 
-            // cap between 0 and 1
-            intensity = std::max(0.15f, std::min(1.0f, intensity)) - 0.1f;
-            const float segmentWidth = 10.0f * ((0.8f * baseWidth + 0.5 * point->pressure / 255.0f) * (
-                                                    static_cast<float>(point->width) / 3.0f) -
+            intensity = point_intensity;
+            const float segmentWidth = 20.0f * ((0.8f * baseWidth + 0.5 * point->pressure / 255.0f) * (
+                                                    static_cast<float>(point->width) / 2.6f) -
                                                 0.1f * AdvancedMath::directionToTilt(point->direction) -
                                                 0.6f * (static_cast<float>(point->speed) / 4) / 10);
-            const float maxWidth = baseWidth * MAGIC_PENCIL_SIZE;
-            stroker->width = std::max(3.0f, std::min(segmentWidth, maxWidth)) / K * scale;
+            const float maxWidth = baseWidth * MAGIC_PENCIL_SIZE + (static_cast<float>(point->width) / 2.6f);
+            stroker->width = std::max(12.0f, std::min(segmentWidth, maxWidth)) / K * scale;
             break;
         }
         default:

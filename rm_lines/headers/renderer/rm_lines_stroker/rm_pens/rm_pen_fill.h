@@ -25,6 +25,7 @@ public:
     unsigned int pointCounter;
     float scale;
     float intensity;
+    float previousIntensity;
     Color baseColor;
     OperatorFunction *operatorFunction;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
