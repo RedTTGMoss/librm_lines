@@ -1,5 +1,6 @@
 import atexit
 import threading
+from typing import Optional
 
 from pygameextra import Rect
 
@@ -7,7 +8,7 @@ from tests_base import *
 import pygameextra as pe
 
 pe.init()
-
+lib: Optional["LibAnnotations"]
 lib.setDebugMode(True)
 
 
@@ -15,6 +16,7 @@ class GC(pe.GameContext):
     AREA = (500, 500)
     MODE = pe.display.DISPLAY_MODE_RESIZABLE
     BACKGROUND = pe.colors.white
+    TITLE = "Interactive Test"
 
     FPS_LOGGER = True
     LANDSCAPES = (
