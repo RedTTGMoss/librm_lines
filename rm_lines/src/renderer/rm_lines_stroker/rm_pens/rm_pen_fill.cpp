@@ -60,7 +60,6 @@ void rMPenFill::newLine() {
             operatorFunction = ShaderPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;
             stroker->joinStyle = RMLinesRenderer::BevelJoin;
-            stroker->width = 30 * scale;
             break;
         default:
             operatorFunction = BasicPen;
@@ -119,6 +118,15 @@ void rMPenFill::newPoint() {
             const float maxWidth = baseWidth * MAGIC_PENCIL_SIZE + (static_cast<float>(point->width) / 2.6f);
             stroker->width = std::max(12.0f, std::min(segmentWidth, maxWidth)) / K * scale;
             break;
+        }
+        case SHADER: {
+            // Adjust width of the shader, shader has a larger width margin, of around 30, similar to highlighter
+            const float segmentWidth = 30.0f * ((0.8f * baseWidth + 0.5 * point->pressure / 255.0f) * (
+                                                    static_cast<float>(point->width) / 2.6f) -
+                                                0.1f * AdvancedMath::directionToTilt(point->direction) -
+                                                0.6f * (static_cast<float>(point->speed) / 4) / 10);
+            const float maxWidth = baseWidth * 64 + (static_cast<float>(point->width) / 1.2f);
+            stroker->width = std::max(30.0f, std::min(segmentWidth, maxWidth)) / K * scale;
         }
         default:
             break;
