@@ -23,6 +23,10 @@ class GC(pe.GameContext):
         'Landscape',
         'Scaling landscape',
     )
+    TEMPLATES = (
+        'Blank',
+        'P Grid medium'
+    )
 
     def __init__(self):
         self.items = []
@@ -33,6 +37,7 @@ class GC(pe.GameContext):
         self.scale = 1
         self.buffer = (None, None, None)
         self.frame = None
+        self.template_index = 0
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
 
@@ -69,6 +74,7 @@ class GC(pe.GameContext):
             print(f"Failed to make renderer for {item}")
             return
         self.loaded[item] = (tree_id, renderer_id)
+        self.set_template(self.TEMPLATES[self.template_index])
 
     def get_renderer(self):
         renderer = self.loaded.get(self.item)
@@ -90,6 +96,16 @@ class GC(pe.GameContext):
             if self.index < 0:
                 self.index = len(self.items) - 1
             self.frame = None
+        elif pe.event.key_DOWN(pe.K_UP):
+            self.template_index -= 1
+            if self.template_index < 0:
+                self.template_index = len(self.TEMPLATES) - 1
+            self.set_template(self.TEMPLATES[self.template_index])
+        elif pe.event.key_DOWN(pe.K_DOWN):
+            self.template_index += 1
+            if self.template_index > len(self.TEMPLATES) - 1:
+                self.template_index = 0
+            self.set_template(self.TEMPLATES[self.template_index])
         if e.type == pe.MOUSEWHEEL:
             self._scale += e.y * self.delta_time
         super().handle_event(e)
@@ -176,6 +192,12 @@ class GC(pe.GameContext):
         else:
             self.sprite.alpha = 255
         self.sprite.display((self.width - 100, self.height - 100))
+
+    def set_template(self, template: str):
+        renderer = self.get_renderer()
+        if renderer[0] is None:
+            return
+        lib.setTemplate(renderer[1], template.encode())
 
 
 gm = GC()

@@ -8,7 +8,7 @@
 #define HTML_FOOTER "</body></html>"
 
 
-Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape): paperSize({1404, 1872}),
+Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape) : paperSize({1404, 1872}),
     landscape(landscape), pageType(pageType),
     sceneTree(sceneTree) {
     // Check for new paperSize in scene info block if applicable
@@ -30,6 +30,7 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
         initSizeTracker(layer.groupId);
         groupLines(layer, LAYER_INFO_NODE, layer.groupId);
     }
+ // setTemplate()
 }
 
 void Renderer::prepareTextDocument() {
@@ -384,6 +385,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
 }
 
 void Renderer::setTemplate(const std::string &templateName) {
+    logDebug(std::format("Template name: {}", templateName));
     if (templateName == "Blank") {
         templateFunction = Blank;
     } else {

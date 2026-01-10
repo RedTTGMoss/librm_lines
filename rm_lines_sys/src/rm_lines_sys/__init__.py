@@ -61,6 +61,9 @@ class LibAnnotations(ctypes.Structure):
                  width: int, height: int, antialias: bool):
         pass
 
+    def setTemplate(self, renderer_id: bytes, template: bytes):
+        pass
+
     def getSizeTracker(self, renderer_id: bytes, layer_id: bytes) -> bytes:
         """Get the size tracker for the library."""
         pass
@@ -163,6 +166,9 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function getFrame(str, *, size_t, (x)int, (y)int, (fw)int, (fh)int, (w)int, (h)int, bool)
     _lib.getFrame.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_size_t, ctypes.c_int,
                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_bool]
+
+    # Function setTemplate(str, str)
+    _lib.setTemplate.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 
     # Function getSizeTracker(str, int, int) -> str
     _lib.getSizeTracker.argtypes = [ctypes.c_char_p, ctypes.c_char_p]

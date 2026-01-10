@@ -218,6 +218,16 @@ void getFrame(
     );
 }
 
+void setTemplate(
+    const char *rendererId, const char *templateName) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid treeId provided");
+        return;
+    }
+    renderer->setTemplate(templateName);
+}
+
 const char *getSizeTracker(const char *rendererId, const char *stringlayerId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
