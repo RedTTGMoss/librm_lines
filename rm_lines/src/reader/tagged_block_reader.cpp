@@ -445,6 +445,18 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
         } else if (currentOffset < block_end) {
             logError(std::format("BLOCK type: {} under-read: {} offset < {} block end", currentBlockInfo.blockType,
                                  currentOffset, block_end));
+            if (getDebugMode()) {
+                // Dump the remaining bytes for debugging
+                const uint32_t remaining = block_end - currentOffset;
+                std::vector<uint8_t> dumpData(remaining);
+                readBytesOrError(remaining, dumpData.data());
+                std::ostringstream oss;
+                oss << "Remaining bytes dump (hex): ";
+                for (const uint8_t byte: dumpData) {
+                    oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+                }
+                logDebug(oss.str());
+            }
             seekTo(block_end);
         } else if (currentOffset > block_end) {
             logError(std::format("BLOCK type: {} over-read : {} offset > {} block end", currentBlockInfo.blockType,
