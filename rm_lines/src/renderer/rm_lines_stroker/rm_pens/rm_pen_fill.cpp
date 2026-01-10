@@ -56,8 +56,12 @@ void rMPenFill::newLine() {
             operatorFunction = PencilPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;
             break;
-        // case SHADER:
-        //     break;
+        case SHADER:
+            operatorFunction = ShaderPen;
+            stroker->capStyle = RMLinesRenderer::RoundCap;
+            stroker->joinStyle = RMLinesRenderer::BevelJoin;
+            stroker->width = 30 * scale;
+            break;
         default:
             operatorFunction = BasicPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;

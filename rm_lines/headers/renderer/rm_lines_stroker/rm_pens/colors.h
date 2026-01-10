@@ -32,3 +32,40 @@ inline Color blendMultiply(const Color base, const Color blend, const float blen
     // Convert back to [0,255] integer values.
     return final;
 }
+
+inline Color blendShader(const Color base, const Color blend) {
+    if (IS_LIKELY(base.alpha == 0)) {
+        // Single stroke on transparent background: slightly darker than just base color
+        Color result = blend;
+        result.alpha = result.alpha * 1.4f; // Slightly increase alpha for visibility
+        return result;
+    }
+
+    // Shader/blend pen: standard alpha compositing
+    // The blend color's alpha (typically 64) creates the watery, gradual effect
+    const float blendAlpha = blend.alpha / 255.0f;
+    const float baseAlpha = base.alpha / 255.0f;
+    // Standard over operator: result = blend over base
+    // result_color = (blend_color * blend_alpha) + (base_color * base_alpha * (1 - blend_alpha))
+    // result_alpha = blend_alpha + base_alpha * (1 - blend_alpha)
+
+    const float invBlendAlpha = 1.0f - blendAlpha;
+    const float resultAlpha = blendAlpha + baseAlpha * invBlendAlpha;
+
+    Color result;
+    if (resultAlpha > 0.0f) {
+        // Premultiply and composite
+        result.red = static_cast<uint8_t>((blend.red * blendAlpha + base.red * baseAlpha * invBlendAlpha) /
+                                          resultAlpha);
+        result.green = static_cast<uint8_t>((blend.green * blendAlpha + base.green * baseAlpha * invBlendAlpha) /
+                                            resultAlpha);
+        result.blue = static_cast<uint8_t>((blend.blue * blendAlpha + base.blue * baseAlpha * invBlendAlpha) /
+                                           resultAlpha);
+        result.alpha = static_cast<uint8_t>(resultAlpha * 255.0f);
+    } else {
+        result = base;
+    }
+
+    return result;
+}
+
