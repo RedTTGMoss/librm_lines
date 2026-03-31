@@ -30,6 +30,7 @@ std::string getTextItemContents(const TextItem item) {
     if (std::holds_alternative<uint32_t>(item.value.value())) {
         return std::format("Formatting ({})", std::get<uint32_t>(item.value.value()));
     }
+    return "";
 }
 
 void replaceNewLine(std::string &string) {

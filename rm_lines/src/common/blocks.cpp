@@ -39,9 +39,9 @@ std::unique_ptr<Block> Block::lookup(const BlockInfo &info) {
         case ROOT_TEXT_BLOCK:
             block = std::make_unique<RootTextBlock>();
             break;
-        // case SCENE_TOMBSTONE_ITEM_BLOCK: // TODO
-        //     block = std::make_unique<SceneTombstoneItemBlock>();
-        //     break;
+        case SCENE_TOMBSTONE_ITEM_BLOCK: // TODO
+            block = std::make_unique<SceneTombstoneItemBlock>();
+            break;
         case AUTHOR_IDS_BLOCK:
             block = std::make_unique<AuthorIdsBlock>();
             break;
@@ -68,6 +68,35 @@ Block::~Block() {
 bool Block::read(TaggedBlockReader *reader) {
     return false;
 }
+
+bool SceneTombstoneItemBlock::read(TaggedBlockReader *reader) {
+    // TODO: Figure out tombstones
+    // These seem to be related to deleted paragraphs
+    CrdtId _item1;
+    CrdtId _posX;
+    CrdtId _posY;
+    CrdtId _item4;
+    uint32_t integer;
+    if (!reader->readId(1, &_item1)) return false;
+
+    if (!reader->readId(2, &_posX)) return false;
+    if (!reader->readId(3, &_posY)) return false;
+    if (!reader->readId(4, &_item4)) return false;
+    if (!reader->readInt(5, &integer)) return false;
+
+    logDebug(std::format("      The item1 is ({}:{})", _item1.first, _item1.second));
+    logDebug(std::format("      The endId is ({}:{})", _posX.first, _posX.second));
+    logDebug(std::format("      The startId is ({}:{})", _posY.first, _posY.second));
+    logDebug(std::format("      The item4 is ({}:{})", _item4.first, _item4.second));
+    logDebug(std::format("      The integer is {}", integer));
+    return true;
+}
+
+json SceneTombstoneItemBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
+}
+
 
 bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
     uint64_t subBlocks = 0;
