@@ -383,6 +383,21 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
 
     if (!reader->readFloat(4, &value.width)) return false;
 
+    if (reader->hasBytesRemaining()) {
+        reader->getTag();
+        if (!reader->readSubBlock(5)) return false;
+        reader->getTag();
+        if (!reader->readSubBlock(1)) return false;
+        CrdtId _id;
+        if (!reader->readId(&_id)) return false;
+        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/0: ({}:{})", _id.first, _id.second));
+        if (!reader->readId(&_id)) return false;
+        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/1: ({}:{})", _id.first, _id.second));
+        if (!reader->readId(&_id)) return false;
+        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/2: ({}:{})", _id.first, _id.second));
+        if (!reader->readId(&_id)) return false;
+        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/3: ({}:{})", _id.first, _id.second));
+    }
     return true;
 }
 
