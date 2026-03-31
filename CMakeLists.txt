@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.30)
 project(rm_lines)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
@@ -53,6 +55,7 @@ target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf
 if (WIN32)
     target_link_libraries(rm_lines PRIVATE DbgHelp)
     set_target_properties(rm_lines PROPERTIES OUTPUT_NAME "rm_lines" PREFIX "")
+    #    target_compile_features(rm_lines PUBLIC cxx_std_20)
 endif ()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})

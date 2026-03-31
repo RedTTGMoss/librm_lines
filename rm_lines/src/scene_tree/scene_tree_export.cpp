@@ -13,9 +13,11 @@
 #include <random>
 #include <sstream>
 #include <iomanip>
+#include <mutex>
 
 using json = nlohmann::json;
 
+static std::mutex globalSceneTreeMutex;
 std::unordered_map<std::string, std::shared_ptr<SceneTree> > globalSceneTreeMap;
 
 std::string generateUUID() {
@@ -40,9 +42,10 @@ std::string generateUUID() {
 }
 
 std::string addSceneTree(std::shared_ptr<SceneTree> tree) {
+    std::lock_guard<std::mutex> lock(globalSceneTreeMutex);
+
     std::string uuid = generateUUID();
 
-    // Check if the UUID already exists
     int attempts = 0;
     while (globalSceneTreeMap.find(uuid) != globalSceneTreeMap.end()) {
         uuid = generateUUID();
@@ -56,13 +59,17 @@ std::string addSceneTree(std::shared_ptr<SceneTree> tree) {
 }
 
 std::shared_ptr<SceneTree> getSceneTree(const std::string &treeId) {
-    if (auto it = globalSceneTreeMap.find(treeId); it != globalSceneTreeMap.end()) {
-        return it->second;
+    std::lock_guard<std::mutex> lock(globalSceneTreeMutex);
+
+    auto it = globalSceneTreeMap.find(treeId);
+    if (it == globalSceneTreeMap.end()) {
+        return nullptr;
     }
-    return nullptr;
+    return it->second;
 }
 
 bool removeSceneTree(const std::string &uuid) {
+    std::lock_guard<std::mutex> lock(globalSceneTreeMutex);
     return globalSceneTreeMap.erase(uuid) > 0;
 }
 
@@ -103,7 +110,8 @@ EXPORT bool convertToJsonFile(const char *treeId, const char *outPath) {
 
     return true;
 }
-EXPORT const char* convertToJson(const char *treeId) {
+
+EXPORT const char *convertToJson(const char *treeId) {
     const auto tree = getSceneTree(treeId);
     if (!tree) {
         logError("Invalid treeId provided");
@@ -117,7 +125,7 @@ EXPORT const char* convertToJson(const char *treeId) {
     return result.c_str();
 }
 
-EXPORT const char * getSceneInfo(const char *treeId) {
+EXPORT const char *getSceneInfo(const char *treeId) {
     const auto tree = getSceneTree(treeId);
     if (!tree) {
         logError("Invalid treeId provided");
@@ -166,7 +174,7 @@ EXPORT const char *buildTree(const char *rmPath) {
         return "";
     }
 
-    static std::string result;
+    thread_local std::string result;
 
     try {
         result = addSceneTree(tree);

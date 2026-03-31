@@ -4,10 +4,13 @@
 #include <fstream>
 #include <sstream>
 #include <optional>
+#include <mutex>
 
+static std::mutex globalRendererMutex;
 std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendererMap;
 
 std::string addRenderer(std::shared_ptr<Renderer> renderer) {
+    std::lock_guard<std::mutex> lock(globalRendererMutex);
     std::string uuid = generateUUID();
 
     // Check if the UUID already exists
@@ -24,13 +27,16 @@ std::string addRenderer(std::shared_ptr<Renderer> renderer) {
 }
 
 std::shared_ptr<Renderer> getRenderer(const std::string &treeId) {
-    if (const auto it = globalRendererMap.find(treeId); it != globalRendererMap.end()) {
-        return it->second;
+    std::lock_guard<std::mutex> lock(globalRendererMutex);
+    auto it = globalRendererMap.find(treeId);
+    if (it == globalRendererMap.end()) {
+        return nullptr;
     }
-    return nullptr;
+    return it->second;
 }
 
 bool removeRenderer(const std::string &uuid) {
+    std::lock_guard<std::mutex> lock(globalRendererMutex);
     return globalRendererMap.erase(uuid) > 0;
 }
 
@@ -46,7 +52,7 @@ EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bo
         return "";
     }
 
-    static std::string result;
+    thread_local std::string result;
 
     try {
         result = addRenderer(renderer);
