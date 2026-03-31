@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 
 // Export macro
 #ifdef _WIN32
@@ -52,6 +53,8 @@ EXPORT bool getDebugMode();
 constexpr uint32_t hashString(const char *str, const uint32_t hash = 2166136261u) {
     return *str ? hashString(str + 1, (hash ^ static_cast<uint32_t>(*str)) * 16777619u) : hash;
 }
+
+std::string bytesToHexStr(const std::vector<uint8_t> &data);
 
 void logDebug(const std::string &msg);
 

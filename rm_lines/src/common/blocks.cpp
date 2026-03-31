@@ -148,6 +148,55 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
         if (!reader->readIntPair(5, &_paperSize)) return false;
         paperSize = _paperSize;
     }
+    if (reader->hasBytesRemaining()) {
+        LwwItem<std::vector<uint8_t> > result;
+        if (!reader->readLwwBytes(6, &result)) {
+            logDebug("SceneInfoBlock has unknown LwwBytes with index 6, but failed to read it");
+        }
+        auto data = bytesToHexStr(result.value);
+        logDebug(std::format("SceneInfoBlock has unknown LwwBytes with length {}: {}", result.value.size(), data));
+    }
+    if (reader->hasBytesRemaining()) [[unlikely]] {
+        // Random block with 16 bytes of untagged data
+        SubBlockInfo info;
+        std::vector<uint8_t> data;
+        DoublePair result;
+        reader->getTag();
+        reader->readSubBlock(7, info);
+        data.resize(info.size);
+        reader->readDoublePair(&result);
+        logDebug(
+            std::format("SceneInfoBlock has unknown subblock with double pair {}, {}", result.first, result.second));
+    }
+    if (reader->hasBytesRemaining()) [[unlikely]] {
+        SubBlockInfo info;
+        LwwItem<DoublePair> result;
+        if (!reader->readLwwDoublePair(8, &result)) {
+            logDebug("SceneInfoBlock has unknown LwwBytes with index 8, but failed to read it");
+        }
+        logDebug(std::format("SceneInfoBlock has unknown LwwDoublePair {}, {} timestamp: ({}:{})",
+                             result.value.first, result.value.second, result.timestamp.first, result.timestamp.second
+        ));
+    }
+    if (reader->hasBytesRemaining()) [[unlikely]] {
+        // Most probably related to rM Methods
+        SubBlockInfo info;
+        LwwItem<uint8_t> result;
+        if (!reader->readLwwByte(9, &result)) {
+            logDebug("SceneInfoBlock has unknown LwwByte with index 9, but failed to read it");
+        }
+        logDebug(std::format("SceneInfoBlock has unknown LwwByte with value: 0x{:X} timestamp: ({}:{})",
+                             result.value, result.timestamp.first, result.timestamp.second));
+    }
+    // logDebug("==============================");
+    // logDebug(std::format("Offset: {}", reader->currentOffset));
+    // while (reader->hasBytesRemaining()) {
+    //     if (!reader->debugTag()) {
+    //         break;
+    //     }
+    //     logDebug("----------------");
+    // }
+    // logDebug("==============================");
 
     return true;
 }
@@ -166,7 +215,7 @@ json SceneInfoBlock::toJson() const {
         j["rootDocumentVisible"] = nullptr;
     }
     if (paperSize) {
-        j["paperSize"] = { paperSize->first, paperSize->second };
+        j["paperSize"] = {paperSize->first, paperSize->second};
     } else {
         j["paperSize"] = nullptr;
     }

@@ -184,6 +184,11 @@ struct IntPair {
     uint32_t second;
 };
 
+struct DoublePair {
+    double first;
+    double second;
+};
+
 template<typename T>
 struct LwwItem {
     CrdtId timestamp = END_MARKER;

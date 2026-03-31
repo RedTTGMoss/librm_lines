@@ -1,4 +1,6 @@
 #include "library.h"
+
+#include <iomanip>
 #include <iostream>
 #include <sstream>
 
@@ -39,6 +41,15 @@ bool getDebugMode() {
     return debugMode;
 }
 
+std::string bytesToHexStr(const std::vector<uint8_t> &data) {
+    std::stringstream ss;
+    ss << std::hex;
+    for (const uint8_t byte: data) {
+        ss << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+    }
+    return ss.str();
+}
+
 void logDebug(const std::string &msg) {
     if (globalDebugLogger && debugMode) {
         globalDebugLogger(msg.c_str());
@@ -65,9 +76,9 @@ off_t getFileSize(FILE *file) {
 #pragma comment(lib, "dbghelp.lib")
 
 std::string getStackTrace() {
-    void* stack[100];
+    void *stack[100];
     unsigned short frames = CaptureStackBackTrace(0, 100, stack, NULL);
-    SYMBOL_INFO* symbol = (SYMBOL_INFO*)calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
+    SYMBOL_INFO *symbol = (SYMBOL_INFO *) calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
     symbol->MaxNameLen = 255;
     symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 

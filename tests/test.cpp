@@ -275,7 +275,7 @@ void runColorAssertTest() {
     assert(initialColor == fromRgbaColor);
 }
 
-int main() {
+int main(const int argc, char *argv[]) {
     // Initialize the library
     setLogger(loggerDefault);
     setDebugLogger(loggerDefault);
@@ -285,6 +285,12 @@ int main() {
     if (!fs::exists("./test.cpp")) {
         logError("Please run this test from the tests directory.");
         return -1;
+    }
+
+    std::optional<std::string> fileFilter = std::nullopt;
+    if (argc > 1) {
+        fileFilter = argv[1];
+        setDebugMode(true);
     }
 
     runColorAssertTest();
@@ -308,6 +314,9 @@ int main() {
         // Iterate over the directory entries
         for (const fs::path dirPath = "./files"; const auto &entry: fs::directory_iterator(dirPath)) {
             std::string filename = entry.path().filename().string();
+            if (fileFilter.has_value() && filename != fileFilter.value()) {
+                continue;
+            }
             std::string file = entry.path().string();
             if (!file.ends_with(".rm")) {
                 std::cerr << "File " << file << " is not a LINES file" << std::endl;
@@ -319,6 +328,9 @@ int main() {
         // Iterate over the directory entries for draw tests
         for (const fs::path dirPath = "./draw_files"; const auto &entry: fs::directory_iterator(dirPath)) {
             std::string filename = entry.path().filename().string();
+            if (fileFilter.has_value() && filename != fileFilter.value()) {
+                continue;
+            }
             std::string file = entry.path().string();
             if (!file.ends_with(".rm")) {
                 std::cerr << "File " << file << " is not a LINES file" << std::endl;

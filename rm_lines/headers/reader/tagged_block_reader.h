@@ -18,6 +18,29 @@ enum class TagType : uint8_t {
     BAD_VALUINT = 0xFF,
 };
 
+inline std::string debugTagTypes(TagType type) {
+    switch (type) {
+        case TagType::ID:
+            return "ID";
+        case TagType::Length4:
+            return "Length4";
+        case TagType::Byte8:
+            return "Byte8";
+        case TagType::Byte4:
+            return "Byte4";
+        case TagType::Byte2:
+            return "Byte2";
+        case TagType::Byte1:
+            return "Byte1";
+        case TagType::BAD_LENGTH:
+            return "BAD_LENGTH";
+        case TagType::BAD_VALUINT:
+            return "BAD_VALUINT";
+        default:
+            return std::format("Unknown(0x{:X})", static_cast<unsigned int>(type));
+    }
+}
+
 struct Tag {
     uint8_t index;
     TagType type;
@@ -56,7 +79,9 @@ public:
 
     bool readSubBlock(uint8_t index);
 
-    bool checkSubBlock(uint8_t index);
+    bool checkSubBlock(uint8_t index) const;
+
+    bool debugSubBlock(u_int8_t index);
 
     bool readValuint(uint64_t &result);
 
@@ -72,9 +97,11 @@ public:
 
     bool checkTag(uint8_t expectedIndex, TagType expectedTagType) const;
 
-    bool checkRequiredTag(uint8_t expectedIndex, TagType expectedTagType);
+    bool checkRequiredTag(uint8_t expectedIndex, TagType expectedTagType, bool error = true);
 
     void getTag();
+
+    bool debugTag(u_int8_t padding = 0);
 
     void claimTag();
 
@@ -94,6 +121,10 @@ public:
 
     bool readIntPair(IntPair *result);
 
+    bool readDoublePair(uint8_t index, DoublePair *result);
+
+    bool readDoublePair(DoublePair *result);
+
     bool readFloat(uint8_t index, float *result);
 
     bool readFloat(float *result);
@@ -103,6 +134,8 @@ public:
     bool readDouble(double *result);
 
     bool readByte(uint8_t index, uint8_t *result);
+
+    bool readBytesIndexed(uint8_t index, uint32_t size, std::vector<uint8_t> *result);
 
     bool readByte(uint8_t *result);
 
@@ -123,6 +156,10 @@ public:
 
     bool readLwwByte(uint8_t index, LwwItem<uint8_t> *result);
 
+    bool readLwwDoublePair(uint8_t index, LwwItem<DoublePair> *result);
+
+    bool readLwwBytes(uint8_t index, LwwItem<std::vector<uint8_t> > *result);
+
     bool readLwwString(uint8_t index, LwwItem<std::string> *result);
 
     // Special
@@ -137,6 +174,9 @@ private:
 
     template<typename T>
     bool _readLwwItemId(uint8_t index, LwwItem<T> *id);
+
+    template<typename T>
+    std::optional<SubBlockInfo> _readLwwItemIdInfo(uint8_t index, LwwItem<T> *id);
 
     Tag tag;
     bool tagClaimed = true;

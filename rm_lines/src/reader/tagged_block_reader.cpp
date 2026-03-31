@@ -63,12 +63,28 @@ bool TaggedBlockReader::readSubBlock(const uint8_t index) {
     return true;
 }
 
-bool TaggedBlockReader::checkSubBlock(const uint8_t index) {
+bool TaggedBlockReader::checkSubBlock(const uint8_t index) const {
     if (!hasBytesRemaining()) {
         return false;
     }
     const bool subBlockPresent = checkTag(index, TagType::Length4);
     return subBlockPresent;
+}
+
+bool TaggedBlockReader::debugSubBlock(u_int8_t index) {
+    SubBlockInfo subBlockInfo;
+    if (!checkSubBlock(index)) {
+        logDebug(std::format("SubBlock with index {} not present at offset {}. Remaining bytes: {}", index,
+                             currentOffset,
+                             remainingBytes()));
+        return false;
+    }
+    if (!readSubBlock(index, subBlockInfo)) {
+        return false;
+    }
+    logDebug(std::format("SubBlock with index {} - offset: {}, size: {}, currentOffset: {}, remainingBytes: {}",
+                         index, subBlockInfo.offset, subBlockInfo.size, currentOffset, remainingBytes()));
+    return true;
 }
 
 bool TaggedBlockReader::readValuint(uint64_t &result) {
@@ -170,15 +186,18 @@ bool TaggedBlockReader::checkTag(const uint8_t expectedIndex, const TagType expe
     return tag.index == expectedIndex && tag.type == expectedTagType;
 }
 
-bool TaggedBlockReader::checkRequiredTag(const uint8_t expectedIndex, const TagType expectedTagType) {
-    if (tag.index == expectedIndex && tag.type == expectedTagType) {
+bool TaggedBlockReader::checkRequiredTag(const uint8_t expectedIndex, const TagType expectedTagType, bool error) {
+    if (tag.index == expectedIndex && tag.type == expectedTagType) [[likely]] {
         claimTag(); // Claim the tag
         return true;
-    } else {
-        logError(std::format("Expected tag index {} and type {}, but got index {} and type {}", expectedIndex,
-                             static_cast<int>(expectedTagType), tag.index, static_cast<int>(tag.type)));
-        return false;
     }
+    if (error) {
+        logError(std::format("Expected tag index {} and type 0x{:X} <{}>, but got index {} and type 0x{:X} <{}>",
+                             expectedIndex,
+                             static_cast<u_int8_t>(expectedTagType), debugTagTypes(expectedTagType), tag.index,
+                             static_cast<u_int8_t>(tag.type), debugTagTypes(tag.type)));
+    }
+    return false;
 }
 
 void TaggedBlockReader::getTag() {
@@ -193,6 +212,45 @@ void TaggedBlockReader::getTag() {
         tagClaimed = false; // mark the tag as unclaimed
     }
     // logDebug(std::format("Read [TAG] index: {}, type: {}", tag.index, static_cast<int>(tag.type)));
+}
+
+bool TaggedBlockReader::debugTag(const u_int8_t padding) {
+    if (!tagClaimed) {
+        return false;
+    }
+    std::string paddingStr(padding * 4, ' ');
+    getTag();
+    if (tag.type == TagType::BAD_LENGTH || tag.type == TagType::BAD_VALUINT) {
+        return debugTag();
+    }
+    logDebug(std::format(
+        "{}Read [TAG] index: {}, type: 0x{:X} <{}> offset: {}",
+        paddingStr,
+        tag.index,
+        static_cast<unsigned int>(tag.type),
+        debugTagTypes(tag.type),
+        currentOffset
+    ));
+    if (tag.type == TagType::Length4 && checkSubBlock(tag.index)) {
+        SubBlockInfo subBlockInfo;
+        const bool success = readSubBlock(tag.index, subBlockInfo);
+        if (!success) {
+            logError(std::format("{}Failed to read subblock for tag index {}. Current offset: {}, data size: {}",
+                                 paddingStr, tag.index, currentOffset, dataSize_));
+            return false;
+        }
+
+        logDebug(std::format(
+            "{}-- SubBlockInfo - offset: {}, size: {}",
+            paddingStr, subBlockInfo.offset, subBlockInfo.size
+        ));
+        while (hasBytesRemaining() && currentOffset < subBlockInfo.offset + subBlockInfo.size) {
+            if (!debugTag(padding + 1)) {
+                break;
+            }
+        }
+    }
+    return true;
 }
 
 void TaggedBlockReader::claimTag() {
@@ -265,6 +323,16 @@ bool TaggedBlockReader::readIntPair(IntPair *result) {
     return readBytes(sizeof(IntPair), result);
 }
 
+bool TaggedBlockReader::readDoublePair(uint8_t index, DoublePair *result) {
+    getTag();
+    if (!readSubBlock(index)) return false;
+    return readDoublePair(result);
+}
+
+bool TaggedBlockReader::readDoublePair(DoublePair *result) {
+    return readBytes(sizeof(DoublePair), result);
+}
+
 bool TaggedBlockReader::readFloat(const uint8_t index, float *result) {
     getTag();
     if (!checkRequiredTag(index, TagType::Byte4)) return false;
@@ -287,8 +355,18 @@ bool TaggedBlockReader::readDouble(double *result) {
 
 bool TaggedBlockReader::readByte(const uint8_t index, uint8_t *result) {
     getTag();
-    if (!checkRequiredTag(index, TagType::Byte1)) return false;
+    if (!checkRequiredTag(index, TagType::Byte1, false)) {
+        // Try to read it as a sub-block
+        if (!readSubBlock(index)) return false;
+        return readByte(result);
+    }
     return readByte(result);
+}
+
+bool TaggedBlockReader::readBytesIndexed(const uint8_t index, const uint32_t size, std::vector<uint8_t> *result) {
+    getTag();
+    if (!checkRequiredTag(index, TagType::Byte1)) return false;
+    return readBytes(size, result->data());
 }
 
 bool TaggedBlockReader::readByte(uint8_t *result) {
@@ -354,6 +432,23 @@ bool TaggedBlockReader::readLwwFloat(const uint8_t index, LwwItem<float> *result
 bool TaggedBlockReader::readLwwByte(const uint8_t index, LwwItem<uint8_t> *result) {
     if (!_readLwwItemId<uint8_t>(index, result)) return false;
     if (!readByte(2, &result->value)) return false;
+    return true;
+}
+
+bool TaggedBlockReader::readLwwDoublePair(const uint8_t index, LwwItem<DoublePair> *result) {
+    if (!_readLwwItemId<DoublePair>(index, result)) return false;
+    if (!readDoublePair(2, &result->value)) return false;
+    return true;
+}
+
+bool TaggedBlockReader::readLwwBytes(const uint8_t index, LwwItem<std::vector<uint8_t> > *result) {
+    const auto info = _readLwwItemIdInfo<std::vector<uint8_t> >(index, result);
+    if (!info.has_value()) return false;
+    SubBlockInfo subBlock;
+    getTag();
+    if (!readSubBlock(2, subBlock)) return false;
+    result->value.resize(subBlock.size);
+    if (!readBytes(subBlock.size, result->value.data())) return false;
     return true;
 }
 
@@ -427,6 +522,15 @@ bool TaggedBlockReader::_readLwwItemId(const uint8_t index, LwwItem<T> *id) {
     if (!readSubBlock(index)) return false;
     if (!readId(1, &id->timestamp)) return false;
     return true;
+}
+
+template<typename T>
+std::optional<SubBlockInfo> TaggedBlockReader::_readLwwItemIdInfo(const uint8_t index, LwwItem<T> *id) {
+    SubBlockInfo info;
+    getTag();
+    if (!readSubBlock(index, info)) return std::nullopt;
+    if (!readId(1, &id->timestamp)) return std::nullopt;
+    return info;
 }
 
 
