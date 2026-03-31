@@ -81,7 +81,7 @@ public:
 
     bool checkSubBlock(uint8_t index) const;
 
-    bool debugSubBlock(u_int8_t index);
+    bool debugSubBlock(uint8_t index);
 
     bool readValuint(uint64_t &result);
 
@@ -101,7 +101,7 @@ public:
 
     void getTag();
 
-    bool debugTag(u_int8_t padding = 0);
+    bool debugTag(uint8_t padding = 0);
 
     void claimTag();
 

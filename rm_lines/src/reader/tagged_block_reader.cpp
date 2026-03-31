@@ -71,7 +71,7 @@ bool TaggedBlockReader::checkSubBlock(const uint8_t index) const {
     return subBlockPresent;
 }
 
-bool TaggedBlockReader::debugSubBlock(u_int8_t index) {
+bool TaggedBlockReader::debugSubBlock(uint8_t index) {
     SubBlockInfo subBlockInfo;
     if (!checkSubBlock(index)) {
         logDebug(std::format("SubBlock with index {} not present at offset {}. Remaining bytes: {}", index,
@@ -194,8 +194,8 @@ bool TaggedBlockReader::checkRequiredTag(const uint8_t expectedIndex, const TagT
     if (error) {
         logError(std::format("Expected tag index {} and type 0x{:X} <{}>, but got index {} and type 0x{:X} <{}>",
                              expectedIndex,
-                             static_cast<u_int8_t>(expectedTagType), debugTagTypes(expectedTagType), tag.index,
-                             static_cast<u_int8_t>(tag.type), debugTagTypes(tag.type)));
+                             static_cast<uint8_t>(expectedTagType), debugTagTypes(expectedTagType), tag.index,
+                             static_cast<uint8_t>(tag.type), debugTagTypes(tag.type)));
     }
     return false;
 }
@@ -214,7 +214,7 @@ void TaggedBlockReader::getTag() {
     // logDebug(std::format("Read [TAG] index: {}, type: {}", tag.index, static_cast<int>(tag.type)));
 }
 
-bool TaggedBlockReader::debugTag(const u_int8_t padding) {
+bool TaggedBlockReader::debugTag(const uint8_t padding) {
     if (!tagClaimed) {
         return false;
     }
