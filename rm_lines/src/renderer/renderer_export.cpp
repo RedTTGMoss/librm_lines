@@ -100,7 +100,7 @@ const char *getLayers(const char *rendererId) {
     }
     const json j = renderer->getLayers();
 
-    static std::string result;
+    thread_local std::string result;
     result = j.dump();
 
     return result.c_str();
@@ -130,7 +130,7 @@ const char *textToMd(const char *rendererId) {
         return "";
     }
 
-    static std::string result;
+    thread_local std::string result;
     std::ostringstream stringStream;
 
     renderer->toMd(stringStream);
@@ -163,7 +163,7 @@ const char *textToTxt(const char *rendererId) {
         return "";
     }
 
-    static std::string result;
+    thread_local std::string result;
     std::ostringstream stringStream;
 
     renderer->toTxt(stringStream);
@@ -196,7 +196,7 @@ const char *textToHtml(const char *rendererId) {
         return "";
     }
 
-    static std::string result;
+    thread_local std::string result;
     std::ostringstream stringStream;
 
     renderer->toHtml(stringStream);
@@ -243,7 +243,7 @@ const char *getSizeTracker(const char *rendererId, const char *stringlayerId) {
     const CrdtId layerId(stringlayerId);
     const json j = renderer->getSizeTracker(layerId)->toJson();
 
-    static std::string result;
+    thread_local std::string result;
     result = j.dump();
 
     return result.c_str();
