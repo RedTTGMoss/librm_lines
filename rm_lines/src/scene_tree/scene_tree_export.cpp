@@ -119,7 +119,7 @@ EXPORT const char *convertToJson(const char *treeId) {
     }
 
     const json j = tree->toJson();
-    static std::string result;
+    thread_local std::string result;
     result = j.dump();
 
     return result.c_str();
@@ -138,7 +138,7 @@ EXPORT const char *getSceneInfo(const char *treeId) {
 
     const json j = tree->sceneInfo.value().toJson();
 
-    static std::string result;
+    thread_local std::string result;
     result = j.dump();
 
     return result.c_str();

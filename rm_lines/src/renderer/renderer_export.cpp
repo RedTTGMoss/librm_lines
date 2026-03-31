@@ -86,7 +86,7 @@ EXPORT const char *getParagraphs(const char *rendererId) {
     }
     const json j = renderer->getParagraphs();
 
-    static std::string result;
+    thread_local std::string result;
     result = j.dump();
 
     return result.c_str();
