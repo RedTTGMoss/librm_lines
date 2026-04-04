@@ -5,21 +5,29 @@ void GridBase(rMPenFill *fill, Renderer *renderer) {
     float cellSize;
     float width = 3.0f;
     float grid_offset_x = 0.0f;
+    float grid_margin_x = 0.0f;
     float grid_offset_y = 0.0f;
     if (renderer->templateName.find("small") != std::string::npos) {
         cellSize = 52.0f;
         width = 2.0f;
-    } else if (renderer->templateName.find("medium") != std::string::npos) {
+    } else if (renderer->templateName.find("medium") != std::string::npos || renderer->templateName.find("med") !=
+               std::string::npos) {
         cellSize = 78.0f;
     } else {
         cellSize = 104.0f;
+    }
+    if (renderer->templateName.find("margin") != std::string::npos) {
+        grid_margin_x = cellSize * 3;
     }
     if (renderer->landscape) {
         grid_offset_x = cellSize / 2.0f;
     }
     constexpr auto lineColor = Color(200, 200, 200);
-    const float offset_x = (std::fmod(fill->position->x, cellSize) + grid_offset_x) * fill->scale;
+    float offset_x = (std::fmod(fill->position->x, cellSize) + grid_offset_x) * fill->scale;
     const float offset_y = (std::fmod(fill->position->y, cellSize) + grid_offset_y) * fill->scale;
+    if (grid_margin_x > 0) {
+        offset_x = std::max(offset_x, (fill->position->x + grid_margin_x - grid_offset_x) * fill->scale);
+    }
     cellSize *= fill->scale;
     float x = offset_x;
     float y = offset_y;
@@ -42,7 +50,7 @@ void GridBase(rMPenFill *fill, Renderer *renderer) {
     }
     x = offset_x;
     while (y < fill->buffer.height) {
-        stroker->moveTo(0, y);
+        stroker->moveTo(x, y);
         stroker->lineTo(fill->buffer.width, y);
         stroker->finish();
         y += cellSize;

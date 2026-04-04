@@ -27,7 +27,9 @@ class GC(pe.GameContext):
         'Blank',
         'P Grid large',
         'P Grid medium',
-        'P Grid small'
+        'P Grid small',
+        'P Grid margin med',
+        'P Grid margin large',
     )
 
     def __init__(self):

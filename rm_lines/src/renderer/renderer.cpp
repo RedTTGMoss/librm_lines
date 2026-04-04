@@ -393,6 +393,8 @@ void Renderer::setTemplate(const std::string &templateName) {
             break;
         case hashString("P Grid large"):
         case hashString("P Grid medium"):
+        case hashString("P Grid margin med"):
+        case hashString("P Grid margin large"):
         case hashString("P Grid small"):
             templateFunction = GridBase;
             break;
