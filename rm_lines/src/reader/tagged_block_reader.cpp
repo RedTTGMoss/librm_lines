@@ -544,10 +544,14 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
         if (!readBlock()) {
             // Skip block
             seekTo(block_end);
-            logError(std::format("Failed to read block type {}", currentBlockInfo.blockType));
+            logError(std::format("Failed to read block type {} (0x{:X})", currentBlockInfo.blockType,
+                                 currentBlockInfo.blockType));
             continue;
-        } else if (currentOffset < block_end) {
-            logError(std::format("BLOCK type: {} under-read: {} offset < {} block end", currentBlockInfo.blockType,
+        }
+        if (currentOffset < block_end) {
+            logError(std::format("BLOCK type: {} (0x{:X}) under-read: {} offset < {} block end",
+                                 currentBlockInfo.blockType,
+                                 currentBlockInfo.blockType,
                                  currentOffset, block_end));
             if (getDebugMode()) {
                 // Dump the remaining bytes for debugging
@@ -563,7 +567,9 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
             }
             seekTo(block_end);
         } else if (currentOffset > block_end) {
-            logError(std::format("BLOCK type: {} over-read : {} offset > {} block end", currentBlockInfo.blockType,
+            logError(std::format("BLOCK type: {} (0x{:X}) over-read : {} offset > {} block end",
+                                 currentBlockInfo.blockType,
+                                 currentBlockInfo.blockType,
                                  currentOffset, block_end));
             seekTo(block_end);
             continue;
