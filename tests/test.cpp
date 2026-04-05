@@ -20,6 +20,10 @@ namespace fs = std::filesystem;
 #define TEXT_EXPAND_PYTHON_OUT "./output/text_expand/"
 #define ANCHOR_TEST_PYTHON_OUT "./output/anchor_test/"
 
+#define COLOR_RESET  "\033[0m"
+#define COLOR_YELLOW "\033[33m"
+#define COLOR_RED    "\033[31m"
+
 std::string getTextItemContents(const TextItem item) {
     if (!item.value.has_value()) {
         return "";
@@ -260,12 +264,15 @@ bool processFile(const std::string &filename, const std::string &path) {
 }
 
 void loggerDefault(const char *msg) {
-    ;
-    std::cout << msg << std::endl;
+    std::cout << msg << COLOR_RESET << std::endl;
+}
+
+void loggerDebug(const char *msg) {
+    std::cout << COLOR_YELLOW << msg << COLOR_RESET << std::endl;
 }
 
 void loggerError(const char *msg) {
-    std::cerr << msg << std::endl;
+    std::cout << COLOR_RED << msg << COLOR_RESET << std::endl;
 }
 
 void runColorAssertTest() {
@@ -279,7 +286,7 @@ void runColorAssertTest() {
 int main(const int argc, char *argv[]) {
     // Initialize the library
     setLogger(loggerDefault);
-    setDebugLogger(loggerDefault);
+    setDebugLogger(loggerDebug);
     setErrorLogger(loggerError);
 
     // Ensure the location matches the source `tests/`

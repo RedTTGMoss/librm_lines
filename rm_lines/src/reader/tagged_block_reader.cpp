@@ -1,5 +1,6 @@
 // ReSharper disable CppTooWideScopeInitStatement
 #include <reader/tagged_block_reader.h>
+#include <reader/analyzer.h>
 #include <cstring>
 #include <format>
 #include <iomanip>
@@ -100,6 +101,12 @@ bool TaggedBlockReader::readValuint(uint64_t &result) {
         if (shift >= 64) break; // Prevent overflow
     }
     return false; // Error: Truncated or invalid data
+}
+
+bool TaggedBlockReader::readUUID(const uint8_t index, std::string &uuid, const uint32_t length) {
+    getTag();
+    if (!readSubBlock(index)) return false;
+    return readUUID(uuid, length);
 }
 
 bool TaggedBlockReader::readUUID(std::string &uuid, const uint32_t length) {
@@ -204,12 +211,25 @@ void TaggedBlockReader::getTag() {
     if (!tagClaimed) {
         return; // Tag not claimed, no need to read it again
     }
+    const int offsetPreTag = currentOffset;
     const auto [index, tagType] = _readTagValues();
     // Update temporary tag info
     tag.index = index;
     tag.type = tagType;
+
+
     if (tag.type != TagType::BAD_LENGTH && tag.type != TagType::BAD_VALUINT) {
         tagClaimed = false; // mark the tag as unclaimed
+        if (tag.type == TagType::MisreadValuint) [[unlikely]] {
+            // Debug misread valuint
+            seekTo(offsetPreTag);
+            uint64_t result;
+            readValuint(result);
+            seekTo(offsetPreTag);
+            // Go back to before the tag if any other code wants to attempt reading this valuint properly
+            logError(std::format("Misread Valuint tag encountered at offset {}. Value of valuint: {}", offsetPreTag,
+                                 result));
+        }
     }
     // logDebug(std::format("Read [TAG] index: {}, type: {}", tag.index, static_cast<int>(tag.type)));
 }
@@ -309,11 +329,22 @@ bool TaggedBlockReader::readInt(const uint8_t index, uint32_t *result) {
     return readInt(result);
 }
 
+bool TaggedBlockReader::readInt(const uint8_t index, int32_t *result) {
+    getTag();
+    if (!checkRequiredTag(index, TagType::Byte4)) return false;
+    return readInt(result);
+}
+
 bool TaggedBlockReader::readInt(uint32_t *result) {
     return readBytes(sizeof(uint32_t), result);
 }
 
-bool TaggedBlockReader::readIntPair(uint8_t index, IntPair *result) {
+
+bool TaggedBlockReader::readInt(int32_t *result) {
+    return readBytes(sizeof(int32_t), result);
+}
+
+bool TaggedBlockReader::readIntPair(const uint8_t index, IntPair *result) {
     getTag();
     if (!readSubBlock(index)) return false;
     return readIntPair(result);
@@ -331,6 +362,16 @@ bool TaggedBlockReader::readDoublePair(uint8_t index, DoublePair *result) {
 
 bool TaggedBlockReader::readDoublePair(DoublePair *result) {
     return readBytes(sizeof(DoublePair), result);
+}
+
+bool TaggedBlockReader::readRectPair(uint8_t index, RectPair *result) {
+    getTag();
+    if (!readSubBlock(index)) return false;
+    return readRectPair(result);
+}
+
+bool TaggedBlockReader::readRectPair(RectPair *result) {
+    return readBytes(sizeof(RectPair), result);
 }
 
 bool TaggedBlockReader::readFloat(const uint8_t index, float *result) {
@@ -388,6 +429,10 @@ bool TaggedBlockReader::readString(std::string *result) {
     if (!readBool(&isAscii)) return false;
     if (!isAscii) return false;
 
+    if (stringLength > remainingBytes()) {
+        return false;
+    }
+
     const auto stringData = std::make_unique<uint8_t[]>(stringLength);
     if (!readBytes(stringLength, stringData.get())) return false;
 
@@ -438,6 +483,18 @@ bool TaggedBlockReader::readLwwByte(const uint8_t index, LwwItem<uint8_t> *resul
 bool TaggedBlockReader::readLwwDoublePair(const uint8_t index, LwwItem<DoublePair> *result) {
     if (!_readLwwItemId<DoublePair>(index, result)) return false;
     if (!readDoublePair(2, &result->value)) return false;
+    return true;
+}
+
+bool TaggedBlockReader::readLwwRectPair(uint8_t index, LwwItem<RectPair> *result) {
+    if (!_readLwwItemId<RectPair>(index, result)) return false;
+    if (!readRectPair(2, &result->value)) return false;
+    return true;
+}
+
+bool TaggedBlockReader::readLwwUUID(const uint8_t index, LwwItem<std::string> *result) {
+    if (!_readLwwItemId<std::string>(index, result)) return false;
+    if (!readUUID(2, result->value, 16)) return false;
     return true;
 }
 
@@ -543,9 +600,13 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
         uint32_t block_end = currentBlockInfo.offset + currentBlockInfo.size;
         if (!readBlock()) {
             // Skip block
-            seekTo(block_end);
             logError(std::format("Failed to read block type {} (0x{:X})", currentBlockInfo.blockType,
                                  currentBlockInfo.blockType));
+            if (getDebugMode()) {
+                Analyzer::analyze(this);
+            }
+            seekTo(block_end);
+
             continue;
         }
         if (currentOffset < block_end) {
@@ -553,7 +614,13 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                                  currentBlockInfo.blockType,
                                  currentBlockInfo.blockType,
                                  currentOffset, block_end));
+
             if (getDebugMode()) {
+                // Analyze first then seek back to dump
+                const int offset = currentOffset;
+                Analyzer::analyze(this);
+                seekTo(offset);
+
                 // Dump the remaining bytes for debugging
                 const uint32_t remaining = block_end - currentOffset;
                 std::vector<uint8_t> dumpData(remaining);

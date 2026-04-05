@@ -51,6 +51,12 @@ std::unique_ptr<Block> Block::lookup(const BlockInfo &info) {
         case SCENE_INFO_BLOCK:
             block = std::make_unique<SceneInfoBlock>();
             break;
+        case IMAGE_INFO_BLOCK:
+            block = std::make_unique<ImageInfoBlock>();
+            break;
+        case SCENE_IMAGE_ITEM_BLOCK:
+            block = std::make_unique<SceneImageItemBlock>();
+            break;
         default:
             block = std::make_unique<UnreadableBlock>();
             break;
@@ -178,54 +184,27 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
         paperSize = _paperSize;
     }
     if (reader->hasBytesRemaining()) {
-        LwwItem<std::vector<uint8_t> > result;
-        if (!reader->readLwwBytes(6, &result)) {
-            logDebug("SceneInfoBlock has unknown LwwBytes with index 6, but failed to read it");
-        }
-        auto data = bytesToHexStr(result.value);
-        logDebug(std::format("SceneInfoBlock has unknown LwwBytes with length {}: {}", result.value.size(), data));
+        LwwItem<RectPair> _extendedContentRect;
+        if (!reader->readLwwRectPair(6, &_extendedContentRect)) return false;
+        extendedContentRect = _extendedContentRect;
     }
-    if (reader->hasBytesRemaining()) [[unlikely]] {
-        // Random block with 16 bytes of untagged data
-        SubBlockInfo info;
-        std::vector<uint8_t> data;
-        DoublePair result;
+    if (reader->hasBytesRemaining()) {
+        DoublePair _paperSizeF;
         reader->getTag();
-        reader->readSubBlock(7, info);
-        data.resize(info.size);
-        reader->readDoublePair(&result);
-        logDebug(
-            std::format("SceneInfoBlock has unknown subblock with double pair {}, {}", result.first, result.second));
+        if (!reader->readSubBlock(7)) return false;
+        if (!reader->readDoublePair(&_paperSizeF)) return false;
+        paperSizeF = _paperSizeF;
     }
     if (reader->hasBytesRemaining()) [[unlikely]] {
-        SubBlockInfo info;
-        LwwItem<DoublePair> result;
-        if (!reader->readLwwDoublePair(8, &result)) {
-            logDebug("SceneInfoBlock has unknown LwwBytes with index 8, but failed to read it");
-        }
-        logDebug(std::format("SceneInfoBlock has unknown LwwDoublePair {}, {} timestamp: ({}:{})",
-                             result.value.first, result.value.second, result.timestamp.first, result.timestamp.second
-        ));
+        LwwItem<DoublePair> _lwwPaperSizeF;
+        if (!reader->readLwwDoublePair(8, &_lwwPaperSizeF)) return false;
+        lwwPaperSizeF = _lwwPaperSizeF;
     }
-    if (reader->hasBytesRemaining()) [[unlikely]] {
-        // Most probably related to rM Methods
-        SubBlockInfo info;
-        LwwItem<uint8_t> result;
-        if (!reader->readLwwByte(9, &result)) {
-            logDebug("SceneInfoBlock has unknown LwwByte with index 9, but failed to read it");
-        }
-        logDebug(std::format("SceneInfoBlock has unknown LwwByte with value: 0x{:X} timestamp: ({}:{})",
-                             result.value, result.timestamp.first, result.timestamp.second));
+    if (reader->hasBytesRemaining()) {
+        LwwItem<uint8_t> _preferredLayout;
+        if (!reader->readLwwByte(9, &_preferredLayout)) return false;
+        preferredLayout = _preferredLayout;
     }
-    // logDebug("==============================");
-    // logDebug(std::format("Offset: {}", reader->currentOffset));
-    // while (reader->hasBytesRemaining()) {
-    //     if (!reader->debugTag()) {
-    //         break;
-    //     }
-    //     logDebug("----------------");
-    // }
-    // logDebug("==============================");
 
     return true;
 }
@@ -234,12 +213,12 @@ json SceneInfoBlock::toJson() const {
     json j;
     j["currentLayer"] = currentLayer.value.toJson();
     if (backgroundVisible) {
-        j["backgroundVisible"] = backgroundVisible->value;
+        j["backgroundVisible"] = backgroundVisible->toJson();
     } else {
         j["backgroundVisible"] = nullptr;
     }
     if (rootDocumentVisible) {
-        j["rootDocumentVisible"] = rootDocumentVisible->value;
+        j["rootDocumentVisible"] = rootDocumentVisible->toJson();
     } else {
         j["rootDocumentVisible"] = nullptr;
     }
@@ -247,6 +226,26 @@ json SceneInfoBlock::toJson() const {
         j["paperSize"] = {paperSize->first, paperSize->second};
     } else {
         j["paperSize"] = nullptr;
+    }
+    if (extendedContentRect) {
+        j["extendedContentRect"] = extendedContentRect->toJson();
+    } else {
+        j["extendedContentRect"] = nullptr;
+    }
+    if (paperSizeF) {
+        j["paperSizeF"] = {paperSizeF->first, paperSizeF->second};
+    } else {
+        j["paperSizeF"] = nullptr;
+    }
+    if (lwwPaperSizeF) {
+        j["lwwPaperSizeF"] = lwwPaperSizeF->toJson();
+    } else {
+        j["lwwPaperSizeF"] = nullptr;
+    }
+    if (preferredLayout) {
+        j["preferredLayout"] = preferredLayout->toJson();
+    } else {
+        j["preferredLayout"] = nullptr;
     }
     return j;
 }
@@ -412,6 +411,80 @@ bool SceneGlyphItemBlock::readValue(TaggedBlockReader *reader) {
 }
 
 json SceneGlyphItemBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
+}
+
+bool ImageInfoBlock::read(TaggedBlockReader *reader) {
+    reader->getTag();
+    reader->readSubBlock(1);
+    uint64_t subBlocks;
+    reader->readValuint(subBlocks);
+
+    for (uint64_t i = 0; i < subBlocks; i++) {
+        // Read UUID
+        reader->getTag();
+        if (!reader->readSubBlock(0)) return false;
+
+        std::string uuid;
+        if (!reader->readUUID(uuid, 16)) return false;
+
+        LwwItem<std::string> fileName;
+        if (!reader->readLwwString(1, &fileName)) return false;
+
+        LwwItem<std::vector<uint8_t> > unknownFlag;
+        if (!reader->readLwwBytes(2, &unknownFlag)) return false;
+    }
+
+    return true;
+}
+
+json ImageInfoBlock::toJson() const {
+    // TODO: Implement this function
+    return {};
+}
+
+bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {
+    ImageItem value;
+
+    LwwItem<std::string> _imageRef;
+    if (!reader->readLwwUUID(1, &_imageRef)) return false;
+    value.imageRef = _imageRef;
+
+    CrdtId _boundsTimestamp;
+    if (!reader->readId(2, &_boundsTimestamp)) return false;
+    value.boundsTimestamp = _boundsTimestamp;
+
+    std::vector<float> _vertices;
+    uint64_t verticesCount;
+    reader->getTag();
+    if (!reader->readSubBlock(3)) return false;
+    if (!reader->readValuint(verticesCount)) return false;
+    for (uint64_t i = 0; i < verticesCount; i++) {
+        float vertex;
+        reader->readFloat(&vertex);
+        _vertices.push_back(vertex);
+    }
+    value.vertices = _vertices;
+
+    std::vector<uint32_t> _indices;
+    uint64_t indicesCount;
+    reader->getTag();
+    if (!reader->readSubBlock(4)) return false;
+    if (!reader->readValuint(indicesCount)) return false;
+    for (uint64_t i = 0; i < indicesCount; i++) {
+        uint32_t index;
+        reader->readInt(&index);
+        _indices.push_back(index);
+    }
+    value.indices = _indices;
+    item.value = value;
+
+
+    return true;
+}
+
+json SceneImageItemBlock::toJson() const {
     // TODO: Implement this function
     return {};
 }

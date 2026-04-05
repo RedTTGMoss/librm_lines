@@ -12,7 +12,7 @@ enum class TagType : uint8_t {
     Length4 = 0xC,
     Byte8 = 0x8,
     Byte4 = 0x4,
-    Byte2 = 0x2,
+    MisreadValuint = 0x2,
     Byte1 = 0x1,
     BAD_LENGTH = 0x0,
     BAD_VALUINT = 0xFF,
@@ -28,8 +28,8 @@ inline std::string debugTagTypes(TagType type) {
             return "Byte8";
         case TagType::Byte4:
             return "Byte4";
-        case TagType::Byte2:
-            return "Byte2";
+        case TagType::MisreadValuint:
+            return "MisreadValuint";
         case TagType::Byte1:
             return "Byte1";
         case TagType::BAD_LENGTH:
@@ -85,6 +85,8 @@ public:
 
     bool readValuint(uint64_t &result);
 
+    bool readUUID(uint8_t index, std::string &uuid, uint32_t length);
+
     bool readUUID(std::string &uuid, uint32_t length);
 
     bool readBytes(uint32_t size, void *result);
@@ -115,7 +117,11 @@ public:
 
     bool readInt(uint8_t index, uint32_t *result);
 
+    bool readInt(uint8_t index, int32_t *result);
+
     bool readInt(uint32_t *result);
+
+    bool readInt(int32_t *result);
 
     bool readIntPair(uint8_t index, IntPair *result);
 
@@ -124,6 +130,10 @@ public:
     bool readDoublePair(uint8_t index, DoublePair *result);
 
     bool readDoublePair(DoublePair *result);
+
+    bool readRectPair(uint8_t index, RectPair *result);
+
+    bool readRectPair(RectPair *result);
 
     bool readFloat(uint8_t index, float *result);
 
@@ -158,6 +168,10 @@ public:
 
     bool readLwwDoublePair(uint8_t index, LwwItem<DoublePair> *result);
 
+    bool readLwwRectPair(uint8_t index, LwwItem<RectPair> *result);
+
+    bool readLwwUUID(uint8_t index, LwwItem<std::string> *result);
+
     bool readLwwBytes(uint8_t index, LwwItem<std::vector<uint8_t> > *result);
 
     bool readLwwString(uint8_t index, LwwItem<std::string> *result);
@@ -168,6 +182,10 @@ public:
     bool readTextItem(TextItem *textItem);
 
     bool readTextFormat(TextFormat *textFormat);
+
+    friend class Analyzer;
+
+    friend bool ImageInfoBlock::read(TaggedBlockReader *reader);
 
 private:
     std::pair<uint8_t, TagType> _readTagValues();

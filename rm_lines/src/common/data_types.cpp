@@ -99,6 +99,10 @@ json Color::toJson() const {
     return {alpha, red, green, blue};
 }
 
+std::string Color::repr() const {
+    return std::format("Color(r={}, g={}, b={}, a={})", red, green, blue, alpha);
+}
+
 uint32_t Color::toRGBA() const {
     // Writing to buffer (RGBA)
     return alpha << 24 | blue << 16 | green << 8 | red;
@@ -167,7 +171,7 @@ json Group::toJsonNoItem() const {
 }
 
 template<>
-json LwwItem<ParagraphStyle>::toJson() const {
+json LwwItem<ParagraphStyle>::valueToJson() const {
     return {
         {"characterId", timestamp.toJson()},
         {"value", value}
@@ -175,6 +179,32 @@ json LwwItem<ParagraphStyle>::toJson() const {
 }
 
 template<>
-json LwwItem<CrdtId>::toJson() const {
+json LwwItem<CrdtId>::valueToJson() const {
     return value.toJson();
+}
+
+template<>
+json LwwItem<RectPair>::valueToJson() const {
+    return {
+        {"x", value.x},
+        {"y", value.y},
+        {"w", value.w},
+        {"h", value.h}
+    };
+}
+
+template<>
+json LwwItem<DoublePair>::valueToJson() const {
+    return {
+        {"first", value.first},
+        {"second", value.second}
+    };
+}
+
+template<>
+json LwwItem<IntPair>::valueToJson() const {
+    return {
+        {"first", value.first},
+        {"second", value.second}
+    };
 }

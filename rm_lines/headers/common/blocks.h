@@ -27,6 +27,8 @@ enum BlockTypes {
     AUTHOR_IDS_BLOCK = 9,
     PAGE_INFO_BLOCK = 10,
     SCENE_INFO_BLOCK = 13,
+    IMAGE_INFO_BLOCK = 14,
+    SCENE_IMAGE_ITEM_BLOCK = 15,
 };
 
 class TaggedBlockReader;
@@ -107,6 +109,10 @@ struct SceneInfoBlock final : Block {
     std::optional<LwwItem<bool> > backgroundVisible;
     std::optional<LwwItem<bool> > rootDocumentVisible;
     std::optional<IntPair> paperSize;
+    std::optional<LwwItem<RectPair> > extendedContentRect;
+    std::optional<DoublePair> paperSizeF;
+    std::optional<LwwItem<DoublePair> > lwwPaperSizeF;
+    std::optional<LwwItem<uint8_t> > preferredLayout;
 
     bool read(TaggedBlockReader *reader) override;
 
@@ -187,6 +193,25 @@ struct SceneGlyphItemBlock final : SceneItemBlock {
     }
 
     CrdtSequenceItem<GlyphRange> item = {};
+
+    bool readValue(TaggedBlockReader *reader) override;
+
+    [[nodiscard]] json toJson() const override;
+};
+
+struct ImageInfoBlock final : Block {
+    std::vector<ImageInfo> images;
+
+    bool read(TaggedBlockReader *reader) override;
+
+    [[nodiscard]] json toJson() const override;
+};
+
+struct SceneImageItemBlock final : SceneItemBlock {
+    SceneImageItemBlock() : SceneItemBlock(0x07) {
+    }
+
+    CrdtSequenceItem<ImageItem> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
 

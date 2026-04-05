@@ -109,3 +109,10 @@ struct GlyphRange {
 
     json toJson() const;
 };
+
+struct ImageItem {
+    LwwItem<std::string> imageRef;
+    CrdtId boundsTimestamp;
+    std::vector<float> vertices;
+    std::vector<uint32_t> indices;
+};

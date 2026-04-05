@@ -180,13 +180,15 @@ struct CrdtSequence {
 };
 
 struct IntPair {
-    uint32_t first;
-    uint32_t second;
+    uint32_t first, second;
 };
 
 struct DoublePair {
-    double first;
-    double second;
+    double first, second;
+};
+
+struct RectPair {
+    double x, y, w, h;
 };
 
 template<typename T>
@@ -205,8 +207,12 @@ struct LwwItem {
     [[nodiscard]] json toJson() const {
         return {
             {"timestamp", timestamp.toJson()},
-            {"value", value}
+            {"value", valueToJson()}
         };
+    }
+
+    [[nodiscard]] json valueToJson() const {
+        return value;
     }
 };
 
@@ -241,11 +247,21 @@ enum ParagraphStyle {
     CHECKBOX_CHECKED = 7
 };
 
+// Templates for data types
 template<>
-json LwwItem<ParagraphStyle>::toJson() const;
+json LwwItem<ParagraphStyle>::valueToJson() const;
 
 template<>
-json LwwItem<CrdtId>::toJson() const;
+json LwwItem<CrdtId>::valueToJson() const;
+
+template<>
+json LwwItem<RectPair>::valueToJson() const;
+
+template<>
+json LwwItem<DoublePair>::valueToJson() const;
+
+template<>
+json LwwItem<IntPair>::valueToJson() const;
 
 typedef std::pair<std::string, std::optional<uint32_t> > StringWithFormat;
 typedef std::pair<CrdtId, LwwItem<ParagraphStyle> > TextFormat;
@@ -259,6 +275,8 @@ struct Color {
     uint8_t alpha;
 
     json toJson() const;
+
+    std::string repr() const;
 
     uint32_t toRGBA() const;
 
@@ -280,3 +298,10 @@ struct Color {
 
     void inplaceFromRGBA(const uint32_t *rgbaColor);
 };
+
+struct ImageInfo {
+    std::string uuid;
+    LwwItem<std::string> fileName;
+    LwwItem<std::vector<uint8_t> > unknownFlag;
+};
+
