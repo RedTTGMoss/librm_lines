@@ -5,21 +5,25 @@
 #include "common/scene_items.h"
 
 struct Text;
-constexpr std::array<std::pair<ParagraphStyle, int>, 8> LineHeights = {
+constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
     {
         {BASIC, 100},
-        {PLAIN, 71},
-        {HEADING, 150},
-        {BOLD, 70},
-        {BULLET, 35},
-        {BULLET2, 35},
-        {CHECKBOX, 100},
-        {CHECKBOX_CHECKED, 100}
+        {PlainText, 71},
+        {Title, 150},
+        {Sub, 70},
+        {Bullet, 35},
+        {BulletTab, 35},
+        {CheckBox, 100},
+        {CheckBoxChecked, 100},
+        {CheckBoxTab, 100},
+        {CheckBoxTabChecked, 100},
+        {Numbered, 100}, // TODO: Update line height for numbered
+        {NumberedTab, 100}
     }
 };
 
 constexpr float getStyleHeight(const ParagraphStyle style) {
-    for (const auto& [key, value] : LineHeights) {
+    for (const auto &[key, value]: LineHeights) {
         if (key == style)
             return static_cast<float>(value);
     }
@@ -100,7 +104,7 @@ struct Paragraph {
     // Representing a single line which can contain multiple texts
     std::vector<FormattedText> contents;
     CrdtId startId;
-    LwwItem<ParagraphStyleNew> style = LwwItem(ParagraphStyleNew(PLAIN));
+    LwwItem<ParagraphStyleNew> style = LwwItem(ParagraphStyleNew(PlainText));
 
     std::string repr() const;
 

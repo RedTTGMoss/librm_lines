@@ -1,11 +1,15 @@
 import atexit
+import os.path
 import threading
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from pygameextra import Rect
 
 from tests_base import *
 import pygameextra as pe
+
+if TYPE_CHECKING:
+    from rm_lines_sys.src.rm_lines_sys import LibAnnotations
 
 pe.init()
 lib: Optional["LibAnnotations"]
@@ -40,16 +44,22 @@ class GC(pe.GameContext):
         self._scale = 0.4
         self.scale = 1
         self.buffer = (None, None, None)
+        self.rect = None
         self.frame = None
+        self.anchors = None
+        self.paragraphs = None
         self.template_index = 0
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
 
         for folder in (files_draw_folder, files_folder, files_color_folder):
             for filename in os.listdir(folder):
-                self.filenames.append(filename[:-3].replace('_', ' ') + f' [{len(self.items)}]')
                 file = os.path.join(folder, filename)
                 self.items.append(file)
+        self.items.sort(key=lambda x: os.path.basename(x))
+        for item in self.items:
+            filename = os.path.basename(item)
+            self.filenames.append(filename[:-3].replace('_', ' ') + f' [{len(self.items)}]')
         self.index = 42
         if os.path.exists('pos'):
             try:
@@ -161,6 +171,7 @@ class GC(pe.GameContext):
         rect.y -= h / 2
         if scale != 1:
             rect.scale_by_ip(scale - 1, scale - 1)
+        self.rect = rect
         lib.getFrame(
             renderer[1],  # Renderer ID
             self.buffer[2],  # Buffer
@@ -172,6 +183,8 @@ class GC(pe.GameContext):
         )
         raw_frame = bytes(self.buffer[2])
         frame = pe.pygame.image.frombuffer(raw_frame, (w, h), 'RGBA')
+        self.anchors = json.loads(lib.getAnchors(renderer[1]))
+        self.paragraphs = json.loads(lib.getParagraphs(renderer[1]))
         return frame
 
     def resize(self, new_size):
@@ -186,16 +199,43 @@ class GC(pe.GameContext):
             self.frame = None
         drag, offset = self.draggable.check()
 
+        x = self.centerx - offset[0]
+        y = self.centery - offset[1]
+
         if self.frame is None or drag:
             self.frame = self.get_frame(
-                self.centerx - offset[0], self.centery - offset[1],
+                x, y,
                 *self.size, self.scale)
         if self.frame:
             pe.display.blit(self.frame)
             self.sprite.alpha = 100
         else:
             self.sprite.alpha = 255
+        if self.anchors is not None:
+            prev_pos = None
+            prev_end = None
+            for anchor_id, pos in self.anchors.items():
+                pos -= 140  # remove top margin
+                pos *= 1 - self.scale
+                pe.draw.line(pe.colors.red, (0, pos), (150, pos), 3)
+                if text := self.get_paragraph(anchor_id):
+                    text = pe.Text(text, font_size=20, colors=[pe.colors.white, pe.colors.black])
+                    if prev_pos is not None and abs(pos - prev_pos) < 20:
+                        text.rect.midleft = (prev_end + 20, pos)
+                    else:
+                        text.rect.midleft = (160, pos)
+                    text.position = text.rect.center
+                    text.display()
+                    prev_pos = pos
+                    prev_end = text.rect.right
         self.sprite.display((self.width - 100, self.height - 100))
+
+    def get_paragraph(self, anchor_id):
+        for paragraph in self.paragraphs:
+            if paragraph["startId"] == anchor_id:
+                if len(paragraph["contents"]) > 0:
+                    return paragraph["contents"][0]["text"]
+        return None
 
     def set_template(self, template: str):
         renderer = self.get_renderer()

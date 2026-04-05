@@ -238,24 +238,35 @@ public:
 
 enum ParagraphStyle {
     BASIC = 0,
-    PLAIN = 1,
-    HEADING = 2,
-    BOLD = 3,
-    BULLET = 4,
-    BULLET2 = 5,
-    CHECKBOX = 6,
-    CHECKBOX_CHECKED = 7
+    PlainText = 1,
+    Title = 2,
+    Sub = 3,
+    Bullet = 4,
+    BulletTab = 5,
+    CheckBox = 6,
+    CheckBoxChecked = 7,
+    CheckBoxTab = 8,
+    CheckBoxTabChecked = 9,
+    Numbered = 10,
+    NumberedTab = 11,
 };
 
 struct ParagraphStyleNew {
-    uint8_t baseStyle = 0;
+    uint8_t baseStyle = 2;
     ParagraphStyle legacy = BASIC;
     uint32_t styleProperties = 0;
 
     ParagraphStyleNew() = default;
 
     explicit ParagraphStyleNew(const ParagraphStyle legacy) : legacy(legacy) {
+        styleProperties = legacy;
     }
+
+    int tabbed() const;
+
+    float getLineHeight() const;
+
+    float getTabOffset() const;
 
     [[nodiscard]] json toJson() const;
 };

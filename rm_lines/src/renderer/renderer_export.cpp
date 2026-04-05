@@ -92,6 +92,20 @@ EXPORT const char *getParagraphs(const char *rendererId) {
     return result.c_str();
 }
 
+const char *getAnchors(const char *rendererId) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid treeId provided");
+        return "";
+    }
+    const json j = renderer->getAnchors();
+
+    thread_local std::string result;
+    result = j.dump();
+
+    return result.c_str();
+}
+
 const char *getLayers(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {

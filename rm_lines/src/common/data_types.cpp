@@ -4,6 +4,8 @@
 #include <sstream>
 #include <common/crdt_sequence_item.h>
 
+#include "advanced/text.h"
+
 std::string formatTextItem(TextItem textItem) {
     if (textItem.value.has_value()) {
         if (std::holds_alternative<std::string>(textItem.value.value())) {
@@ -97,6 +99,32 @@ json textFormatToJson(const TextFormat &textFormat) {
 
 json Color::toJson() const {
     return {alpha, red, green, blue};
+}
+
+int ParagraphStyleNew::tabbed() const {
+    if (baseStyle == 3) {
+        switch (legacy) {
+            case BulletTab:
+                return styleProperties;
+            case CheckBoxTab:
+            case CheckBoxTabChecked:
+                return styleProperties - 16;
+            case NumberedTab:
+                return styleProperties - 32;
+            default:
+                return 0; // Not tabbed
+        }
+    }
+    return 0; // Not tabbed
+}
+
+float ParagraphStyleNew::getLineHeight() const {
+    return getStyleHeight(legacy);
+}
+
+float ParagraphStyleNew::getTabOffset() const {
+    constexpr float TAB_LENGTH = 10.0; // TODO: create a practical or dynamic tab length
+    return TAB_LENGTH * tabbed();
 }
 
 std::string Color::repr() const {

@@ -36,6 +36,9 @@ class LibAnnotations(ctypes.Structure):
     def getParagraphs(self, renderer_id: bytes) -> bytes:
         pass
 
+    def getAnchors(self, renderer_id: bytes) -> bytes:
+        pass
+
     def getLayers(self, renderer_id: bytes) -> bytes:
         pass
 
@@ -135,6 +138,10 @@ def load_lib() -> Optional[ctypes.CDLL]:
     _lib.getParagraphs.argtypes = [ctypes.c_char_p]
     _lib.getParagraphs.restype = ctypes.c_char_p
 
+    # Function getAnchors(str) -> str
+    _lib.getAnchors.argtypes = [ctypes.c_char_p]
+    _lib.getAnchors.restype = ctypes.c_char_p
+
     # Function getLayers(str) -> str
     _lib.getLayers.argtypes = [ctypes.c_char_p]
     _lib.getLayers.restype = ctypes.c_char_p
@@ -185,4 +192,4 @@ def load_lib() -> Optional[ctypes.CDLL]:
 
 lib: Optional[LibAnnotations] = load_lib()
 
-__all__ = ['lib']
+__all__ = ['lib', 'LibAnnotations']

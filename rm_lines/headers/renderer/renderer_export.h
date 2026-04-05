@@ -13,6 +13,8 @@ EXPORT int destroyRenderer(const char *rendererId);
 
 EXPORT const char *getParagraphs(const char *rendererId);
 
+EXPORT const char *getAnchors(const char *rendererId);
+
 EXPORT const char *getLayers(const char *rendererId);
 
 EXPORT bool textToMdFile(const char *rendererId, const char *outputFile);

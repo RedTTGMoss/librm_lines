@@ -8,7 +8,9 @@
 #define HTML_FOOTER "</body></html>"
 
 
-Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape) : paperSize({1404, 1872}),
+Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool landscape) : paperSize({
+        BASE_PAPER_SIZE_X, BASE_PAPER_SIZE_Y
+    }),
     landscape(landscape), pageType(pageType),
     sceneTree(sceneTree) {
     // Check for new paperSize in scene info block if applicable
@@ -75,15 +77,14 @@ void Renderer::calculateAnchors() {
 
     // Initialize start positions
     int yOffset = TEXT_TOP_Y;
-    int posX = 0, posY = 0;
+    int posY = 0;
 
     // Calculate the anchors
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
-        auto styleHeight = getStyleHeight(paragraph.style.value.legacy);
+        const auto styleHeight = paragraph.style.value.getLineHeight();
         yOffset += styleHeight;
 
-        posX += 0;
         posY = yOffset;
 
         // Save the anchor for this paragraph
@@ -151,6 +152,14 @@ json Renderer::getParagraphs() const {
     return j;
 }
 
+json Renderer::getAnchors() const {
+    json j;
+    for (const auto &[id, pos]: anchors) {
+        j[id.toJson()] = pos;
+    }
+    return j;
+}
+
 json Renderer::getLayers() const {
     json j = json::array();
     for (const auto &layer: layers) {
@@ -159,33 +168,72 @@ json Renderer::getLayers() const {
     return j;
 }
 
+float Renderer::getTextMargin() const {
+    return frameSize.halfX() - getTextWidth() / 2;
+}
+
+float Renderer::getTextWidth() const {
+    // The size of the text is based on the rM2
+    // We need to scale it relative to the paperSize
+    const float screenRelative = frameSize.x / BASE_PAPER_SIZE_X;
+    const float width = textDocument.text.width.value;
+    return width * screenRelative;
+}
+
 void Renderer::toMd(std::ostream &stream) const {
+    int numbered = 0;
+    bool sub1 = false;
     for (const auto &paragraph: textDocument.paragraphs) {
         // Write style prefix based on paragraph style
+        for (int i = 0; i < paragraph.style.value.tabbed(); i++) {
+            stream << "- ";
+        }
         switch (paragraph.style.value.legacy) {
-            case HEADING:
+            case Numbered:
+            case NumberedTab:
+                numbered++;
+                break;
+            default:
+                numbered = 0;
+                break;
+        }
+        switch (paragraph.style.value.legacy) {
+            case Title:
                 stream << "# ";
+                sub1 = false;
                 break;
-            case BOLD:
-                stream << "## ";
+            case Sub:
+                if (sub1) {
+                    stream << "### ";
+                } else {
+                    stream << "## ";
+                    sub1 = true;
+                }
+
                 break;
-            case BULLET:
-            case BULLET2:
+            case Bullet:
+            case BulletTab:
                 stream << "- ";
                 break;
-            case CHECKBOX:
+            case CheckBox:
+            case CheckBoxTab:
                 stream << "☐ ";
                 break;
-            case CHECKBOX_CHECKED:
+            case CheckBoxChecked:
+            case CheckBoxTabChecked:
                 stream << "**☑** ";
                 break;
-            case PLAIN:
+            case Numbered:
+            case NumberedTab:
+                stream << numbered << ". ";
+                break;
+            case PlainText:
             default:
                 break;
         }
 
         // Add strikethrough for checked checkboxes
-        if (paragraph.style.value.legacy == CHECKBOX_CHECKED) {
+        if (paragraph.style.value.legacy == CheckBoxChecked) {
             stream << "~~";
         }
 
@@ -211,7 +259,7 @@ void Renderer::toMd(std::ostream &stream) const {
         }
 
         // Close strikethrough if needed
-        if (paragraph.style.value.legacy == CHECKBOX_CHECKED) {
+        if (paragraph.style.value.legacy == CheckBoxChecked) {
             stream << "~~";
         }
 
@@ -371,8 +419,16 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
                 else
                     stroker.raster.raster.fill.baseColor = Color(150, 150, 255, 200);
                 alternate = !alternate;
-                stroker.moveTo(0, (position.y + anchor) * scale.y);
-                stroker.lineTo(buf->width, (position.y + anchor) * scale.y);
+                if (sceneTree->rootText.has_value()) {
+                    stroker.moveTo((position.x + getTextMargin()) * scale.x,
+                                   (position.y + anchor) * scale.y);
+                    stroker.lineTo(
+                        (position.x + getTextMargin() + getTextWidth()) * scale.x,
+                        (position.y + anchor) * scale.y);
+                } else {
+                    stroker.moveTo(0, (position.y + anchor) * scale.y);
+                    stroker.lineTo(buf->width, (position.y + anchor) * scale.y);
+                }
                 stroker.finish();
             }
         }

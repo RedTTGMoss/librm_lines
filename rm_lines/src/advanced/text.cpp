@@ -34,26 +34,26 @@ std::string Paragraph::repr() const {
         case BASIC:
             // I can't find this being used for any of the texts?
             break;
-        case PLAIN:
+        case PlainText:
             // This is paragraph text
             break;
-        case HEADING:
+        case Title:
             final += "# ";
             break;
-        case BOLD:
+        case Sub:
             final += "## ";
             break;
-        case BULLET:
+        case Bullet:
             final += "- ";
             break;
-        case BULLET2:
+        case BulletTab:
             // I can't find this being used anywhere too, but it's some variant or version of the bullet style
             final += "-- ";
             break;
-        case CHECKBOX:
+        case CheckBox:
             final += "☐ ";
             break;
-        case CHECKBOX_CHECKED:
+        case CheckBoxChecked:
             final += "☑ ";
             break;
         default:
