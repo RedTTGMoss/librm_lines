@@ -247,9 +247,22 @@ enum ParagraphStyle {
     CHECKBOX_CHECKED = 7
 };
 
+struct ParagraphStyleNew {
+    uint8_t baseStyle = 0;
+    ParagraphStyle legacy = BASIC;
+    uint32_t styleProperties = 0;
+
+    ParagraphStyleNew() = default;
+
+    explicit ParagraphStyleNew(const ParagraphStyle legacy) : legacy(legacy) {
+    }
+
+    [[nodiscard]] json toJson() const;
+};
+
 // Templates for data types
 template<>
-json LwwItem<ParagraphStyle>::valueToJson() const;
+json LwwItem<ParagraphStyleNew>::valueToJson() const;
 
 template<>
 json LwwItem<CrdtId>::valueToJson() const;
@@ -264,7 +277,7 @@ template<>
 json LwwItem<IntPair>::valueToJson() const;
 
 typedef std::pair<std::string, std::optional<uint32_t> > StringWithFormat;
-typedef std::pair<CrdtId, LwwItem<ParagraphStyle> > TextFormat;
+typedef std::pair<CrdtId, LwwItem<ParagraphStyleNew> > TextFormat;
 
 json textFormatToJson(const TextFormat &textFormat);
 

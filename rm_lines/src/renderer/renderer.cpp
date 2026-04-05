@@ -80,7 +80,7 @@ void Renderer::calculateAnchors() {
     // Calculate the anchors
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
-        auto styleHeight = static_cast<float>(LineHeights[paragraph.style.value].second);
+        auto styleHeight = getStyleHeight(paragraph.style.value.legacy);
         yOffset += styleHeight;
 
         posX += 0;
@@ -162,7 +162,7 @@ json Renderer::getLayers() const {
 void Renderer::toMd(std::ostream &stream) const {
     for (const auto &paragraph: textDocument.paragraphs) {
         // Write style prefix based on paragraph style
-        switch (paragraph.style.value) {
+        switch (paragraph.style.value.legacy) {
             case HEADING:
                 stream << "# ";
                 break;
@@ -185,7 +185,7 @@ void Renderer::toMd(std::ostream &stream) const {
         }
 
         // Add strikethrough for checked checkboxes
-        if (paragraph.style.value == CHECKBOX_CHECKED) {
+        if (paragraph.style.value.legacy == CHECKBOX_CHECKED) {
             stream << "~~";
         }
 
@@ -211,7 +211,7 @@ void Renderer::toMd(std::ostream &stream) const {
         }
 
         // Close strikethrough if needed
-        if (paragraph.style.value == CHECKBOX_CHECKED) {
+        if (paragraph.style.value.legacy == CHECKBOX_CHECKED) {
             stream << "~~";
         }
 

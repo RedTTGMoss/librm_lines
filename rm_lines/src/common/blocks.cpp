@@ -366,36 +366,28 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     if (!reader->readValuint(numberOfItems)) return false;
 
 
-    value.styles = std::vector<TextFormat>(numberOfItems);
+    value.styles.resize(numberOfItems);
 
     for (uint64_t i = 0; i < numberOfItems; i++) {
         if (!reader->readTextFormat(&value.styles[i])) return false;
         value.styleMap[value.styles[i].first] = value.styles[i].second;
     }
 
-
     reader->getTag();
     if (!reader->readSubBlock(3)) return false; // last section
 
+    logDebug("Read pos");
     if (!reader->readDouble(&value.posX)) return false;
     if (!reader->readDouble(&value.posY)) return false;
+    // Legacy width
+    if (!reader->readFloat(4, &value.width.value)) return false;
 
-    if (!reader->readFloat(4, &value.width)) return false;
-
+    // Modern width? I guess, it just has a timestamp now :)
     if (reader->hasBytesRemaining()) {
         reader->getTag();
         if (!reader->readSubBlock(5)) return false;
-        reader->getTag();
-        if (!reader->readSubBlock(1)) return false;
-        CrdtId _id;
-        if (!reader->readId(&_id)) return false;
-        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/0: ({}:{})", _id.first, _id.second));
-        if (!reader->readId(&_id)) return false;
-        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/1: ({}:{})", _id.first, _id.second));
-        if (!reader->readId(&_id)) return false;
-        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/2: ({}:{})", _id.first, _id.second));
-        if (!reader->readId(&_id)) return false;
-        logDebug(std::format("RootTextBlock has unknown CrdtId in subblock 5/1/3: ({}:{})", _id.first, _id.second));
+
+        reader->readLwwFloat(1, &value.width);
     }
     return true;
 }

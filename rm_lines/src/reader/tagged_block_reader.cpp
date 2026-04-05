@@ -275,7 +275,6 @@ bool TaggedBlockReader::debugTag(const uint8_t padding) {
 
 void TaggedBlockReader::claimTag() {
     if (tagClaimed) {
-        logError("Already claimed tag was attempted to be claimed again!");
         return;
     }
     tagClaimed = true;
@@ -324,12 +323,6 @@ bool TaggedBlockReader::readBool(bool *result) {
 }
 
 bool TaggedBlockReader::readInt(const uint8_t index, uint32_t *result) {
-    getTag();
-    if (!checkRequiredTag(index, TagType::Byte4)) return false;
-    return readInt(result);
-}
-
-bool TaggedBlockReader::readInt(const uint8_t index, int32_t *result) {
     getTag();
     if (!checkRequiredTag(index, TagType::Byte4)) return false;
     return readInt(result);
@@ -567,8 +560,22 @@ bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
     uint8_t format;
     if (!readByte(&format)) return false;
 
+    textFormat->second.value.legacy = static_cast<ParagraphStyle>(format);
 
-    textFormat->second.value = static_cast<ParagraphStyle>(format);
+    // Try to read new formatting styles
+    const int offset = currentOffset;
+    getTag();
+    if (checkRequiredTag(2, TagType::Byte1, false)) {
+        readByte(&textFormat->second.value.baseStyle);
+        claimTag();
+        readInt(3, &textFormat->second.value.styleProperties);
+    } else {
+        // Rewind this check.
+        claimTag();
+        seekTo(offset);
+        textFormat->second.value.baseStyle = 2;
+        textFormat->second.value.styleProperties = format;
+    }
 
     return true;
 }
@@ -598,39 +605,37 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                              currentBlockInfo.size, currentBlockInfo.blockType));
 
         uint32_t block_end = currentBlockInfo.offset + currentBlockInfo.size;
-        if (!readBlock()) {
+        if (!readBlock() || currentOffset < block_end) {
             // Skip block
+
             logError(std::format("Failed to read block type {} (0x{:X})", currentBlockInfo.blockType,
                                  currentBlockInfo.blockType));
-            if (getDebugMode()) {
-                Analyzer::analyze(this);
-            }
-            seekTo(block_end);
+            if (currentOffset < block_end) {
+                logError(std::format("BLOCK type: {} (0x{:X}) under-read: {} offset < {} block end",
+                                     currentBlockInfo.blockType,
+                                     currentBlockInfo.blockType,
+                                     currentOffset, block_end));
 
-            continue;
-        }
-        if (currentOffset < block_end) {
-            logError(std::format("BLOCK type: {} (0x{:X}) under-read: {} offset < {} block end",
-                                 currentBlockInfo.blockType,
-                                 currentBlockInfo.blockType,
-                                 currentOffset, block_end));
+                if (getDebugMode()) {
+                    // Analyze first then seek back to dump
+                    const int offset = currentOffset;
+                    Analyzer::analyze(this);
+                    seekTo(offset);
 
-            if (getDebugMode()) {
-                // Analyze first then seek back to dump
-                const int offset = currentOffset;
-                Analyzer::analyze(this);
-                seekTo(offset);
-
-                // Dump the remaining bytes for debugging
-                const uint32_t remaining = block_end - currentOffset;
-                std::vector<uint8_t> dumpData(remaining);
-                readBytesOrError(remaining, dumpData.data());
-                std::ostringstream oss;
-                oss << "Remaining bytes dump (hex): ";
-                for (const uint8_t byte: dumpData) {
-                    oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+                    // Dump the remaining bytes for debugging
+                    const uint32_t remaining = block_end - currentOffset;
+                    std::vector<uint8_t> dumpData(remaining);
+                    readBytesOrError(remaining, dumpData.data());
+                    std::ostringstream oss;
+                    oss << "Remaining bytes dump (hex): ";
+                    for (const uint8_t byte: dumpData) {
+                        oss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte) << " ";
+                    }
+                    logDebug(oss.str());
                 }
-                logDebug(oss.str());
+            } else {
+                // Only analyze
+                Analyzer::analyze(this);
             }
             seekTo(block_end);
         } else if (currentOffset > block_end) {

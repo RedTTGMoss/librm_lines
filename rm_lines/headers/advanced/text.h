@@ -18,6 +18,14 @@ constexpr std::array<std::pair<ParagraphStyle, int>, 8> LineHeights = {
     }
 };
 
+constexpr float getStyleHeight(const ParagraphStyle style) {
+    for (const auto& [key, value] : LineHeights) {
+        if (key == style)
+            return static_cast<float>(value);
+    }
+    return static_cast<float>(LineHeights[0].second);
+}
+
 enum FormattingOptions {
     BOLD_ON = 1,
     BOLD_OFF = 2,
@@ -92,7 +100,7 @@ struct Paragraph {
     // Representing a single line which can contain multiple texts
     std::vector<FormattedText> contents;
     CrdtId startId;
-    LwwItem<ParagraphStyle> style = LwwItem<ParagraphStyle>(PLAIN);
+    LwwItem<ParagraphStyleNew> style = LwwItem(ParagraphStyleNew(PLAIN));
 
     std::string repr() const;
 

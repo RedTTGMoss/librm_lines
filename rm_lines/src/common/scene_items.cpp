@@ -99,7 +99,7 @@ json Text::toJson() const {
         {"styles", stylesJson},
         {"posX", posX},
         {"posY", posY},
-        {"width", width},
+        {"width", width.toJson()},
     };
 }
 

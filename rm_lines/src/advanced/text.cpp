@@ -30,7 +30,7 @@ json FormattedText::toJson() const {
 
 std::string Paragraph::repr() const {
     std::string final = "";
-    switch (style.value) {
+    switch (style.value.legacy) {
         case BASIC:
             // I can't find this being used for any of the texts?
             break;
@@ -68,7 +68,7 @@ std::string Paragraph::repr() const {
 json Paragraph::toJson() const {
     json j;
     j["startId"] = startId.toJson();
-    j["style"] = style.value;
+    j["style"] = style.value.toJson();
     j["contents"] = json::array();
     for (const auto &text: contents) {
         j["contents"].push_back(text.toJson());

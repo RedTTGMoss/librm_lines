@@ -170,11 +170,19 @@ json Group::toJsonNoItem() const {
     };
 }
 
+json ParagraphStyleNew::toJson() const {
+    return {
+        {"legacyStyle", legacy},
+        {"baseStyle", baseStyle},
+        {"styleProperties", styleProperties}
+    };
+}
+
 template<>
-json LwwItem<ParagraphStyle>::valueToJson() const {
+json LwwItem<ParagraphStyleNew>::valueToJson() const {
     return {
         {"characterId", timestamp.toJson()},
-        {"value", value}
+        {"style", value.toJson()},
     };
 }
 
