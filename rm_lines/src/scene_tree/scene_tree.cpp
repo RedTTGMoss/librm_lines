@@ -38,15 +38,16 @@ std::vector<SceneItemVariant> SceneTree::getGroupChildren(const CrdtId &nodeId) 
 json SceneTree::toJson() {
     json j = {
         {"sceneInfo", sceneInfo ? sceneInfo->toJson() : nullptr},
+        {"imageInfo", imageInfo ? imageInfo->toJson() : nullptr},
         {"rootText", rootText ? rootText->toJson() : nullptr},
         {"nodes", json()}
     };
 
-    for (const auto &[key, value] : _nodeIds) {
+    for (const auto &[key, value]: _nodeIds) {
         json nodeJson = value->toJsonNoItem();
         nodeJson["children"] = json();
 
-        for (const auto &child : _groupChildren[key]) {
+        for (const auto &child: _groupChildren[key]) {
             if (auto item = std::get_if<CrdtSequenceItem<Group> >(&child)) {
                 json obj = item->toJson();
                 obj["_type"] = "Group";
@@ -59,13 +60,17 @@ json SceneTree::toJson() {
                 json obj = item->toJson();
                 obj["_type"] = "GlyphRange";
                 nodeJson["children"].push_back(obj);
-            } else if (auto item = std::get_if<CrdtSequenceItem<Line>>(&child)) {
+            } else if (auto item = std::get_if<CrdtSequenceItem<Line> >(&child)) {
                 json obj = item->toJson();
                 obj["_type"] = "Line";
                 nodeJson["children"].push_back(obj);
             } else if (auto item = std::get_if<CrdtSequenceItem<Text> >(&child)) {
                 json obj = item->toJson();
                 obj["_type"] = "Text";
+                nodeJson["children"].push_back(obj);
+            } else if (auto item = std::get_if<CrdtSequenceItem<ImageItem> >(&child)) {
+                json obj = item->toJson();
+                obj["_type"] = "Image";
                 nodeJson["children"].push_back(obj);
             } else {
                 nodeJson["children"].push_back(nullptr);

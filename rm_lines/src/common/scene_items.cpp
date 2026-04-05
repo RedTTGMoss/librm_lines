@@ -233,3 +233,12 @@ json GlyphRange::toJson() const {
         {"rects", rectsJson}
     };
 }
+
+json ImageItem::toJson() const {
+    return {
+        {"imageRef", imageRef.toJson()},
+        {"boundsTimestamp", boundsTimestamp.toJson()},
+        {"vertices", vertices},
+        {"indices", indices}
+    };
+}

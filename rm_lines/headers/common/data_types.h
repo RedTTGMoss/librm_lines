@@ -302,6 +302,6 @@ struct Color {
 struct ImageInfo {
     std::string uuid;
     LwwItem<std::string> fileName;
-    LwwItem<std::vector<uint8_t> > unknownFlag;
+    LwwItem<std::vector<uint8_t> > flags;
 };
 

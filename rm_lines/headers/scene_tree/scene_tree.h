@@ -22,7 +22,8 @@ using SceneItemVariant = std::variant<
     CrdtSequenceItem<CrdtId>,
     CrdtSequenceItem<GlyphRange>,
     CrdtSequenceItem<Line>,
-    CrdtSequenceItem<Text>
+    CrdtSequenceItem<Text>,
+    CrdtSequenceItem<ImageItem>
 >;
 
 class SceneTree {
@@ -30,6 +31,7 @@ public:
     SceneTree();
 
     std::optional<SceneInfoBlock> sceneInfo;
+    std::optional<ImageInfoBlock> imageInfo;
     std::optional<Text> rootText;
 
     void addNode(const CrdtId &nodeId, const CrdtId &parentId);

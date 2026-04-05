@@ -115,4 +115,6 @@ struct ImageItem {
     CrdtId boundsTimestamp;
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
+
+    json toJson() const;
 };

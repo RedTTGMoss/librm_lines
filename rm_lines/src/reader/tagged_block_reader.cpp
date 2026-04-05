@@ -685,9 +685,19 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 tree.addItem(glyphItemBlock->item, glyphItemBlock->parentId);
                 break;
             }
+            case SCENE_IMAGE_ITEM_BLOCK: {
+                const auto imageItemBlock = dynamic_cast<SceneImageItemBlock *>(currentBlock.get());
+                tree.addItem(imageItemBlock->item, imageItemBlock->parentId);
+                break;
+            }
             case SCENE_INFO_BLOCK: {
                 const auto sceneInfoBlock = dynamic_cast<SceneInfoBlock *>(currentBlock.get());
                 tree.sceneInfo = *sceneInfoBlock;
+                break;
+            }
+            case IMAGE_INFO_BLOCK: {
+                const auto imageInfoBlock = dynamic_cast<ImageInfoBlock *>(currentBlock.get());
+                tree.imageInfo = *imageInfoBlock;
                 break;
             }
             case ROOT_TEXT_BLOCK: {
@@ -695,7 +705,12 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 tree.rootText = rootTextBlock->value;
                 break;
             }
-            default: break;
+            default:
+                // Scold the devs for forgetting something UwU
+                logDebug(std::format(
+                    "!!!! No tree insertion for block type {}? Are you sure there isn't unfinished work? !!!!",
+                    currentBlockInfo.blockType));
+                break;
         }
     }
 

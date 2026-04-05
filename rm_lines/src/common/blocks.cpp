@@ -434,14 +434,22 @@ bool ImageInfoBlock::read(TaggedBlockReader *reader) {
 
         LwwItem<std::vector<uint8_t> > unknownFlag;
         if (!reader->readLwwBytes(2, &unknownFlag)) return false;
+
+        images.push_back(ImageInfo{uuid, fileName, unknownFlag});
     }
 
     return true;
 }
 
 json ImageInfoBlock::toJson() const {
-    // TODO: Implement this function
-    return {};
+    json j;
+    for (const auto &image: images) {
+        json infoJson;
+        infoJson["fileName"] = image.fileName.toJson();
+        infoJson["flags"] = image.flags.toJson();
+        j[image.uuid] = infoJson;
+    }
+    return j;
 }
 
 bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {
