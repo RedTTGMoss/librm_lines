@@ -59,7 +59,9 @@ void TextSequence::expandTextItems() {
         } else {
             // If the text is valid we want to split each char into a new item
             for (int i = 0; i < rawString.size(); i++) {
-                const auto rightId = i == rawString.size() - 1 ? textItem.rightId : CrdtId(itemId.first, itemId.second + 1);
+                const auto rightId = i == rawString.size() - 1
+                                         ? textItem.rightId
+                                         : CrdtId(itemId.first, itemId.second + 1);
                 add(TextItem{
                     itemId,
                     leftId,
@@ -74,4 +76,8 @@ void TextSequence::expandTextItems() {
             }
         }
     }
+}
+
+void TextSequence::compactTextItems() {
+    // TODO: FINISH
 }

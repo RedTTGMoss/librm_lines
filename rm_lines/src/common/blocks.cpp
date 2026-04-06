@@ -144,8 +144,8 @@ bool AuthorIdsBlock::write(TaggedBlockWriter *writer) const {
 
     constexpr uint64_t uuidLength = 16;
     for (const auto &[authorId, uuid]: authorIds) {
-        int subBlockStart;
-        if (subBlockStart = writer->writeSubBlockStart(0); subBlockStart < 0) return false;
+        uint32_t subBlockStart;
+        if (subBlockStart = writer->writeSubBlockStart(0); subBlockStart == 0) return false;
 
         if (!writer->writeValuint(uuidLength)) return false;
 
@@ -260,7 +260,7 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
     }
     if (reader->hasBytesRemaining()) {
         LwwItem<uint8_t> _preferredLayout;
-        if (!reader->readLwwByte(9, &_preferredLayout)) return false;
+        if (!reader->readLwwByteSub(9, &_preferredLayout)) return false;
         preferredLayout = _preferredLayout;
     }
 
@@ -289,7 +289,7 @@ bool SceneInfoBlock::write(TaggedBlockWriter *writer) const {
         if (!writer->writeLwwDoublePair(8, &lwwPaperSizeF.value())) return false;
     }
     if (preferredLayout.has_value()) {
-        if (!writer->writeLwwByte(9, &preferredLayout.value())) return false;
+        if (!writer->writeLwwByteSub(9, &preferredLayout.value())) return false;
     }
 
     return true;
@@ -336,13 +336,44 @@ json SceneInfoBlock::toJson() const {
     return j;
 }
 
+SceneTreeBlock SceneTreeBlock::fromNode(const Group *node) {
+    SceneTreeBlock block;
+    // Create basic block info
+    block.info = BlockInfo();
+    block.info->minVersion = 1;
+    block.info->currentVersion = 1;
+    block.info->blockType = SCENE_TREE_BLOCK;
+
+    block.treeId = node->nodeId;
+    if (node->parentIsNode) {
+        block.parentNodeId = node->parentId;
+        block.isUpdate = false;
+    } else {
+        block.parentTreeId = node->parentId;
+    }
+    return block;
+}
+
 bool SceneTreeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &treeId)) return false;
-    if (!reader->readId(2, &nodeId)) return false;
+    if (!reader->readId(2, &parentNodeId)) return false;
     if (!reader->readBool(3, &isUpdate)) return false;
     reader->getTag();
     if (!reader->readSubBlock(4)) return false;
-    if (!reader->readId(1, &parentId)) return false;
+    if (!reader->readId(1, &parentTreeId)) return false;
+
+    return true;
+}
+
+bool SceneTreeBlock::write(TaggedBlockWriter *writer) const {
+    if (!writer->writeId(1, &treeId)) return false;
+    if (!writer->writeId(2, &parentNodeId)) return false;
+    if (!writer->writeBool(3, isUpdate)) return false;
+
+    uint32_t subBlockStart;
+    if (subBlockStart = writer->writeSubBlockStart(4); subBlockStart == 0) return false;
+    if (!writer->writeId(1, &parentTreeId)) return false;
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
 
     return true;
 }
@@ -423,13 +454,25 @@ json SceneLineItemBlock::toJson() const {
     return {};
 }
 
+RootTextBlock RootTextBlock::fromText(const Text &text) {
+    RootTextBlock block;
+    // Create basic block info
+    block.info = BlockInfo();
+    block.info->minVersion = 1;
+    block.info->currentVersion = 1;
+    block.info->blockType = ROOT_TEXT_BLOCK;
+
+    block.value = text;
+    return block;
+}
+
 bool RootTextBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &blockId)) return false;
     if (blockId != CrdtId(0, 0)) return false;
     reader->getTag();
     if (!reader->readSubBlock(2)) return false; // Section one
 
-    for (int i = 1; i <= 2; i++) {
+    for (int i = 0; i < 2; i++) {
         reader->getTag();
         if (!reader->readSubBlock(1)) return false; // Text items
     }
@@ -462,9 +505,10 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     reader->getTag();
     if (!reader->readSubBlock(3)) return false; // last section
 
-    logDebug("Read pos");
+    // Position
     if (!reader->readDouble(&value.posX)) return false;
     if (!reader->readDouble(&value.posY)) return false;
+
     // Legacy width
     if (!reader->readFloat(4, &value.width.value)) return false;
 
@@ -476,6 +520,80 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
         reader->readLwwFloat(1, &value.width);
     }
     return true;
+}
+
+bool RootTextBlock::write(TaggedBlockWriter *writer) const {
+    if (!writer->writeId(1, &blockId)) return false;
+    //TODO: Figure out issues with writing root text block
+
+    // Section one 2/1/1
+    uint32_t mainSubBlockStart;
+    if (mainSubBlockStart = writer->writeSubBlockStart(2); mainSubBlockStart == 0) return false;
+    uint32_t start;
+
+    // Write sections 1/1
+    if (start = writer->writeSubBlockStart(1); start == 0) return false;
+    if (!writer->writeSubBlockEnd(start)) return false;
+    if (start = writer->writeSubBlockStart(1); start == 0) return false;
+
+    // Write item count
+    uint64_t numberOfItems = value.items.size();
+
+    if (!writer->writeValuint(numberOfItems)) return false;
+
+
+    // Extract the text items from the sequence
+    std::vector<const TextItem *> items;
+    items.reserve(numberOfItems);
+    for (auto &item: value.items | std::views::values) {
+        items.push_back(&item);
+    }
+
+    // Sort the text items
+    std::ranges::sort(items, [](const TextItem *a, const TextItem *b) {
+        return *a < *b;
+    });
+
+    for (const auto item: items) {
+        if (!writer->writeTextItem(item)) return false;
+    }
+
+    // End of section one 2/1/1
+    if (!writer->writeSubBlockEnd(start)) return false;
+
+    // Section two 2/2/1
+    // Write sections 2/1
+    if (start = writer->writeSubBlockStart(1); start == 0) return false;
+    if (!writer->writeSubBlockEnd(start)) return false;
+    if (start = writer->writeSubBlockStart(1); start == 0) return false;
+
+    // Write item count
+    numberOfItems = value.styles.size();
+    if (!writer->writeValuint(numberOfItems)) return false;
+
+    for (const auto &style: value.styles) {
+        if (!writer->writeTextFormat(&style)) return false;
+    }
+
+    // End of section two and main 2/2/1
+    if (!writer->writeSubBlockEnd(start)) return false;
+    if (!writer->writeSubBlockEnd(mainSubBlockStart)) return false;
+
+    // Last section 3
+    if (mainSubBlockStart = writer->writeSubBlockStart(3); mainSubBlockStart == 0) return false;
+
+    // Position
+    if (!writer->writeDouble(&value.posX)) return false;
+    if (!writer->writeDouble(&value.posY)) return false;
+
+    // Legacy width
+    if (!writer->writeFloat(4, &value.width.value)) return false;
+    uint32_t subBlockStart;
+    if (subBlockStart = writer->writeSubBlockStart(5); subBlockStart == 0) return false;
+    if (!writer->writeLwwFloat(1, &value.width)) return false;
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+
+    return writer->writeSubBlockEnd(mainSubBlockStart);
 }
 
 json RootTextBlock::toJson() const {

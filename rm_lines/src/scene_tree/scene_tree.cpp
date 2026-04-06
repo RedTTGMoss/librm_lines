@@ -2,15 +2,24 @@
 
 SceneTree::SceneTree() {
     // Add the root node
-    addNode(CrdtId(0, 1), CrdtId(0, 0));
+    addNode(ROOT_NODE, BLANK_NODE, BLANK_NODE);
 }
 
-void SceneTree::addNode(const CrdtId &nodeId, const CrdtId &parentId) {
+void SceneTree::addNode(const CrdtId &nodeId, const CrdtId &parentNodeId, const CrdtId &parentTreeId) {
     if (_nodeIds.contains(nodeId)) {
         throw std::invalid_argument(std::format("Node {} already exists in the tree", nodeId.repr()));
     }
-    logDebug(std::format("Add node {}, with parent {}", nodeId.repr(), parentId.repr()));
-    _nodeIds[nodeId] = std::make_unique<Group>(nodeId);
+    if (nodeId != ROOT_NODE && parentNodeId != BLANK_NODE && parentTreeId != BLANK_NODE) {
+        throw std::runtime_error("A node with a node parent and a tree parent, is not supported and is invalid data");
+    }
+    if (parentNodeId != BLANK_NODE) {
+        logDebug(std::format("Add node {}, with node parent {}", nodeId.repr(), parentNodeId.repr()));
+        _nodeIds[nodeId] = std::make_unique<Group>(nodeId, parentNodeId);
+        _nodeIds[nodeId]->parentIsNode = true;
+    } else {
+        logDebug(std::format("Add node {}, with tree parent {}", nodeId.repr(), parentTreeId.repr()));
+        _nodeIds[nodeId] = std::make_unique<Group>(nodeId, parentTreeId);
+    }
 }
 
 void SceneTree::addItem(const SceneItemVariant &item, const CrdtId &parentId) {

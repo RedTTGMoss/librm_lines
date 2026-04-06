@@ -117,5 +117,7 @@ struct TextDocument {
 
     void fromText(Text &text);
 
+    Text toText() const;
+
     std::string repr() const;
 };

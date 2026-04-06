@@ -18,6 +18,12 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/nemtrif/utfcpp.git
         GIT_TAG v4.0.6
 )
+FetchContent_Declare(
+        simdutf
+        GIT_REPOSITORY https://github.com/simdutf/simdutf.git
+        GIT_TAG v8.2.0
+)
+FetchContent_MakeAvailable(simdutf)
 FetchContent_MakeAvailable(utf8cpp)
 FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(cppcodec)
@@ -52,7 +58,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/renderer/rm_lines_stroker/rm_pens/debug_pen.cpp
 )
 
-target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp)
+target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 
 if (WIN32)
     target_link_libraries(rm_lines PRIVATE DbgHelp)
@@ -64,7 +70,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_executable(test tests/test.cpp)
 target_link_libraries(test PRIVATE rm_lines)
-target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp)
+target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 
 if (WIN32)
     target_link_libraries(test PRIVATE DbgHelp)

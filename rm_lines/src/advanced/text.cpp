@@ -137,6 +137,15 @@ void TextDocument::fromText(Text &text) {
     this->text = std::move(text);
 }
 
+Text TextDocument::toText() const {
+    Text text = this->text; // We need to make a copy of the text to modify it
+    text.items.compactTextItems();
+
+    //TODO: FINISH
+
+    return text;
+}
+
 std::string TextDocument::repr() const {
     std::string final;
 

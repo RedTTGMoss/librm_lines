@@ -85,9 +85,15 @@ CrdtId::CrdtId(const std::string &string) {
 }
 
 Group::Group(const CrdtId nodeId)
-    : nodeId(nodeId),
+    : nodeId(nodeId), parentId(CrdtId{0, 0}),
       label(LwwItem<std::string>(CrdtId(0, 0), "")),
-      visible(LwwItem<bool>(CrdtId{0, 0}, true)) {
+      visible(LwwItem(CrdtId{0, 0}, true)) {
+}
+
+Group::Group(const CrdtId nodeId, const CrdtId parentId)
+    : nodeId(nodeId), parentId(parentId),
+      label(LwwItem<std::string>(CrdtId(0, 0), "")),
+      visible(LwwItem(CrdtId{0, 0}, true)) {
 }
 
 json textFormatToJson(const TextFormat &textFormat) {
@@ -191,6 +197,7 @@ json Group::toJsonNoItem() const {
     return {
         {"label", label.toJson()},
         {"visible", visible.toJson()},
+        {"parentId", parentId.toJson()},
         {"anchorId", anchorId ? anchorId->toJson() : nullptr},
         {"anchorType", anchorType ? anchorType->toJson() : nullptr},
         {"anchorThreshold", anchorThreshold ? anchorThreshold->toJson() : nullptr},

@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <memory>
+#include <stack>
 #include <common/blocks.h>
 #include <scene_tree/scene_tree.h>
 #include <common/crdt_sequence_item.h>
@@ -145,6 +146,8 @@ public:
 
     bool readByte(uint8_t index, uint8_t *result);
 
+    bool readByteSub(uint8_t index, uint8_t *result);
+
     bool readBytesIndexed(uint8_t index, uint32_t size, std::vector<uint8_t> *result);
 
     bool readByte(uint8_t *result);
@@ -165,6 +168,8 @@ public:
     bool readLwwFloat(uint8_t index, LwwItem<float> *result);
 
     bool readLwwByte(uint8_t index, LwwItem<uint8_t> *result);
+
+    bool readLwwByteSub(uint8_t index, LwwItem<uint8_t> *result);
 
     bool readLwwDoublePair(uint8_t index, LwwItem<DoublePair> *result);
 

@@ -17,11 +17,9 @@ struct CrdtId {
     uint8_t first;
     uint64_t second;
 
-    bool operator==(const CrdtId &crdt_id) const = default;
+    auto operator<=>(const CrdtId &) const = default;
 
-    bool operator<(const CrdtId &other) const {
-        return std::tie(first, second) < std::tie(other.first, other.second);
-    }
+    bool operator==(const CrdtId &) const = default;
 
     [[nodiscard]] std::string repr() const;
 
@@ -38,6 +36,9 @@ struct CrdtId {
 
     explicit CrdtId(const std::string &string);
 };
+
+constexpr auto BLANK_NODE = CrdtId{0, 0};
+constexpr auto ROOT_NODE = CrdtId{0, 1};
 
 template<>
 struct std::hash<CrdtId> {
@@ -177,6 +178,10 @@ struct CrdtSequence {
     auto end() const {
         return sequence.end();
     }
+
+    auto size() const {
+        return sequence.size();
+    }
 };
 
 struct IntPair {
@@ -221,9 +226,13 @@ class Group {
 public:
     explicit Group(CrdtId nodeId);
 
+    explicit Group(CrdtId nodeId, CrdtId parentId);
+
     Group() = default;
 
     CrdtId nodeId;
+    CrdtId parentId; // Tree or Node parent ID
+    bool parentIsNode = false;
     LwwItem<std::string> label;
     LwwItem<bool> visible;
     std::optional<LwwItem<CrdtId> > anchorId;
@@ -255,6 +264,7 @@ struct ParagraphStyleNew {
     uint8_t baseStyle = 2;
     ParagraphStyle legacy = BASIC;
     uint32_t styleProperties = 0;
+    bool isLegacy = false;
 
     ParagraphStyleNew() = default;
 
@@ -328,4 +338,3 @@ struct ImageInfo {
     LwwItem<std::string> fileName;
     LwwItem<std::vector<uint8_t> > flags;
 };
-

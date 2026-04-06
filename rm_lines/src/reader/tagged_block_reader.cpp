@@ -64,7 +64,7 @@ bool TaggedBlockReader::readSubBlock(const uint8_t index, SubBlockInfo &subBlock
 
 bool TaggedBlockReader::readSubBlock(const uint8_t index) {
     if (!checkRequiredTag(index, TagType::Length4)) return false;
-    skipBytes(4); // Skip the length
+    skipBytes(4);
     return true;
 }
 
@@ -393,11 +393,13 @@ bool TaggedBlockReader::readDouble(double *result) {
 
 bool TaggedBlockReader::readByte(const uint8_t index, uint8_t *result) {
     getTag();
-    if (!checkRequiredTag(index, TagType::Byte1, false)) {
-        // Try to read it as a sub-block
-        if (!readSubBlock(index)) return false;
-        return readByte(result);
-    }
+    if (!checkRequiredTag(index, TagType::Byte1)) return false;
+    return readByte(result);
+}
+
+bool TaggedBlockReader::readByteSub(const uint8_t index, uint8_t *result) {
+    getTag();
+    if (!readSubBlock(index)) return false;
     return readByte(result);
 }
 
@@ -477,6 +479,12 @@ bool TaggedBlockReader::readLwwByte(const uint8_t index, LwwItem<uint8_t> *resul
     return true;
 }
 
+bool TaggedBlockReader::readLwwByteSub(uint8_t index, LwwItem<uint8_t> *result) {
+    if (!_readLwwItemId<uint8_t>(index, result)) return false;
+    if (!readByteSub(2, &result->value)) return false;
+    return true;
+}
+
 bool TaggedBlockReader::readLwwDoublePair(const uint8_t index, LwwItem<DoublePair> *result) {
     if (!_readLwwItemId<DoublePair>(index, result)) return false;
     if (!readDoublePair(2, &result->value)) return false;
@@ -514,7 +522,7 @@ bool TaggedBlockReader::readLwwString(const uint8_t index, LwwItem<std::string> 
 
 // Special
 
-bool TaggedBlockReader::readStringWithFormat(uint8_t index, StringWithFormat *result) {
+bool TaggedBlockReader::readStringWithFormat(const uint8_t index, StringWithFormat *result) {
     if (!readSubBlock(index)) return false;
     if (!readString(&result->first)) return false;
     getTag();
@@ -579,6 +587,7 @@ bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
         seekTo(offset);
         textFormat->second.value.baseStyle = 2;
         textFormat->second.value.styleProperties = format;
+        textFormat->second.value.isLegacy = true;
     }
 
     return true;
@@ -671,7 +680,7 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
             case SCENE_TREE_BLOCK: {
                 // Add the scene tree as a tree node
                 const auto sceneTreeBlock = dynamic_cast<SceneTreeBlock *>(currentBlock.get());
-                tree.addNode(sceneTreeBlock->treeId, sceneTreeBlock->parentId);
+                tree.addNode(sceneTreeBlock->treeId, sceneTreeBlock->parentNodeId, sceneTreeBlock->parentTreeId);
                 break;
             }
             case TREE_NODE_BLOCK: {

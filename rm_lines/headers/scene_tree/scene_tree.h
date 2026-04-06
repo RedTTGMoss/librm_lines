@@ -37,7 +37,7 @@ public:
     std::optional<ImageInfoBlock> imageInfo;
     std::optional<Text> rootText;
 
-    void addNode(const CrdtId &nodeId, const CrdtId &parentId);
+    void addNode(const CrdtId &nodeId, const CrdtId &parentNodeId, const CrdtId &parentTreeId);
 
     void addItem(const SceneItemVariant &item, const CrdtId &parentId);
 
@@ -47,7 +47,9 @@ public:
 
     json toJson();
 
+    friend class TaggedBlockWriter;
+
 private:
-    std::unordered_map<CrdtId, std::unique_ptr<Group> > _nodeIds;
-    std::unordered_map<CrdtId, std::vector<SceneItemVariant> > _groupChildren;
+    std::map<CrdtId, std::unique_ptr<Group> > _nodeIds;
+    std::map<CrdtId, std::vector<SceneItemVariant> > _groupChildren;
 };

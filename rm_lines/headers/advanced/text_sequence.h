@@ -7,6 +7,8 @@ struct TextSequence : CrdtSequence<TextItem> {
     // A custom CrdtSequence specifically for TextItem
     void expandTextItems();
 
+    void compactTextItems();
+
     bool operator==(char c) const;
 
 private:

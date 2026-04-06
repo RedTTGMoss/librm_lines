@@ -52,6 +52,12 @@ struct CrdtSequenceItem {
                                                  value(value) {
     };
 
+    std::strong_ordering operator<=>(const CrdtSequenceItem &other) const {
+        return itemId <=> other.itemId;
+    }
+
+    bool operator==(const CrdtSequenceItem &other) const = default;
+
 private:
     std::optional<std::reference_wrapper<Group> > _treeValue;
 };

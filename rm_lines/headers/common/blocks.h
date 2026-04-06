@@ -17,8 +17,8 @@ using json = nlohmann::json;
 
 enum BlockTypes {
     UNREADABLE_BLOCK = -1,
-    MIGRATION_INFO_BLOCK = 0,
-    SCENE_TREE_BLOCK = 1,
+    MIGRATION_INFO_BLOCK = 0, // Writable!
+    SCENE_TREE_BLOCK = 1, // Writable!
     TREE_NODE_BLOCK = 2,
     SCENE_GLYPH_ITEM_BLOCK = 3,
     SCENE_GROUP_ITEM_BLOCK = 4,
@@ -26,9 +26,9 @@ enum BlockTypes {
     SCENE_TEXT_ITEM_BLOCK = 6,
     ROOT_TEXT_BLOCK = 7,
     SCENE_TOMBSTONE_ITEM_BLOCK = 8,
-    AUTHOR_IDS_BLOCK = 9,
-    PAGE_INFO_BLOCK = 10,
-    SCENE_INFO_BLOCK = 13,
+    AUTHOR_IDS_BLOCK = 9, // Writable!
+    PAGE_INFO_BLOCK = 10, // Writable!
+    SCENE_INFO_BLOCK = 13, // Writable!
     IMAGE_INFO_BLOCK = 14,
     SCENE_IMAGE_ITEM_BLOCK = 15,
 };
@@ -158,13 +158,17 @@ struct SceneInfoBlock final : Block {
 
 struct SceneTreeBlock final : Block {
     CrdtId treeId;
-    CrdtId nodeId;
-    bool isUpdate;
+    CrdtId parentNodeId = BLANK_NODE;
+    bool isUpdate = true;
 
     // In subblock
-    CrdtId parentId;
+    CrdtId parentTreeId = BLANK_NODE;
+
+    static SceneTreeBlock fromNode(const Group *node);
 
     bool read(TaggedBlockReader *reader) override;
+
+    bool write(TaggedBlockWriter *writer) const override;
 
     [[nodiscard]] json toJson() const override;
 
@@ -236,7 +240,11 @@ struct RootTextBlock final : Block {
     CrdtId blockId;
     Text value;
 
+    static RootTextBlock fromText(const Text &text);
+
     bool read(TaggedBlockReader *reader) override;
+
+    bool write(TaggedBlockWriter *writer) const override;
 
     json toJson() const override;
 
