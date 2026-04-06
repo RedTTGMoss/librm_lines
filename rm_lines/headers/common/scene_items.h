@@ -116,5 +116,7 @@ struct ImageItem {
     std::vector<float> vertices;
     std::vector<uint32_t> indices;
 
+    std::optional<CrdtId> moveId;
+
     json toJson() const;
 };

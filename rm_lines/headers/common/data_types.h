@@ -39,6 +39,13 @@ struct CrdtId {
 
 constexpr auto BLANK_NODE = CrdtId{0, 0};
 constexpr auto ROOT_NODE = CrdtId{0, 1};
+constexpr auto ROOT_TEXT_NODE = CrdtId{0, 11};
+
+enum ParentTypes {
+    TREE,
+    NODE,
+    TEXT
+};
 
 template<>
 struct std::hash<CrdtId> {
@@ -232,7 +239,7 @@ public:
 
     CrdtId nodeId;
     CrdtId parentId; // Tree or Node parent ID
-    bool parentIsNode = false;
+    ParentTypes parentIs = TREE;
     LwwItem<std::string> label;
     LwwItem<bool> visible;
     std::optional<LwwItem<CrdtId> > anchorId;

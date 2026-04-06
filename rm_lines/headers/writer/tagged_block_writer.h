@@ -61,6 +61,10 @@ public:
 
     bool writeLwwByte(uint8_t index, const LwwItem<uint8_t> *value);
 
+    bool writeLwwBytes(uint8_t index, const LwwItem<std::vector<uint8_t> > *value);
+
+    bool writeLwwString(uint8_t index, const LwwItem<std::string> *value);
+
     bool writeLwwByteSub(uint8_t index, const LwwItem<uint8_t> *value);
 
     template<typename T>

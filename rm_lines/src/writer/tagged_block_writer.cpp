@@ -6,25 +6,34 @@ TaggedBlockWriter::~TaggedBlockWriter() {
 
 bool TaggedBlockWriter::buildRM() {
     writeBytes(V6_HEADER_SIZE, V6_HEADER);
+    // Author IDs block
     if (renderer->sceneTree->authorsInfo.has_value()) {
         if (!writeBlock(&renderer->sceneTree->authorsInfo.value())) return false;
     }
+    // Migration info block
     if (renderer->sceneTree->migrationInfo.has_value()) {
         if (!writeBlock(&renderer->sceneTree->migrationInfo.value())) return false;
     }
+    // Page info block
     if (renderer->sceneTree->pageInfo.has_value()) {
         if (!writeBlock(&renderer->sceneTree->pageInfo.value())) return false;
     }
+    // Scene info block
     if (renderer->sceneTree->sceneInfo.has_value()) {
         if (!writeBlock(&renderer->sceneTree->sceneInfo.value())) return false;
+    }
+    // Image info block
+    if (renderer->sceneTree->imageInfo.has_value()) {
+        if (!writeBlock(&renderer->sceneTree->imageInfo.value())) return false;
     }
     // Start writing nodes
     for (auto &node: renderer->sceneTree->_nodeIds | std::views::values) {
         if (!writeNode(node.get())) return false;
     }
 
-    // Root text block
-    if (!writeRootText(renderer->textDocument.toText())) return false;
+    // TODO: Write the Root text block
+    // if (!writeRootText(renderer->textDocument.toText())) return false;
+
     return true;
 }
 
@@ -123,6 +132,23 @@ bool TaggedBlockWriter::writeLwwByte(const uint8_t index, const LwwItem<uint8_t>
     uint32_t subBlockStart;
     if (subBlockStart = _writeLwwItemId<uint8_t>(index, value); subBlockStart == 0) return false;
     if (!writeByte(2, &value->value)) return false;
+    return writeSubBlockEnd(subBlockStart);
+}
+
+bool TaggedBlockWriter::writeLwwBytes(const uint8_t index, const LwwItem<std::vector<uint8_t> > *value) {
+    uint32_t subBlockStart;
+    if (subBlockStart = _writeLwwItemId<std::vector<uint8_t> >(index, value); subBlockStart == 0) return false;
+    uint32_t valueBlockStart;
+    if (valueBlockStart = writeSubBlockStart(2); valueBlockStart == 0) return false;
+    if (!writeBytes(value->value.size(), value->value.data())) return false;
+    if (!writeSubBlockEnd(valueBlockStart)) return false;
+    return writeSubBlockEnd(subBlockStart);
+}
+
+bool TaggedBlockWriter::writeLwwString(const uint8_t index, const LwwItem<std::string> *value) {
+    uint32_t subBlockStart;
+    if (subBlockStart = _writeLwwItemId<std::string>(index, value); subBlockStart == 0) return false;
+    if (!writeString(2, &value->value)) return false;
     return writeSubBlockEnd(subBlockStart);
 }
 

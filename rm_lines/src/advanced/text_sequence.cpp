@@ -79,5 +79,4 @@ void TextSequence::expandTextItems() {
 }
 
 void TextSequence::compactTextItems() {
-    // TODO: FINISH
 }

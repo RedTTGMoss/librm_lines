@@ -78,6 +78,7 @@ json Paragraph::toJson() const {
 }
 
 void TextDocument::fromText(Text &text) {
+    logDebug(to_string(text.toJson()));
     text.items.expandTextItems();
     paragraphs.clear();
     const auto characterIDs = text.items.getSortedIds();
@@ -139,9 +140,9 @@ void TextDocument::fromText(Text &text) {
 
 Text TextDocument::toText() const {
     Text text = this->text; // We need to make a copy of the text to modify it
-    text.items.compactTextItems();
 
-    //TODO: FINISH
+    for (const auto &paragraph: paragraphs) {
+    }
 
     return text;
 }

@@ -18,6 +18,8 @@ FetchContent_Declare(
         GIT_REPOSITORY https://github.com/nemtrif/utfcpp.git
         GIT_TAG v4.0.6
 )
+set(SIMDUTF_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(SIMDUTF_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         simdutf
         GIT_REPOSITORY https://github.com/simdutf/simdutf.git

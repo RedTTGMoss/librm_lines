@@ -29,7 +29,7 @@ enum BlockTypes {
     AUTHOR_IDS_BLOCK = 9, // Writable!
     PAGE_INFO_BLOCK = 10, // Writable!
     SCENE_INFO_BLOCK = 13, // Writable!
-    IMAGE_INFO_BLOCK = 14,
+    IMAGE_INFO_BLOCK = 14, // Writable!
     SCENE_IMAGE_ITEM_BLOCK = 15,
 };
 
@@ -272,6 +272,8 @@ struct ImageInfoBlock final : Block {
     std::vector<ImageInfo> images;
 
     bool read(TaggedBlockReader *reader) override;
+
+    bool write(TaggedBlockWriter *writer) const override;
 
     [[nodiscard]] json toJson() const override;
 

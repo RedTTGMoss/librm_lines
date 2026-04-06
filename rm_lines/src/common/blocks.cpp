@@ -345,11 +345,18 @@ SceneTreeBlock SceneTreeBlock::fromNode(const Group *node) {
     block.info->blockType = SCENE_TREE_BLOCK;
 
     block.treeId = node->nodeId;
-    if (node->parentIsNode) {
-        block.parentNodeId = node->parentId;
-        block.isUpdate = false;
-    } else {
-        block.parentTreeId = node->parentId;
+    switch (node->parentIs) {
+        case TREE:
+            block.parentTreeId = node->parentId;
+            break;
+        case NODE:
+            block.parentNodeId = node->parentId;
+            block.isUpdate = false;
+            break;
+        case TEXT:
+            block.parentNodeId = node->parentId;
+            block.parentTreeId = ROOT_TEXT_NODE;
+            break;
     }
     return block;
 }
@@ -637,6 +644,28 @@ bool ImageInfoBlock::read(TaggedBlockReader *reader) {
     return true;
 }
 
+bool ImageInfoBlock::write(TaggedBlockWriter *writer) const {
+    uint32_t mainSubBlockStart;
+    const uint32_t subBlocks = images.size();
+
+    // Write the sub block count
+    if (mainSubBlockStart = writer->writeSubBlockStart(1); mainSubBlockStart == 0) return false;
+    if (!writer->writeValuint(subBlocks)) return false;
+
+
+    for (const auto image: images) {
+        uint32_t subBlockStart;
+        if (subBlockStart = writer->writeSubBlockStart(0); subBlockStart == 0) return false;
+        if (!writer->writeUUID(image.uuid)) return false;
+        if (!writer->writeLwwString(1, &image.fileName)) return false;
+        if (!writer->writeLwwBytes(2, &image.flags)) return false;
+
+        if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+    }
+
+    return writer->writeSubBlockEnd(mainSubBlockStart);
+}
+
 json ImageInfoBlock::toJson() const {
     json j;
     for (const auto &image: images) {
@@ -684,6 +713,14 @@ bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {
     value.indices = _indices;
     item.value = value;
 
+    if (!reader->hasBytesRemaining()) return true;
+    // Additional optional moveId
+    reader->getTag();
+    if (reader->checkTag(5, TagType::ID)) {
+        CrdtId _moveId;
+        if (!reader->readId(5, &_moveId)) return false;
+        item.value->moveId = _moveId;
+    }
 
     return true;
 }
