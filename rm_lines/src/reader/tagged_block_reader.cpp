@@ -19,7 +19,7 @@ bool TaggedBlockReader::readBlockInfo() {
     currentBlockInfo.offset = currentOffset + 8; // Store offset at block data start
     readBytesOrError(sizeof(uint32_t), &currentBlockInfo.size);
 
-    skipBytes(1); // Skip 1 unknown byte
+    skipBytes(1); // Skip 1 unknown byte of 0x00
 
     uint8_t temp[3];
     readBytesOrError(3, temp); // Read 3 bytes for currentBlockInfo
@@ -45,6 +45,10 @@ uint32_t TaggedBlockReader::remainingBytes() const {
 
 bool TaggedBlockReader::readBlock() {
     currentBlock = Block::lookup(currentBlockInfo);
+    currentBlock->info = currentBlockInfo;
+    // if (currentBlockInfo.blockType == AUTHOR_IDS_BLOCK) {
+    //     return false;
+    // }
     return currentBlock ? currentBlock->read(this) : false;
 }
 
@@ -347,7 +351,7 @@ bool TaggedBlockReader::readIntPair(IntPair *result) {
     return readBytes(sizeof(IntPair), result);
 }
 
-bool TaggedBlockReader::readDoublePair(uint8_t index, DoublePair *result) {
+bool TaggedBlockReader::readDoublePair(const uint8_t index, DoublePair *result) {
     getTag();
     if (!readSubBlock(index)) return false;
     return readDoublePair(result);
@@ -649,6 +653,21 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
 
         // Handle the block into the tree
         switch (currentBlockInfo.getBlockType()) {
+            case AUTHOR_IDS_BLOCK: {
+                const auto authorIdsBlock = dynamic_cast<AuthorIdsBlock *>(currentBlock.get());
+                tree.authorsInfo = *authorIdsBlock;
+                break;
+            }
+            case MIGRATION_INFO_BLOCK: {
+                const auto migrationInfoBlock = dynamic_cast<MigrationInfoBlock *>(currentBlock.get());
+                tree.migrationInfo = *migrationInfoBlock;
+                break;
+            }
+            case PAGE_INFO_BLOCK: {
+                const auto pageInfoBlock = dynamic_cast<PageInfoBlock *>(currentBlock.get());
+                tree.pageInfo = *pageInfoBlock;
+                break;
+            }
             case SCENE_TREE_BLOCK: {
                 // Add the scene tree as a tree node
                 const auto sceneTreeBlock = dynamic_cast<SceneTreeBlock *>(currentBlock.get());

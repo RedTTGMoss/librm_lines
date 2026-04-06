@@ -7,6 +7,8 @@
 #include <reader/tagged_block_reader.h>
 #include <common/scene_items.h>
 
+#include "writer/tagged_block_writer.h"
+
 BlockTypes BlockInfo::getBlockType() const {
     return static_cast<BlockTypes>(blockType);
 }
@@ -75,6 +77,14 @@ bool Block::read(TaggedBlockReader *reader) {
     return false;
 }
 
+bool Block::write(TaggedBlockWriter *writer) const {
+    return false;
+}
+
+BlockTypes Block::getBlockType() const {
+    return UNREADABLE_BLOCK;
+}
+
 bool SceneTombstoneItemBlock::read(TaggedBlockReader *reader) {
     // TODO: Figure out tombstones
     // These seem to be related to deleted paragraphs
@@ -128,24 +138,60 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
     return true;
 }
 
+bool AuthorIdsBlock::write(TaggedBlockWriter *writer) const {
+    const uint64_t subBlocks = authorIds.size();
+    if (!writer->writeValuint(subBlocks)) return false;
+
+    constexpr uint64_t uuidLength = 16;
+    for (const auto &[authorId, uuid]: authorIds) {
+        int subBlockStart;
+        if (subBlockStart = writer->writeSubBlockStart(0); subBlockStart < 0) return false;
+
+        if (!writer->writeValuint(uuidLength)) return false;
+
+        if (!writer->writeUUID(uuid)) return false;
+
+        if (!writer->writeBytes(sizeof(uint16_t), &authorId)) return false;
+
+        if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+    }
+    return true;
+}
+
 json AuthorIdsBlock::toJson() const {
-    // TODO: Implement this function
-    return {};
+    json j = json::array();
+    for (const auto &[index, uuid]: authorIds) {
+        j.push_back({{"first", uuid}, {"second", index}});
+    }
+    return j;
 }
 
 bool MigrationInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &migrationId)) return false;
     if (!reader->readBool(2, &isDevice)) return false;
     if (reader->hasBytesRemaining()) {
-        // Read unknown
-        if (!reader->readBool(3, nullptr)) return false;
+        bool _isV3;
+        if (!reader->readBool(3, &_isV3)) return false;
+        isV3 = _isV3;
+    }
+    return true;
+}
+
+bool MigrationInfoBlock::write(TaggedBlockWriter *writer) const {
+    if (!writer->writeId(1, &migrationId)) return false;
+    if (!writer->writeBool(2, isDevice)) return false;
+    if (isV3.has_value()) {
+        if (!writer->writeBool(3, isV3.value())) return false;
     }
     return true;
 }
 
 json MigrationInfoBlock::toJson() const {
-    // TODO: Implement this function
-    return {};
+    return {
+        {"migrationId", migrationId.toJson()},
+        {"isDevice", isDevice},
+        {"isV3", isV3.has_value() ? json(isV3.value()) : nullptr}
+    };
 }
 
 bool PageInfoBlock::read(TaggedBlockReader *reader) {
@@ -160,9 +206,23 @@ bool PageInfoBlock::read(TaggedBlockReader *reader) {
     return true;
 }
 
+bool PageInfoBlock::write(TaggedBlockWriter *writer) const {
+    if (!writer->writeInt(1, &loadsCount)) return false;
+    if (!writer->writeInt(2, &mergesCount)) return false;
+    if (!writer->writeInt(3, &textCharsCount)) return false;
+    if (!writer->writeInt(4, &textLinesCount)) return false;
+    if (!writer->writeInt(5, &typeFolioUseCount)) return false;
+    return true;
+}
+
 json PageInfoBlock::toJson() const {
-    // TODO: Implement this function
-    return {};
+    return {
+        {"loadsCount", loadsCount},
+        {"mergesCount", mergesCount},
+        {"textCharsCount", textCharsCount},
+        {"textLinesCount", textLinesCount},
+        {"typeFolioUseCount", typeFolioUseCount}
+    };
 }
 
 bool SceneInfoBlock::read(TaggedBlockReader *reader) {
@@ -190,9 +250,7 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
     }
     if (reader->hasBytesRemaining()) {
         DoublePair _paperSizeF;
-        reader->getTag();
-        if (!reader->readSubBlock(7)) return false;
-        if (!reader->readDoublePair(&_paperSizeF)) return false;
+        if (!reader->readDoublePair(7, &_paperSizeF)) return false;
         paperSizeF = _paperSizeF;
     }
     if (reader->hasBytesRemaining()) [[unlikely]] {
@@ -204,6 +262,34 @@ bool SceneInfoBlock::read(TaggedBlockReader *reader) {
         LwwItem<uint8_t> _preferredLayout;
         if (!reader->readLwwByte(9, &_preferredLayout)) return false;
         preferredLayout = _preferredLayout;
+    }
+
+    return true;
+}
+
+bool SceneInfoBlock::write(TaggedBlockWriter *writer) const {
+    if (!writer->writeLwwId(1, &currentLayer)) return false;
+
+    if (backgroundVisible.has_value()) {
+        if (!writer->writeLwwBool(2, &backgroundVisible.value())) return false;
+    }
+    if (rootDocumentVisible.has_value()) {
+        if (!writer->writeLwwBool(3, &rootDocumentVisible.value())) return false;
+    }
+    if (paperSize.has_value()) {
+        if (!writer->writeIntPair(5, &paperSize.value())) return false;
+    }
+    if (extendedContentRect.has_value()) {
+        if (!writer->writeLwwRectPair(6, &extendedContentRect.value())) return false;
+    }
+    if (paperSizeF.has_value()) {
+        if (!writer->writeDoublePair(7, &paperSizeF.value())) return false;
+    }
+    if (lwwPaperSizeF.has_value()) {
+        if (!writer->writeLwwDoublePair(8, &lwwPaperSizeF.value())) return false;
+    }
+    if (preferredLayout.has_value()) {
+        if (!writer->writeLwwByte(9, &preferredLayout.value())) return false;
     }
 
     return true;

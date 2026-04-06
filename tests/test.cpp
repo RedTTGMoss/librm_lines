@@ -12,6 +12,7 @@ namespace fs = std::filesystem;
 #define HTML_OUT "./output/html/"
 #define JSON_OUT "./output/json/"
 #define MD_OUT "./output/md/"
+#define RM_OUT "./output/rm/"
 #define SVG_OUT "./output/svg/"
 #define PNG_OUT "./output/png/"
 #define PARA_OUT "./output/paragraphs/"
@@ -122,6 +123,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::string htmlFile = HTML_OUT + filename + ".html";
     std::string jsonFile = JSON_OUT + filename + ".json";
     std::string mdFile = MD_OUT + filename + ".md";
+    std::string rmFile = RM_OUT + filename + ".rm";
     std::string svgFile = SVG_OUT + filename + ".svg";
     std::string pngFile = PNG_OUT + filename + ".png";
     std::string paraFile = PARA_OUT + filename + ".json";
@@ -134,6 +136,7 @@ bool processFile(const std::string &filename, const std::string &path) {
 
     std::ofstream htmlFilePtr(htmlFile.c_str());
     std::ofstream mdFilePtr(mdFile.c_str());
+    std::ofstream rmFilePtr(rmFile.c_str());
     std::ofstream svgFilePtr(svgFile.c_str());
     std::ofstream pngFilePtr(pngFile.c_str());
     std::ofstream paraFilePtr(paraFile.c_str());
@@ -141,7 +144,8 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::ofstream rawTextFilePtr(rawTextFile.c_str());
     std::ofstream textExpandPythonFilePtr(textExpandPythonFile.c_str());
     std::ofstream anchorTestPythonFilePtr(anchorTestPythonFile.c_str());
-    if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !pngFilePtr || !paraFilePtr || !layersFilePtr || !rawTextFilePtr ||
+    if (!htmlFilePtr || !mdFilePtr || !rmFilePtr || !svgFilePtr || !pngFilePtr || !paraFilePtr || !layersFilePtr || !
+        rawTextFilePtr ||
         !textExpandPythonFilePtr || !anchorTestPythonFilePtr) {
         logError(std::format("Failed to open output files for page \"{}\"", filename));
         destroyTree(treeId);
@@ -150,6 +154,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     try {
         renderer->toHtml(htmlFilePtr);
         renderer->toMd(mdFilePtr);
+        renderer->toRM(rmFilePtr);
         json paragraphs = renderer->getParagraphs();
         paraFilePtr << paragraphs.dump(4);
         json layers = renderer->getLayers();
@@ -308,6 +313,7 @@ int main(const int argc, char *argv[]) {
     fs::create_directories(HTML_OUT);
     fs::create_directories(JSON_OUT);
     fs::create_directories(MD_OUT);
+    fs::create_directories(RM_OUT);
     fs::create_directories(SVG_OUT);
     fs::create_directories(PNG_OUT);
     fs::create_directories(PARA_OUT);

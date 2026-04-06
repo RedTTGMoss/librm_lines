@@ -4,6 +4,7 @@
 #include "advanced/text.h"
 #include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
 #include "renderer/rm_lines_stroker/templates/template_functions.h"
+#include "writer/tagged_block_writer.h"
 #define HTML_HEADER "<!DOCTYPE html><html><body>"
 #define HTML_FOOTER "</body></html>"
 
@@ -265,6 +266,13 @@ void Renderer::toMd(std::ostream &stream) const {
 
         // Add double newline after each paragraph
         stream << "\n\n";
+    }
+}
+
+void Renderer::toRM(std::ostream &stream) const {
+    auto writer = TaggedBlockWriter(stream, this);
+    if (!writer.buildRM()) {
+        logError("Failed to build RM file!");
     }
 }
 

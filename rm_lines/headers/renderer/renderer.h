@@ -67,6 +67,8 @@ public:
     // Exports
     void toMd(std::ostream &stream) const;
 
+    void toRM(std::ostream &stream) const;
+
     void toTxt(std::ostream &stream) const;
 
     void toHtml(std::ostream &stream);
@@ -80,6 +82,8 @@ public:
         VaryingGeneratorLengthWidth> *getStroker() {
         return &stroker;
     }
+
+    friend class TaggedBlockWriter;
 
 private:
     SceneTree *sceneTree;

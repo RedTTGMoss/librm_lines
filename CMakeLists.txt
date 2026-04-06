@@ -33,6 +33,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_export.cpp
         rm_lines/src/reader/analyzer.cpp
         rm_lines/src/reader/tagged_block_reader.cpp
+        rm_lines/src/writer/tagged_block_writer.cpp
         rm_lines/src/v5/reader.cpp
         rm_lines/src/v6/reader.cpp
         rm_lines/src/common/blocks.cpp

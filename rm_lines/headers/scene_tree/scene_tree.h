@@ -30,6 +30,9 @@ class SceneTree {
 public:
     SceneTree();
 
+    std::optional<AuthorIdsBlock> authorsInfo;
+    std::optional<MigrationInfoBlock> migrationInfo;
+    std::optional<PageInfoBlock> pageInfo;
     std::optional<SceneInfoBlock> sceneInfo;
     std::optional<ImageInfoBlock> imageInfo;
     std::optional<Text> rootText;

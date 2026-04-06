@@ -12,9 +12,11 @@
 
 #include <nlohmann/json.hpp>
 
+class TaggedBlockWriter;
 using json = nlohmann::json;
 
 enum BlockTypes {
+    UNREADABLE_BLOCK = -1,
     MIGRATION_INFO_BLOCK = 0,
     SCENE_TREE_BLOCK = 1,
     TREE_NODE_BLOCK = 2,
@@ -49,11 +51,17 @@ struct SubBlockInfo {
 };
 
 struct Block {
+    std::optional<BlockInfo> info = std::nullopt;
+
     Block();
 
     virtual ~Block();
 
     virtual bool read(TaggedBlockReader *reader);
+
+    virtual bool write(TaggedBlockWriter *writer) const;
+
+    virtual BlockTypes getBlockType() const;
 
     static std::unique_ptr<Block> lookup(const BlockInfo &info);
 
@@ -73,23 +81,40 @@ struct SceneTombstoneItemBlock final : Block {
     bool read(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return SCENE_TOMBSTONE_ITEM_BLOCK;
+    }
 };
 
 struct AuthorIdsBlock final : Block {
-    std::map<uint32_t, std::string> authorIds;
+    std::map<uint16_t, std::string> authorIds;
 
     bool read(TaggedBlockReader *reader) override;
 
+    bool write(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return AUTHOR_IDS_BLOCK;
+    }
 };
 
 struct MigrationInfoBlock final : Block {
     CrdtId migrationId;
     bool isDevice;
+    std::optional<bool> isV3 = std::nullopt;
 
     bool read(TaggedBlockReader *reader) override;
 
+    bool write(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return MIGRATION_INFO_BLOCK;
+    }
 };
 
 struct PageInfoBlock final : Block {
@@ -101,7 +126,13 @@ struct PageInfoBlock final : Block {
 
     bool read(TaggedBlockReader *reader) override;
 
+    bool write(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return PAGE_INFO_BLOCK;
+    }
 };
 
 struct SceneInfoBlock final : Block {
@@ -116,7 +147,13 @@ struct SceneInfoBlock final : Block {
 
     bool read(TaggedBlockReader *reader) override;
 
+    bool write(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return SCENE_INFO_BLOCK;
+    }
 };
 
 struct SceneTreeBlock final : Block {
@@ -130,6 +167,10 @@ struct SceneTreeBlock final : Block {
     bool read(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return SCENE_TREE_BLOCK;
+    }
 };
 
 struct TreeNodeBlock final : Block {
@@ -138,6 +179,10 @@ struct TreeNodeBlock final : Block {
     bool read(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return TREE_NODE_BLOCK;
+    }
 };
 
 struct SceneItemBlock : Block {
@@ -165,6 +210,10 @@ struct SceneGroupItemBlock final : SceneItemBlock {
     bool readValue(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return SCENE_GROUP_ITEM_BLOCK;
+    }
 };
 
 struct SceneLineItemBlock final : SceneItemBlock {
@@ -177,6 +226,10 @@ struct SceneLineItemBlock final : SceneItemBlock {
     bool readValue(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return SCENE_LINE_ITEM_BLOCK;
+    }
 };
 
 struct RootTextBlock final : Block {
@@ -186,6 +239,10 @@ struct RootTextBlock final : Block {
     bool read(TaggedBlockReader *reader) override;
 
     json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return ROOT_TEXT_BLOCK;
+    }
 };
 
 struct SceneGlyphItemBlock final : SceneItemBlock {
@@ -197,6 +254,10 @@ struct SceneGlyphItemBlock final : SceneItemBlock {
     bool readValue(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return SCENE_GLYPH_ITEM_BLOCK;
+    }
 };
 
 struct ImageInfoBlock final : Block {
@@ -205,6 +266,10 @@ struct ImageInfoBlock final : Block {
     bool read(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return IMAGE_INFO_BLOCK;
+    }
 };
 
 struct SceneImageItemBlock final : SceneItemBlock {
@@ -216,4 +281,8 @@ struct SceneImageItemBlock final : SceneItemBlock {
     bool readValue(TaggedBlockReader *reader) override;
 
     [[nodiscard]] json toJson() const override;
+
+    BlockTypes getBlockType() const override {
+        return SCENE_IMAGE_ITEM_BLOCK;
+    }
 };

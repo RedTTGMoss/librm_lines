@@ -37,6 +37,9 @@ std::vector<SceneItemVariant> SceneTree::getGroupChildren(const CrdtId &nodeId) 
 
 json SceneTree::toJson() {
     json j = {
+        {"authorsInfo", authorsInfo ? authorsInfo->toJson() : nullptr},
+        {"migrationInfo", migrationInfo ? migrationInfo->toJson() : nullptr},
+        {"pageInfo", pageInfo ? pageInfo->toJson() : nullptr},
         {"sceneInfo", sceneInfo ? sceneInfo->toJson() : nullptr},
         {"imageInfo", imageInfo ? imageInfo->toJson() : nullptr},
         {"rootText", rootText ? rootText->toJson() : nullptr},
