@@ -172,3 +172,139 @@ void TextSequence::compactTextItems() {
         i = j;
     }
 }
+
+std::vector<CrdtId> TextSequence::getSortedTextIds() const {
+    // Skip all the processing ahead, if the sequence is empty
+    if (sequence.empty())
+        return {};
+
+    // Helper function to calculate the "length" of a text item (how many virtual positions it occupies)
+    auto getItemLength = [](const TextItem &item) -> uint32_t {
+        // Skip invalid items with no value
+        if (!item.value.has_value())
+            return 0;
+
+        auto value = item.value.value();
+
+        // Format items (uint32_t) always count as 1 position
+        if (std::holds_alternative<uint32_t>(value))
+            return 1;
+
+        // Deleted items: deletedLength itself is the count (1 means just itemId, 2 means itemId + one extra)
+        if (item.deletedLength > 0)
+            return item.deletedLength;
+
+        // String items: string length determines virtual positions
+        // NOTE: Using string.length() for now. If different UTF-8 characters cause issues in the future,
+        // consider using splitUtf8(str).size() to count actual UTF-8 characters instead.
+        return std::get<std::string>(value).length();
+    };
+
+    // Helper to check if a CrdtId falls within an item's virtual range
+    auto idInRange = [&getItemLength](const CrdtId &targetId, const TextItem &item) -> bool {
+        uint32_t length = getItemLength(item);
+        if (length == 0)
+            return false;
+
+        // Check if targetId is within [itemId, itemId + length - 1]
+        if (item.itemId.first != targetId.first)
+            return false;
+
+        return targetId.second >= item.itemId.second &&
+               targetId.second < item.itemId.second + length;
+    };
+
+    // Allocate size for the final sorted keys
+    std::vector<CrdtId> sortedIds;
+    sortedIds.reserve(sequence.size());
+
+    // Build dependency graph
+    std::map<CrdtId, std::unordered_set<CrdtId> > graph;
+
+    for (const auto &[itemId, item]: sequence) {
+        // Skip invalid items with no value
+        if (!item.value.has_value())
+            continue;
+
+        uint32_t length = getItemLength(item);
+        if (length == 0)
+            continue;
+
+        // Initialize this item in the graph
+        graph[itemId] = {};
+
+        // Check leftId dependency
+        if (item.leftId != END_MARKER) {
+            // Find which item contains the leftId position
+            for (const auto &[otherId, otherItem]: sequence) {
+                if (otherId == itemId)
+                    continue;
+
+                // Check if leftId falls within this other item's range
+                if (idInRange(item.leftId, otherItem)) {
+                    graph[itemId].insert(otherId);
+                    break;
+                }
+            }
+        }
+
+        // Check rightId dependencies: items that have this item in their virtual range should come after
+        for (const auto &[otherId, otherItem]: sequence) {
+            if (otherId == itemId)
+                continue;
+
+            if (!otherItem.value.has_value())
+                continue;
+
+            // If another item's rightId falls within our virtual range, we must come before it
+            if (otherItem.rightId != END_MARKER && idInRange(otherItem.rightId, item)) {
+                graph[otherId].insert(itemId);
+            }
+        }
+    }
+
+    // Topological sort with tie-breaking by itemId
+    std::vector<CrdtId> nextIds;
+    while (!graph.empty()) {
+        for (auto it = graph.begin(); it != graph.end();) {
+            // If the item has no dependencies, we can add it to the next items
+            if (it->second.empty()) {
+                nextIds.push_back(it->first);
+                it = graph.erase(it);
+            } else {
+                ++it;
+            }
+        }
+
+        if (nextIds.empty() && !graph.empty()) {
+            // If we have no next items but the graph is not finished, we have a cycle
+            std::string debugGraph = "Here's the dependency graph, while sorting the text sequence: ";
+            for (const auto &[key, value]: graph) {
+                debugGraph += std::format("\nItem: {} -> ", key.repr());
+                for (const auto &dep: value) {
+                    debugGraph += std::format("{} ", dep.repr());
+                }
+            }
+            logError(debugGraph);
+            throw std::runtime_error("Cyclic dependency in text sequence");
+        }
+
+        // Sort ascending by itemId to break ties consistently
+        std::sort(nextIds.begin(), nextIds.end(), [](const CrdtId &a, const CrdtId &b) {
+            return a < b;
+        });
+
+        for (const auto &itemId: nextIds) {
+            // Add the item to the sorted keys
+            sortedIds.push_back(itemId);
+
+            // Remove the item as a dependency of all other items in the graph
+            for (auto &dependencies: graph | std::views::values)
+                dependencies.erase(itemId);
+        }
+        // Erase the list of items for the next loop cycle
+        nextIds.clear();
+    }
+
+    return sortedIds;
+}

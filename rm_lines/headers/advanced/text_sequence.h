@@ -9,6 +9,8 @@ struct TextSequence : CrdtSequence<TextItem> {
 
     void compactTextItems();
 
+    [[nodiscard]] std::vector<CrdtId> getSortedTextIds() const;
+
     bool operator==(char c) const;
 
 private:

@@ -547,13 +547,14 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
     if (subStart3 = writer->writeSubBlockStart(1); subStart3 == 0) return false;
 
     // Extract the text items from the sequence
-    auto itemIds = value.items.getSortedIds();
+    auto itemIds = value.items.getSortedTextIds();
     std::vector<const TextItem *> items;
     items.reserve(value.items.size());
     for (auto itemId: itemIds) {
         if (!value.items[itemId]->value.has_value()) {
             continue; // Text objects can't be empty!
         }
+        logDebug(reprTextItem(*value.items[itemId]));
         items.push_back(value.items[itemId]);
     }
     items.shrink_to_fit();
@@ -565,7 +566,6 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
 
     int i = 0;
     for (const auto item: items) {
-        logDebug(reprTextItem(*item));
         if (!writer->writeTextItem(item)) return false;
         if (i == 1) {
             return true;
