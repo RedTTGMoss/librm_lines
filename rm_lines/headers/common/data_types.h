@@ -14,10 +14,10 @@
 using json = nlohmann::json;
 
 struct CrdtId {
-    uint8_t first;
-    uint64_t second;
+    uint8_t first = 0;
+    uint64_t second = 0;
 
-    auto operator<=>(const CrdtId &) const = default;
+    std::strong_ordering operator<=>(const CrdtId &other) const;
 
     bool operator==(const CrdtId &) const = default;
 
@@ -26,6 +26,13 @@ struct CrdtId {
     [[nodiscard]] json toJson() const;
 
     CrdtId operator++(int);
+
+    CrdtId operator+(int i) const;
+
+    CrdtId operator-(int i) const;
+
+    CrdtId &operator+=(int i);
+
 
     CrdtId() = default;
 
@@ -40,6 +47,7 @@ struct CrdtId {
 constexpr auto BLANK_NODE = CrdtId{0, 0};
 constexpr auto ROOT_NODE = CrdtId{0, 1};
 constexpr auto ROOT_TEXT_NODE = CrdtId{0, 11};
+constexpr auto TEXT_START = CrdtId{1, 17};
 
 enum ParentTypes {
     TREE,
@@ -159,16 +167,24 @@ struct CrdtSequence {
         return sequence[key];
     }
 
+    T *operator[](const CrdtId &key) const {
+        auto it = sequence.find(key);
+        if (it == sequence.end())
+            return nullptr;
+        return const_cast<T *>(&it->second);
+    }
+
     [[nodiscard]] json toJson() const {
         json j;
         // Iterate over the map and convert each item to JSON
+
         for (const auto &[key, value]: sequence) {
             j[key.toJson()] = value.toJsonNoItem();
         }
         return j;
     }
 
-    // Allow for itteration
+    // Allow for iteration
     auto begin() {
         return sequence.begin();
     }
@@ -188,6 +204,15 @@ struct CrdtSequence {
 
     auto size() const {
         return sequence.size();
+    }
+
+    std::vector<CrdtId> getKeys() const {
+        std::vector<CrdtId> keys;
+        keys.reserve(sequence.size());
+        for (const auto &[key, _]: sequence) {
+            keys.push_back(key);
+        }
+        return keys;
     }
 };
 
@@ -253,6 +278,7 @@ public:
 };
 
 enum ParagraphStyle {
+    MISSING = -1,
     BASIC = 0,
     PlainText = 1,
     Title = 2,

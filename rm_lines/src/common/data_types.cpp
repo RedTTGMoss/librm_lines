@@ -56,6 +56,10 @@ std::string reprTextItem(TextItem textItem) {
     );
 }
 
+std::strong_ordering CrdtId::operator<=>(const CrdtId &other) const {
+    return std::tie(first, second) <=> std::tie(other.first, other.second);
+}
+
 std::string CrdtId::repr() const {
     return std::format("CrdtId[{}:{}]", first, second);
 }
@@ -66,6 +70,19 @@ json CrdtId::toJson() const {
 
 CrdtId CrdtId::operator++(int) {
     return CrdtId(first, ++second);
+}
+
+CrdtId CrdtId::operator+(const int i) const {
+    return CrdtId(first, second + i);
+}
+
+CrdtId CrdtId::operator-(const int i) const {
+    return CrdtId(first, second - i);
+}
+
+CrdtId &CrdtId::operator+=(const int i) {
+    second += i;
+    return *this;
 }
 
 CrdtId::CrdtId(const char *id) : CrdtId(std::string(id)) {

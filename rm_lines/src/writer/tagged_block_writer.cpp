@@ -31,8 +31,7 @@ bool TaggedBlockWriter::buildRM() {
         if (!writeNode(node.get())) return false;
     }
 
-    // TODO: Write the Root text block
-    // if (!writeRootText(renderer->textDocument.toText())) return false;
+    if (!writeRootText(renderer->textDocument.toText())) return false;
 
     return true;
 }

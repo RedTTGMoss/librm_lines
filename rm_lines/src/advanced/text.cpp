@@ -16,7 +16,8 @@ bool operator==(const std::string &str, const char rhs) {
 json TextFormattingOptions::toJson() const {
     return {
         {"bold", bold},
-        {"italic", italic}
+        {"italic", italic},
+        {"deletedLength", deletedLength}
     };
 }
 
@@ -78,7 +79,6 @@ json Paragraph::toJson() const {
 }
 
 void TextDocument::fromText(Text &text) {
-    logDebug(to_string(text.toJson()));
     text.items.expandTextItems();
     paragraphs.clear();
     const auto characterIDs = text.items.getSortedIds();
@@ -99,6 +99,7 @@ void TextDocument::fromText(Text &text) {
         }
 
         FormattedText currentText;
+        currentText.formatting = formatting;
         while (i < characterIDs.size()) {
             if (
                 auto characterItem = text.items[characterIDs[i]];
@@ -111,12 +112,26 @@ void TextDocument::fromText(Text &text) {
                     break; // Time for the next paragraph
                 }
                 // assert(characterString.size() <= 1); This is not ideal due to utf8 encoding multiple bytes
-                if (currentText.text.empty()) {
-                    // If the current text is empty, we can just add the formatting information
-                    currentText.formatting = formatting;
-                } else if (currentText.formatting != formatting) {
+                if (currentText.formatting != formatting) {
+                    // New formatting
                     // Push the current text to the paragraph and create a new one
                     paragraph.contents.push_back(std::move(currentText));
+                    formatting.deletedLength = 0;
+                    currentText.formatting = formatting;
+                }
+                if (characterItem.deletedLength > 0 && currentText.formatting.deletedLength == 0) {
+                    // Start new deletedLength
+                    paragraph.contents.push_back(std::move(currentText));
+                    formatting.deletedLength = characterItem.deletedLength;
+                    currentText.formatting = formatting;
+                } else if (characterItem.deletedLength > 0 && currentText.formatting.deletedLength > 0) {
+                    // We can just increase it
+                    currentText.formatting.deletedLength += characterItem.deletedLength;
+                }
+                if (characterItem.deletedLength == 0 && currentText.formatting.deletedLength > 0) {
+                    // If the formatting has a deleted length, we need to push the current text and create a new one with the formatting moved forward
+                    paragraph.contents.push_back(std::move(currentText));
+                    formatting.deletedLength = 0;
                     currentText.formatting = formatting;
                 }
                 // Add the character to the current text
@@ -125,7 +140,7 @@ void TextDocument::fromText(Text &text) {
             }
             i++;
         }
-        if (!currentText.text.empty()) {
+        if (!currentText.text.empty() || currentText.formatting.deletedLength > 0) {
             paragraph.contents.push_back(std::move(currentText));
         }
         if (text.styleMap.contains(paragraph.startId)) {
@@ -134,16 +149,15 @@ void TextDocument::fromText(Text &text) {
         paragraphs.push_back(std::move(paragraph));
     }
 
+
     // Finally make sure to move the text into the text document
     this->text = std::move(text);
 }
 
 Text TextDocument::toText() const {
-    Text text = this->text; // We need to make a copy of the text to modify it
-
-    for (const auto &paragraph: paragraphs) {
-    }
-
+    // We copy the internal text object, compact the text items and we're done!
+    auto text = this->text;
+    text.items.compactTextItems();
     return text;
 }
 
@@ -155,4 +169,32 @@ std::string TextDocument::repr() const {
     }
 
     return final;
+}
+
+TextItem createDeletedLength(const CrdtId start, const CrdtId end) {
+    // A deleted chunk that takes up anchor IDs
+    TextItem item;
+    item.itemId = start + 1;
+    item.leftId = start;
+    item.deletedLength = end.second - start.second;
+    item.value = std::string("");
+    return item;
+}
+
+TextItem createFormatting(const CrdtId id, const FormattingOptions option) {
+    TextItem item;
+    item.itemId = id + 1;
+    item.leftId = id;
+    item.deletedLength = 0;
+    item.value = static_cast<uint32_t>(option);
+    return item;
+}
+
+TextItem createTextItem(const CrdtId id, const std::string &text) {
+    TextItem item;
+    item.itemId = id + 1;
+    item.leftId = id;
+    item.deletedLength = 0;
+    item.value = text;
+    return item;
 }

@@ -43,6 +43,7 @@ constexpr CrdtId ANCHOR_ID_END(0, 281474976710655);
 struct TextFormattingOptions {
     bool bold = false;
     bool italic = false;
+    int deletedLength = 0;
 
     void updateUsingFormattingValue(const FormattingOptions option) {
         switch (option) {
@@ -121,3 +122,9 @@ struct TextDocument {
 
     std::string repr() const;
 };
+
+TextItem createDeletedLength(CrdtId start, CrdtId end);
+
+TextItem createFormatting(CrdtId id, FormattingOptions option);
+
+TextItem createTextItem(CrdtId id, const std::string &text);
