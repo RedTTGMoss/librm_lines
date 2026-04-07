@@ -382,7 +382,6 @@ bool TaggedBlockWriter::writeTextItem(const TextItem *textItem) {
         // Write empty text
         if (!writeEmptyString()) return false;
         // Write format
-        if (!writeTag(2, TagType::Byte4)) return false;
         if (!writeInt(2, &format)) return false;
         if (!writeSubBlockEnd(valueSubBlockStart)) return false;
     }
@@ -391,21 +390,22 @@ bool TaggedBlockWriter::writeTextItem(const TextItem *textItem) {
 
 bool TaggedBlockWriter::writeTextFormat(const TextFormat *textFormat) {
     if (!writeId(&textFormat->first)) return false;
-    if (!writeId(&textFormat->second.timestamp)) return false;
-    uint32_t subBlockStart;
+    if (!writeId(1, &textFormat->second.timestamp)) return false;
+ uint32_t subBlockStart;
     if (subBlockStart = writeSubBlockStart(2); subBlockStart == 0) return false;
 
     // Unknown byte that is always 17
     if (!writeByte(&writer::BYTE_SEVENTEEN)) return false;
+
     // Write legacy format
     const uint8_t format = static_cast<uint8_t>(textFormat->second.value.legacy);
     if (!writeByte(&format)) return false;
-    if (textFormat->second.value.isLegacy) {
+
+    if (!textFormat->second.value.isLegacy) {
         const uint8_t baseStyle = static_cast<uint8_t>(textFormat->second.value.baseStyle);
         const uint32_t styleProperties = static_cast<uint32_t>(textFormat->second.value.styleProperties);
 
-        if (!writeTag(2, TagType::Byte1)) return false;
-        if (!writeByte(&baseStyle)) return false;
+        if (!writeByte(2, &baseStyle)) return false;
         if (!writeInt(3, &styleProperties)) return false;
     }
     return writeSubBlockEnd(subBlockStart);

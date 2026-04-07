@@ -491,7 +491,6 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     for (uint64_t i = 0; i < numberOfItems; i++) {
         TextItem textItem;
         if (!reader->readTextItem(&textItem)) return false;
-        logDebug(reprTextItem(textItem));
         value.items.add(std::move(textItem));
     }
 
@@ -532,9 +531,8 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
 
 bool RootTextBlock::write(TaggedBlockWriter *writer) const {
     if (!writer->writeId(1, &blockId)) return false;
-    //TODO: Figure out issues with writing root text block
 
-    // Section one 2/1/1
+    // Text and Styles, sub block 2
     uint32_t subStart1;
     uint32_t subStart2;
     uint32_t subStart3;
@@ -542,7 +540,7 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
     uint32_t subStart5;
     if (subStart1 = writer->writeSubBlockStart(2); subStart1 == 0) return false;
 
-    // Write sections 1/1
+    // Start of text item section
     if (subStart2 = writer->writeSubBlockStart(1); subStart2 == 0) return false;
     if (subStart3 = writer->writeSubBlockStart(1); subStart3 == 0) return false;
 
@@ -550,11 +548,11 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
     auto itemIds = value.items.getSortedTextIds();
     std::vector<const TextItem *> items;
     items.reserve(value.items.size());
+
     for (auto itemId: itemIds) {
         if (!value.items[itemId]->value.has_value()) {
             continue; // Text objects can't be empty!
         }
-        logDebug(reprTextItem(*value.items[itemId]));
         items.push_back(value.items[itemId]);
     }
     items.shrink_to_fit();
@@ -564,24 +562,17 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
 
     if (!writer->writeValuint(numberOfItems)) return false;
 
-    int i = 0;
     for (const auto item: items) {
         if (!writer->writeTextItem(item)) return false;
-        if (i == 1) {
-            return true;
-        }
-        i++;
     }
 
-    // End of section one 2/1/1
+    // End of text item section
     if (!writer->writeSubBlockEnd(subStart3)) return false;
     if (!writer->writeSubBlockEnd(subStart2)) return false;
-    return true;
 
 
-    // Section two 2/2/1
-    // Write sections 2/1
-    if (subStart4 = writer->writeSubBlockStart(1); subStart4 == 0) return false;
+    // Start of style section
+    if (subStart4 = writer->writeSubBlockStart(2); subStart4 == 0) return false;
     if (subStart5 = writer->writeSubBlockStart(1); subStart5 == 0) return false;
 
 
@@ -593,28 +584,30 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
         if (!writer->writeTextFormat(&style)) return false;
     }
 
-    // End of section two and main 2/2/1
+    // End of style section + sub block 2
     if (!writer->writeSubBlockEnd(subStart5)) return false;
     if (!writer->writeSubBlockEnd(subStart4)) return false;
-    //if (!writer->writeSubBlockEnd(firstSubStart)) return false;  // TODO: Check correct
+    if (!writer->writeSubBlockEnd(subStart1)) return false; // TODO: Check correct
 
-
-    // Last section 3
+    // Position, sub block 3
     uint32_t mainSubBlockStart;
     if (mainSubBlockStart = writer->writeSubBlockStart(3); mainSubBlockStart == 0) return false;
 
-    // Position
     if (!writer->writeDouble(&value.posX)) return false;
     if (!writer->writeDouble(&value.posY)) return false;
 
-    // Legacy width
-    if (!writer->writeFloat(4, &value.width.value)) return false;
-    uint32_t subBlockStart;
-    if (subBlockStart = writer->writeSubBlockStart(5); subBlockStart == 0) return false;
-    if (!writer->writeLwwFloat(1, &value.width)) return false;
-    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+    if (!writer->writeSubBlockEnd(mainSubBlockStart)) return false;
 
-    writer->writeSubBlockEnd(mainSubBlockStart);
+    // Legacy width, sub block 4
+    if (!writer->writeFloat(4, &value.width.value)) return false;
+
+    // Modern width with timestamp, sub block 5
+    if (value.width.timestamp != END_MARKER) {
+        uint32_t subBlockStart;
+        if (subBlockStart = writer->writeSubBlockStart(5); subBlockStart == 0) return false;
+        if (!writer->writeLwwFloat(1, &value.width)) return false;
+        if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+    }
 
     return true;
 }

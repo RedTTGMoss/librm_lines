@@ -565,10 +565,7 @@ bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
     getTag();
     if (!readSubBlock(2)) return false;
 
-    // THIS IS THE ID OF THE START TEXT NODE 1:17 MOST LIKELY
-    // But we can also safely ignore this because it doesn't seem
-    // that this value is different in any document,
-    // if this check has failed, then please report the document that caused it.
+    // Unknown byte
     uint8_t unknown;
     if (!readByte(&unknown)) return false;
     if (unknown != 17) return false;

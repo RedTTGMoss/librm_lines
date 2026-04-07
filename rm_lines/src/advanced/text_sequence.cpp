@@ -248,7 +248,7 @@ std::vector<CrdtId> TextSequence::getSortedTextIds() const {
             }
         }
 
-        // Check rightId dependencies: items that have this item in their virtual range should come after
+        // Check rightId dependencies: items that point to this item should come before
         for (const auto &[otherId, otherItem]: sequence) {
             if (otherId == itemId)
                 continue;
@@ -256,9 +256,9 @@ std::vector<CrdtId> TextSequence::getSortedTextIds() const {
             if (!otherItem.value.has_value())
                 continue;
 
-            // If another item's rightId falls within our virtual range, we must come before it
+            // If another item's rightId falls within our virtual range, that item must come before us
             if (otherItem.rightId != END_MARKER && idInRange(otherItem.rightId, item)) {
-                graph[otherId].insert(itemId);
+                graph[itemId].insert(otherId);
             }
         }
     }
