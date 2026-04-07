@@ -13,3 +13,5 @@ __pycache__/
 /tests/pos
 /tests/copy_test_writer.sh
 /tests/files/Test file copied.rm
+/tests/graph.html
+/tests/test_graph.py
