@@ -39,7 +39,9 @@ public:
 
     bool writeBlock(const Block *block);
 
-    bool writeNode(const Group *node);
+    bool writeSceneTree(const Group *node);
+
+    bool writeTreeNode(const Group *node);
 
     bool writeRootText(const Text &text);
 

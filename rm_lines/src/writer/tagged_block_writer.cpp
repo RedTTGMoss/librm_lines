@@ -26,12 +26,17 @@ bool TaggedBlockWriter::buildRM() {
     if (renderer->sceneTree->imageInfo.has_value()) {
         if (!writeBlock(&renderer->sceneTree->imageInfo.value())) return false;
     }
-    // Start writing nodes
+    // Start writing scene trees
     for (auto &node: renderer->sceneTree->_nodeIds | std::views::values) {
-        if (!writeNode(node.get())) return false;
+        if (!writeSceneTree(node.get())) return false;
     }
 
     if (!writeRootText(renderer->textDocument.toText())) return false;
+
+    // Start writing tree nodes
+    for (auto &node: renderer->sceneTree->_nodeIds | std::views::values) {
+        if (!writeTreeNode(node.get())) return false;
+    }
 
     return true;
 }
@@ -80,10 +85,18 @@ bool TaggedBlockWriter::writeBlock(const Block *block) {
     return true;
 }
 
-bool TaggedBlockWriter::writeNode(const Group *node) {
+bool TaggedBlockWriter::writeSceneTree(const Group *node) {
     if (node->nodeId == ROOT_NODE) return true; // Root node is derived.
 
     const SceneTreeBlock block = SceneTreeBlock::fromNode(node);
+    return writeBlock(&block);
+}
+
+bool TaggedBlockWriter::writeTreeNode(const Group *node) {
+    if (!node->updated) {
+        return true; // SKIP, does not have meaningful info to write.
+    }
+    const TreeNodeBlock block = TreeNodeBlock::fromNode(node);
     return writeBlock(&block);
 }
 
@@ -391,7 +404,7 @@ bool TaggedBlockWriter::writeTextItem(const TextItem *textItem) {
 bool TaggedBlockWriter::writeTextFormat(const TextFormat *textFormat) {
     if (!writeId(&textFormat->first)) return false;
     if (!writeId(1, &textFormat->second.timestamp)) return false;
- uint32_t subBlockStart;
+    uint32_t subBlockStart;
     if (subBlockStart = writeSubBlockStart(2); subBlockStart == 0) return false;
 
     // Unknown byte that is always 17

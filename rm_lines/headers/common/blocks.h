@@ -19,7 +19,7 @@ enum BlockTypes {
     UNREADABLE_BLOCK = -1,
     MIGRATION_INFO_BLOCK = 0, // Writable!
     SCENE_TREE_BLOCK = 1, // Writable!
-    TREE_NODE_BLOCK = 2,
+    TREE_NODE_BLOCK = 2, // Writable!
     SCENE_GLYPH_ITEM_BLOCK = 3,
     SCENE_GROUP_ITEM_BLOCK = 4,
     SCENE_LINE_ITEM_BLOCK = 5,
@@ -180,7 +180,11 @@ struct SceneTreeBlock final : Block {
 struct TreeNodeBlock final : Block {
     Group group;
 
+    static TreeNodeBlock fromNode(const Group *node);
+
     bool read(TaggedBlockReader *reader) override;
+
+    bool write(TaggedBlockWriter *writer) const override;
 
     [[nodiscard]] json toJson() const override;
 

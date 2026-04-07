@@ -390,6 +390,17 @@ json SceneTreeBlock::toJson() const {
     return {};
 }
 
+TreeNodeBlock TreeNodeBlock::fromNode(const Group *node) {
+    TreeNodeBlock block;
+    // Create basic block info
+    block.info = BlockInfo();
+    block.info->minVersion = 1;
+    block.info->currentVersion = 2;
+    block.info->blockType = TREE_NODE_BLOCK;
+    block.group = *node;
+    return block;
+}
+
 bool TreeNodeBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &group.nodeId)) return false;
     if (!reader->readLwwString(2, &group.label)) return false;
@@ -408,7 +419,25 @@ bool TreeNodeBlock::read(TaggedBlockReader *reader) {
         if (!reader->readLwwFloat(10, &_anchorOriginX)) return false;
         group.anchorOriginX = _anchorOriginX;
     }
+    return true;
+}
 
+bool TreeNodeBlock::write(TaggedBlockWriter *writer) const {
+    if (!writer->writeId(1, &group.nodeId)) return false;
+    if (!writer->writeLwwString(2, &group.label)) return false;
+    if (!writer->writeLwwBool(3, &group.visible)) return false;
+    if (group.anchorId.has_value()) {
+        if (!writer->writeLwwId(7, &group.anchorId.value())) return false;
+    }
+    if (group.anchorType.has_value()) {
+        if (!writer->writeLwwByte(8, &group.anchorType.value())) return false;
+    }
+    if (group.anchorThreshold.has_value()) {
+        if (!writer->writeLwwFloat(9, &group.anchorThreshold.value())) return false;
+    }
+    if (group.anchorOriginX.has_value()) {
+        if (!writer->writeLwwFloat(10, &group.anchorOriginX.value())) return false;
+    }
     return true;
 }
 

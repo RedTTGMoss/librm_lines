@@ -271,6 +271,7 @@ public:
     std::optional<LwwItem<uint8_t> > anchorType;
     std::optional<LwwItem<float> > anchorThreshold;
     std::optional<LwwItem<float> > anchorOriginX;
+    bool updated = false;
 
     json toJson() const;
 

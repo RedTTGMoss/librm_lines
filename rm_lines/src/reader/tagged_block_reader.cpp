@@ -697,6 +697,7 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
                 node->anchorType = treeNodeBlock->group.anchorType;
                 node->anchorOriginX = treeNodeBlock->group.anchorOriginX;
                 node->anchorThreshold = treeNodeBlock->group.anchorThreshold;
+                node->updated = true;
                 break;
             }
             case SCENE_GROUP_ITEM_BLOCK: {
