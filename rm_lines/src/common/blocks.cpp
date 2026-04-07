@@ -491,6 +491,7 @@ bool RootTextBlock::read(TaggedBlockReader *reader) {
     for (uint64_t i = 0; i < numberOfItems; i++) {
         TextItem textItem;
         if (!reader->readTextItem(&textItem)) return false;
+        logDebug(reprTextItem(textItem));
         value.items.add(std::move(textItem));
     }
 
@@ -534,45 +535,55 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
     //TODO: Figure out issues with writing root text block
 
     // Section one 2/1/1
-    uint32_t mainSubBlockStart;
-    if (mainSubBlockStart = writer->writeSubBlockStart(2); mainSubBlockStart == 0) return false;
-    uint32_t start;
+    uint32_t subStart1;
+    uint32_t subStart2;
+    uint32_t subStart3;
+    uint32_t subStart4;
+    uint32_t subStart5;
+    if (subStart1 = writer->writeSubBlockStart(2); subStart1 == 0) return false;
 
     // Write sections 1/1
-    if (start = writer->writeSubBlockStart(1); start == 0) return false;
-    if (!writer->writeSubBlockEnd(start)) return false;
-    if (start = writer->writeSubBlockStart(1); start == 0) return false;
+    if (subStart2 = writer->writeSubBlockStart(1); subStart2 == 0) return false;
+    if (subStart3 = writer->writeSubBlockStart(1); subStart3 == 0) return false;
+
+    // Extract the text items from the sequence
+    auto itemIds = value.items.getSortedIds();
+    std::vector<const TextItem *> items;
+    items.reserve(value.items.size());
+    for (auto itemId: itemIds) {
+        if (!value.items[itemId]->value.has_value()) {
+            continue; // Text objects can't be empty!
+        }
+        items.push_back(value.items[itemId]);
+    }
+    items.shrink_to_fit();
 
     // Write item count
-    uint64_t numberOfItems = value.items.size();
+    uint64_t numberOfItems = items.size();
 
     if (!writer->writeValuint(numberOfItems)) return false;
 
-
-    // Extract the text items from the sequence
-    std::vector<const TextItem *> items;
-    items.reserve(numberOfItems);
-    for (auto &item: value.items | std::views::values) {
-        items.push_back(&item);
-    }
-
-    // Sort the text items
-    std::ranges::sort(items, [](const TextItem *a, const TextItem *b) {
-        return *a < *b;
-    });
-
+    int i = 0;
     for (const auto item: items) {
+        logDebug(reprTextItem(*item));
         if (!writer->writeTextItem(item)) return false;
+        if (i == 1) {
+            return true;
+        }
+        i++;
     }
 
     // End of section one 2/1/1
-    if (!writer->writeSubBlockEnd(start)) return false;
+    if (!writer->writeSubBlockEnd(subStart3)) return false;
+    if (!writer->writeSubBlockEnd(subStart2)) return false;
+    return true;
+
 
     // Section two 2/2/1
     // Write sections 2/1
-    if (start = writer->writeSubBlockStart(1); start == 0) return false;
-    if (!writer->writeSubBlockEnd(start)) return false;
-    if (start = writer->writeSubBlockStart(1); start == 0) return false;
+    if (subStart4 = writer->writeSubBlockStart(1); subStart4 == 0) return false;
+    if (subStart5 = writer->writeSubBlockStart(1); subStart5 == 0) return false;
+
 
     // Write item count
     numberOfItems = value.styles.size();
@@ -583,10 +594,13 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
     }
 
     // End of section two and main 2/2/1
-    if (!writer->writeSubBlockEnd(start)) return false;
-    if (!writer->writeSubBlockEnd(mainSubBlockStart)) return false;
+    if (!writer->writeSubBlockEnd(subStart5)) return false;
+    if (!writer->writeSubBlockEnd(subStart4)) return false;
+    //if (!writer->writeSubBlockEnd(firstSubStart)) return false;  // TODO: Check correct
+
 
     // Last section 3
+    uint32_t mainSubBlockStart;
     if (mainSubBlockStart = writer->writeSubBlockStart(3); mainSubBlockStart == 0) return false;
 
     // Position
@@ -600,7 +614,9 @@ bool RootTextBlock::write(TaggedBlockWriter *writer) const {
     if (!writer->writeLwwFloat(1, &value.width)) return false;
     if (!writer->writeSubBlockEnd(subBlockStart)) return false;
 
-    return writer->writeSubBlockEnd(mainSubBlockStart);
+    writer->writeSubBlockEnd(mainSubBlockStart);
+
+    return true;
 }
 
 json RootTextBlock::toJson() const {

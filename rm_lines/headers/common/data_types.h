@@ -90,7 +90,7 @@ struct CrdtSequence {
         sortedIds.reserve(sequence.size());
 
         // We initialize a list containing the IDs and their dependant IDs
-        std::unordered_map<CrdtId, std::unordered_set<CrdtId> > graph;
+        std::map<CrdtId, std::unordered_set<CrdtId> > graph;
 
         // Lambda to get the respective sideId depending on the side passed
         auto getSideId = [&](const T item, const Side side) -> std::optional<CrdtId> {
@@ -108,7 +108,7 @@ struct CrdtSequence {
             // Graph out which item needs which sideId
             if (leftSideId.has_value() && sequence.contains(leftSideId.value()))
                 graph[itemId].insert(leftSideId.value()); // This item first needs the left side
-            else // If the sideId is not present in the sequence of items
+            else if (itemId != END_MARKER) // If the sideId is not present in the sequence of items
                 graph[itemId] = {}; // Make an empty set for the item on the graph
 
             if (rightSideId.has_value() && sequence.contains(rightSideId.value()))

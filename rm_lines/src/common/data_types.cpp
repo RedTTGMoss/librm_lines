@@ -6,7 +6,7 @@
 
 #include "advanced/text.h"
 
-std::string formatTextItem(TextItem textItem) {
+std::string formatTextItem(const TextItem &textItem) {
     if (textItem.value.has_value()) {
         if (std::holds_alternative<std::string>(textItem.value.value())) {
             std::string rawString = std::get<std::string>(textItem.value.value());
@@ -37,18 +37,18 @@ std::string formatTextItem(TextItem textItem) {
     return "TextItem has no value";
 }
 
-std::string reprTextItem(TextItem textItem) {
+std::string reprTextItem(const TextItem &textItem) {
     auto value = textItem.value.value();
     std::string valueDebug = formatTextItem(textItem);
 
     return std::format(
-        "DEBUG Text item /w python: "
-        "CrdtSequenceItem("
-        "CrdtId({}, {}), "
-        "CrdtId({}, {}), "
-        "CrdtId({}, {}), {}, "
-        "{}"
-        ")", textItem.itemId.first, textItem.itemId.second,
+        "DEBUG Text item:"
+        "ItemId({}, {}), "
+        "LeftId({}, {}), "
+        "RightId({}, {}), "
+        "DeletedLength = {}, "
+        "value = {}",
+        textItem.itemId.first, textItem.itemId.second,
         textItem.leftId.first, textItem.leftId.second,
         textItem.rightId.first, textItem.rightId.second,
         textItem.deletedLength,

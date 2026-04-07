@@ -85,7 +85,7 @@ void TextSequence::compactTextItems() {
 
     // Get sorted IDs before moving the sequence
     auto sortedIds = getSortedIds();
-    
+
     // We move the current sequence and create the new sequence with merged strings
     auto oldSequence = std::move(sequence);
 
