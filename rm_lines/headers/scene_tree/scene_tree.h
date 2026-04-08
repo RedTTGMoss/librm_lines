@@ -47,7 +47,6 @@ public:
     std::optional<PageInfoBlock> pageInfo;
     std::optional<SceneInfoBlock> sceneInfo;
     std::optional<ImageInfoBlock> imageInfo;
-    std::optional<Text> rootText;
 
     void addNode(const CrdtId &nodeId, const CrdtId &parentNodeId, const CrdtId &parentTreeId);
 
@@ -62,7 +61,24 @@ public:
     friend class TaggedBlockWriter;
     friend class SceneTreeEditor;
 
+    void setText(Text &&text) {
+        rootText = std::make_shared<Text>(std::move(text));
+    }
+
+    void clearText() {
+        rootText.reset();
+    }
+
+    bool hasText() const {
+        return static_cast<bool>(rootText);
+    }
+
+    std::shared_ptr<Text> getText() const {
+        return rootText;
+    }
+
 private:
+    std::shared_ptr<Text> rootText;
     std::map<CrdtId, std::unique_ptr<Group> > _nodeIds;
     std::map<CrdtId, std::vector<SceneItemVariant> > _groupChildren;
 };

@@ -4,6 +4,7 @@
 #include "scene_tree.h"
 
 class LineBuilder;
+class TextBuilder;
 
 // A class that expands on the scene tree with functions for building out the scene tree
 class SceneTreeEditor final : public SceneTree {
@@ -20,9 +21,12 @@ public:
 
     void init();
 
+    void initText();
+
     LineBuilder startLine();
 
     friend class LineBuilder;
+    TextBuilder *text;
 
 private:
     CrdtId currentLayer = ROOT_TEXT_NODE;
@@ -100,4 +104,12 @@ private:
     uint32_t pointDirection = 4;
     uint32_t pointWidth = 16;
     uint32_t pointPressure = 255;
+};
+
+class TextBuilder {
+public:
+    explicit TextBuilder(Text *text);
+
+private:
+    Text *text;
 };

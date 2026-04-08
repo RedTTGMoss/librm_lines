@@ -78,10 +78,11 @@ json Paragraph::toJson() const {
     return j;
 }
 
-void TextDocument::fromText(Text &text) {
-    text.items.expandTextItems();
+void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
+    text = _text;
+    text->items.expandTextItems();
     paragraphs.clear();
-    const auto characterIDs = text.items.getSortedIds();
+    const auto characterIDs = text->items.getSortedIds();
 
     TextFormattingOptions formatting;
 
@@ -91,7 +92,7 @@ void TextDocument::fromText(Text &text) {
         // Initiate a new paragraph
         Paragraph paragraph;
 
-        if (checkString(text.items[characterIDs[i]], "\n")) {
+        if (checkString(text->items[characterIDs[i]], "\n")) {
             paragraph.startId = characterIDs[i];
             i++;
         } else {
@@ -102,7 +103,7 @@ void TextDocument::fromText(Text &text) {
         currentText.formatting = formatting;
         while (i < characterIDs.size()) {
             if (
-                auto characterItem = text.items[characterIDs[i]];
+                auto characterItem = text->items[characterIDs[i]];
                 std::holds_alternative<uint32_t>(characterItem.value.value())
             ) {
                 formatting.updateUsingFormattingValue(characterItem);
@@ -143,22 +144,21 @@ void TextDocument::fromText(Text &text) {
         if (!currentText.text.empty() || currentText.formatting.deletedLength > 0) {
             paragraph.contents.push_back(std::move(currentText));
         }
-        if (text.styleMap.contains(paragraph.startId)) {
-            paragraph.style = text.styleMap[paragraph.startId];
+        if (text->styleMap.contains(paragraph.startId)) {
+            paragraph.style = text->styleMap[paragraph.startId];
         }
         paragraphs.push_back(std::move(paragraph));
     }
-
-
-    // Finally make sure to move the text into the text document
-    this->text = std::move(text);
 }
 
 Text TextDocument::toText() const {
+    if (!this->text) {
+        throw std::invalid_argument("Text is null");
+    }
     // We copy the internal text object, compact the text items and we're done!
-    auto text = this->text;
-    text.items.compactTextItems();
-    return text;
+    auto newText = *this->text;
+    newText.items.compactTextItems();
+    return newText;
 }
 
 std::string TextDocument::repr() const {

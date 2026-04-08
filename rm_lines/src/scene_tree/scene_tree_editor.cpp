@@ -58,6 +58,10 @@ void SceneTreeEditor::init() {
     sceneInfo = SceneInfoBlock();
 }
 
+void SceneTreeEditor::initText() {
+    // TODO: Implement initializing text
+}
+
 LineBuilder SceneTreeEditor::startLine() {
     return LineBuilder(this);
 }

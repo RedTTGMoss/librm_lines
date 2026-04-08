@@ -75,7 +75,7 @@ bool processFile(const std::string &filename, const std::string &path) {
         return false;
     }
     auto tree = getSceneTree(treeId);
-    auto textCopy = tree->rootText;
+    auto textCopy = tree->getText();
     std::optional<Renderer> renderer;
     try {
         renderer = Renderer(tree.get(), NOTEBOOK, false);
@@ -93,14 +93,14 @@ bool processFile(const std::string &filename, const std::string &path) {
     for (const auto &paragraph: renderer->textDocument.paragraphs) {
         for (const auto &string: paragraph.contents) {
             for (const auto &characterId: string.characterIDs) {
-                auto currentTextItem = renderer->textDocument.text.items[currentId];
+                auto currentTextItem = renderer->textDocument.text->items[currentId];
 
                 if (
                     getTextItemContents(currentTextItem) != "\n" &&
                     currentId != END_MARKER &&
                     characterId != currentId
                 ) {
-                    auto oldTextItem = renderer->textDocument.text.items[oldId];
+                    auto oldTextItem = renderer->textDocument.text->items[oldId];
 
                     logError(std::format("Character ID mismatch in file {}: expected {}, got {}", filename,
                                          currentId.repr(), characterId.repr()));
@@ -186,18 +186,20 @@ bool processFile(const std::string &filename, const std::string &path) {
         anchorTestPythonFilePtr << anchorTestData.dump(4);
 
         // Export the raw characters
-        for (const auto &id: renderer->textDocument.text.items.getSortedIds()) {
-            if (auto item = renderer->textDocument.text.items[id]; item.value.has_value()) {
-                if (std::holds_alternative<std::string>(item.value.value())) {
-                    rawTextFilePtr << std::get<std::string>(item.value.value());
+        if (renderer->textDocument.text) {
+            for (const auto &id: renderer->textDocument.text->items.getSortedIds()) {
+                if (auto item = renderer->textDocument.text->items[id]; item.value.has_value()) {
+                    if (std::holds_alternative<std::string>(item.value.value())) {
+                        rawTextFilePtr << std::get<std::string>(item.value.value());
+                    }
                 }
             }
         }
 
-        if (textCopy.has_value()) {
+        if (textCopy) {
             // Export the original text items in raw
             rawTextFilePtr << "\n\n";
-            for (const auto &value: textCopy.value().items.sequence | std::views::values) {
+            for (const auto &value: textCopy->items.sequence | std::views::values) {
                 if (value.value.has_value()) {
                     if (std::holds_alternative<std::string>(value.value.value())) {
                         auto string = std::get<std::string>(value.value.value());
@@ -208,12 +210,12 @@ bool processFile(const std::string &filename, const std::string &path) {
             }
 
             // Export the original text items in json
-            rawTextFilePtr << "\n\n" << textCopy.value().items.toJson().dump(4);
+            rawTextFilePtr << "\n\n" << textCopy->items.toJson().dump(4);
 
             // Export the text to python symbols for testing
             textExpandPythonFilePtr << "[";
-            for (const auto &id: renderer->textDocument.text.items.getSortedIds()) {
-                if (auto item = renderer->textDocument.text.items[id]; item.value.has_value()) {
+            for (const auto &id: renderer->textDocument.text->items.getSortedIds()) {
+                if (auto item = renderer->textDocument.text->items[id]; item.value.has_value()) {
                     if (std::holds_alternative<std::string>(item.value.value())) {
                         auto string = safeString(std::get<std::string>(item.value.value()));
                         textExpandPythonFilePtr << std::format(

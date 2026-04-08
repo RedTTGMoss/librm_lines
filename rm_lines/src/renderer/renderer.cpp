@@ -37,9 +37,9 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
 }
 
 void Renderer::prepareTextDocument() {
-    if (!sceneTree->rootText) return;
+    if (!sceneTree->hasText()) return;
 
-    textDocument.fromText(sceneTree->rootText.value());
+    textDocument.fromText(sceneTree->getText());
 }
 
 DocumentSizeTracker *Renderer::getSizeTracker(const CrdtId layerId) {
@@ -74,7 +74,7 @@ void Renderer::calculateAnchors() {
     anchors[ANCHOR_ID_END] = paperSize.second;
 
     // Check for the root text
-    if (!sceneTree->rootText) return;
+    if (!sceneTree->hasText()) return;
 
     // Initialize start positions
     int yOffset = TEXT_TOP_Y;
@@ -178,7 +178,7 @@ float Renderer::getTextWidth() const {
     // The size of the text is based on the rM2
     // We need to scale it relative to the paperSize
     const float screenRelative = frameSize.x / BASE_PAPER_SIZE_X;
-    const float width = textDocument.text.width.value;
+    const float width = textDocument.text->width.value;
     return width * screenRelative;
 }
 
@@ -428,7 +428,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
                 else
                     stroker.raster.raster.fill.baseColor = Color(150, 150, 255, 200);
                 alternate = !alternate;
-                if (sceneTree->rootText.has_value()) {
+                if (sceneTree->hasText()) {
                     stroker.moveTo((position.x + getTextMargin()) * scale.x,
                                    (position.y + anchor) * scale.y);
                     stroker.lineTo(

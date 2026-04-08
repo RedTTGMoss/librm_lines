@@ -736,7 +736,7 @@ bool TaggedBlockReader::buildTree(SceneTree &tree) {
             }
             case ROOT_TEXT_BLOCK: {
                 const auto rootTextBlock = dynamic_cast<RootTextBlock *>(currentBlock.get());
-                tree.rootText = rootTextBlock->value;
+                tree.setText(std::move(rootTextBlock->value));
                 break;
             }
             default:

@@ -113,10 +113,10 @@ struct Paragraph {
 };
 
 struct TextDocument {
-    Text text;
+    std::shared_ptr<Text> text;
     std::vector<Paragraph> paragraphs;
 
-    void fromText(Text &text);
+    void fromText(const std::shared_ptr<Text> &_text);
 
     Text toText() const;
 

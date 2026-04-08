@@ -33,7 +33,9 @@ bool TaggedBlockWriter::buildRM() {
     }
 
     // Write root text
-    if (!writeRootText(renderer->textDocument.toText())) return false;
+    if (renderer->sceneTree->hasText()) {
+        if (!writeRootText(renderer->textDocument.toText())) return false;
+    }
 
     // Start writing tree nodes
     for (auto &node: renderer->sceneTree->_nodeIds | std::views::values) {

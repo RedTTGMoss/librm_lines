@@ -39,7 +39,6 @@ public:
     explicit File(const std::string &name) : name(name) {
         tree = new SceneTreeEditor();
         tree->init();
-        drawCat();
         renderer = new Renderer(tree, NOTEBOOK, false);
     }
 
@@ -102,6 +101,9 @@ public:
         }
     }
 
+    void addText() {
+    }
+
     void save() {
         const std::string jsonFile = JSON_OUT + name + " - test write.json";
         const std::string rmFile = RM_OUT + name + " - test write.rm";
@@ -134,6 +136,11 @@ int main(const int argc, char *argv[]) {
     fs::create_directories(RM_OUT);
     fs::create_directories(JSON_OUT);
 
-    auto test_draw = File("Draw");
-    test_draw.save();
+    auto testDrawCat = File("Cat");
+    testDrawCat.drawCat();
+    testDrawCat.save();
+
+    auto testText = File("Text");
+    testText.addText();
+    testText.save();
 }
