@@ -8,6 +8,7 @@
 
 #include <nlohmann/json.hpp>
 
+class TaggedBlockWriter;
 using json = nlohmann::json;
 
 class TaggedBlockReader;
@@ -78,9 +79,12 @@ struct Line {
     CrdtId timestamp;
     std::optional<CrdtId> moveId;
     std::optional<Color> argbColor;
+    uint8_t version = 2;
 
 
     bool read(TaggedBlockReader *reader, uint8_t version);
+
+    bool write(TaggedBlockWriter *writer) const;
 
     json toJson() const;
 };
@@ -106,6 +110,8 @@ struct GlyphRange {
     std::vector<AdvancedMath::Rect> rects;
 
     bool read(TaggedBlockReader *reader);
+
+    bool write(TaggedBlockWriter *writer) const;
 
     json toJson() const;
 };

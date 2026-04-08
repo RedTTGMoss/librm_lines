@@ -447,11 +447,13 @@ json TreeNodeBlock::toJson() const {
 }
 
 bool SceneItemBlock::read(TaggedBlockReader *reader) {
+    auto &item = itemBase();
     if (!reader->readId(1, &parentId)) return false;
     if (!reader->readId(2, &item.itemId)) return false;
     if (!reader->readId(3, &item.leftId)) return false;
     if (!reader->readId(4, &item.rightId)) return false;
     if (!reader->readInt(5, &item.deletedLength)) return false;
+
     reader->getTag();
     if (reader->checkSubBlock(6)) {
         if (!reader->readSubBlock(6)) return false;
@@ -466,6 +468,24 @@ bool SceneItemBlock::read(TaggedBlockReader *reader) {
     return true;
 }
 
+bool SceneItemBlock::write(TaggedBlockWriter *writer) const {
+    const auto &item = itemBase();
+    if (!writer->writeId(1, &parentId)) return false;
+    if (!writer->writeId(2, &item.itemId)) return false;
+    if (!writer->writeId(3, &item.leftId)) return false;
+    if (!writer->writeId(4, &item.rightId)) return false;
+    if (!writer->writeInt(5, &item.deletedLength)) return false;
+
+    uint32_t subBlockStart;
+    if (subBlockStart = writer->writeSubBlockStart(6); subBlockStart == 0) return false;
+
+    if (!writer->writeBytes(sizeof(_itemType), &_itemType)) return false;
+
+    if (!writeValue(writer)) return false;
+
+    return writer->writeSubBlockEnd(subBlockStart);
+}
+
 bool SceneGroupItemBlock::readValue(TaggedBlockReader *reader) {
     CrdtId _value;
     if (!reader->readId(2, &_value)) return false;
@@ -473,9 +493,24 @@ bool SceneGroupItemBlock::readValue(TaggedBlockReader *reader) {
     return true;
 }
 
+bool SceneGroupItemBlock::writeValue(TaggedBlockWriter *writer) const {
+    return writer->writeId(2, &item.value.value());
+}
+
 json SceneGroupItemBlock::toJson() const {
     // TODO: Implement this function
     return {};
+}
+
+SceneGroupItemBlock SceneGroupItemBlock::fromItem(const CrdtSequenceItem<CrdtId> &item) {
+    SceneGroupItemBlock block;
+    block.info = BlockInfo();
+    block.info->minVersion = 1;
+    block.info->currentVersion = 1;
+    block.info->blockType = block.getBlockType();
+
+    block.item = item;
+    return block;
 }
 
 bool SceneLineItemBlock::readValue(TaggedBlockReader *reader) {
@@ -485,9 +520,24 @@ bool SceneLineItemBlock::readValue(TaggedBlockReader *reader) {
     return item.value.value().read(reader, version);
 }
 
+bool SceneLineItemBlock::writeValue(TaggedBlockWriter *writer) const {
+    return item.value.value().write(writer);
+}
+
 json SceneLineItemBlock::toJson() const {
     // TODO: Implement this function
     return {};
+}
+
+SceneLineItemBlock SceneLineItemBlock::fromItem(const CrdtSequenceItem<Line> &item) {
+    SceneLineItemBlock block;
+    block.info = BlockInfo();
+    block.info->minVersion = item.value.value().version;
+    block.info->currentVersion = item.value.value().version;
+    block.info->blockType = block.getBlockType();
+
+    block.item = item;
+    return block;
 }
 
 RootTextBlock RootTextBlock::fromText(const Text &text) {
@@ -651,9 +701,25 @@ bool SceneGlyphItemBlock::readValue(TaggedBlockReader *reader) {
     return item.value.value().read(reader);
 }
 
+bool SceneGlyphItemBlock::writeValue(TaggedBlockWriter *writer) const {
+    return item.value.value().write(writer);
+}
+
 json SceneGlyphItemBlock::toJson() const {
     // TODO: Implement this function
     return {};
+}
+
+SceneGlyphItemBlock SceneGlyphItemBlock::fromItem(const CrdtSequenceItem<GlyphRange> &item) {
+    SceneGlyphItemBlock block;
+    block.info = BlockInfo();
+    // TODO: Check correct version here for glyph
+    block.info->minVersion = 1;
+    block.info->currentVersion = 1;
+    block.info->blockType = block.getBlockType();
+
+    block.item = item;
+    return block;
 }
 
 bool ImageInfoBlock::read(TaggedBlockReader *reader) {
@@ -763,7 +829,24 @@ bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {
     return true;
 }
 
+bool SceneImageItemBlock::writeValue(TaggedBlockWriter *writer) const {
+    // TODO: Implement writing Image item
+    return false;
+}
+
 json SceneImageItemBlock::toJson() const {
     // TODO: Implement this function
     return {};
+}
+
+SceneImageItemBlock SceneImageItemBlock::fromItem(const CrdtSequenceItem<ImageItem> &item) {
+    SceneImageItemBlock block;
+    block.info = BlockInfo();
+    // TODO: Check correct version here for glyph
+    block.info->minVersion = 1;
+    block.info->currentVersion = 1;
+    block.info->blockType = block.getBlockType();
+
+    block.item = item;
+    return block;
 }

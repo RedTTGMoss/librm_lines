@@ -67,8 +67,13 @@ bool Line::read(TaggedBlockReader *reader, const uint8_t version) {
         if (!reader->readColor(&_argbColor)) return false;
         argbColor = _argbColor;
     }
-
+    this->version = version;
     return true;
+}
+
+bool Line::write(TaggedBlockWriter *writer) const {
+    // TODO: write LINE
+    return false;
 }
 
 json Line::toJson() const {
@@ -217,6 +222,11 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
     }
 
     return true;
+}
+
+bool GlyphRange::write(TaggedBlockWriter *writer) const {
+    // TODO: Write GLYPH RANGE
+    return false;
 }
 
 json GlyphRange::toJson() const {

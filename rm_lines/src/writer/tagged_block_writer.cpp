@@ -1,3 +1,4 @@
+// ReSharper disable CppDeclarationHidesLocal
 #include "writer/tagged_block_writer.h"
 #include "v6/reader.h"
 
@@ -31,11 +32,51 @@ bool TaggedBlockWriter::buildRM() {
         if (!writeSceneTree(node.get())) return false;
     }
 
+    // Write root text
     if (!writeRootText(renderer->textDocument.toText())) return false;
 
     // Start writing tree nodes
     for (auto &node: renderer->sceneTree->_nodeIds | std::views::values) {
         if (!writeTreeNode(node.get())) return false;
+    }
+
+    // Prefetch lines
+    std::map<CrdtId, std::vector<Line> > linesFromLayers;
+    for (auto &layer: renderer->layers) {
+        for (auto &lineInfo: layer.lines) {
+            linesFromLayers[layer.groupId].push_back(lineInfo.line);
+        }
+    }
+
+    // Start writing scene items
+    for (auto &[parentId, children]: renderer->sceneTree->_groupChildren) {
+        if (parentId == END_MARKER) continue;
+        for (auto &child: children) {
+            if (const auto item = std::get_if<CrdtSequenceItem<CrdtId> >(&child)) {
+                SceneGroupItemBlock block = SceneGroupItemBlock::fromItem(*item);
+                block.parentId = parentId;
+                if (!writeBlock(&block)) return false;
+            } else if (const auto item = std::get_if<CrdtSequenceItem<Line> >(&child)) {
+                return true;
+                item->value = linesFromLayers[parentId].empty()
+                                  ? std::optional<Line>()
+                                  : std::optional<Line>(linesFromLayers[parentId].back());
+                if (!item->value.has_value()) continue;
+                SceneLineItemBlock block = SceneLineItemBlock::fromItem(*item);
+                block.parentId = parentId;
+                if (!writeBlock(&block)) return false;
+            } else if (const auto item = std::get_if<CrdtSequenceItem<GlyphRange> >(&child)) {
+                SceneGlyphItemBlock block = SceneGlyphItemBlock::fromItem(*item);
+                block.parentId = parentId;
+                if (!writeBlock(&block)) return false;
+            } else if (const auto item = std::get_if<CrdtSequenceItem<ImageItem> >(&child)) {
+                SceneImageItemBlock block = SceneImageItemBlock::fromItem(*item);
+                block.parentId = parentId;
+                if (!writeBlock(&block)) return false;
+            } else {
+                logDebug("Unknown item type in scene tree, skipping...");
+            }
+        }
     }
 
     return true;

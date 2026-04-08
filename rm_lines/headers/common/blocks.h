@@ -21,7 +21,7 @@ enum BlockTypes {
     SCENE_TREE_BLOCK = 1, // Writable!
     TREE_NODE_BLOCK = 2, // Writable!
     SCENE_GLYPH_ITEM_BLOCK = 3,
-    SCENE_GROUP_ITEM_BLOCK = 4,
+    SCENE_GROUP_ITEM_BLOCK = 4, // Writable!
     SCENE_LINE_ITEM_BLOCK = 5,
     SCENE_TEXT_ITEM_BLOCK = 6,
     ROOT_TEXT_BLOCK = 7, // Writable!
@@ -198,15 +198,22 @@ struct SceneItemBlock : Block {
     }
 
     CrdtId parentId = {};
-    CrdtSequenceItem<> item = {};
 
     // In subblock
     bool read(TaggedBlockReader *reader) override;
 
+    bool write(TaggedBlockWriter *writer) const override;
+
 private:
     uint8_t _itemType;
 
+    virtual CrdtSequenceItem<> &itemBase() = 0;
+
+    virtual const CrdtSequenceItem<> &itemBase() const = 0;
+
     virtual bool readValue(TaggedBlockReader *reader) = 0;
+
+    virtual bool writeValue(TaggedBlockWriter *writer) const = 0;
 };
 
 struct SceneGroupItemBlock final : SceneItemBlock {
@@ -217,10 +224,23 @@ struct SceneGroupItemBlock final : SceneItemBlock {
 
     bool readValue(TaggedBlockReader *reader) override;
 
+    bool writeValue(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
 
     BlockTypes getBlockType() const override {
         return SCENE_GROUP_ITEM_BLOCK;
+    }
+
+    static SceneGroupItemBlock fromItem(const CrdtSequenceItem<CrdtId> &item);
+
+private:
+    CrdtSequenceItem<> &itemBase() override {
+        return reinterpret_cast<CrdtSequenceItem<> &>(item);
+    }
+
+    const CrdtSequenceItem<> &itemBase() const override {
+        return reinterpret_cast<const CrdtSequenceItem<> &>(item);
     }
 };
 
@@ -233,10 +253,23 @@ struct SceneLineItemBlock final : SceneItemBlock {
 
     bool readValue(TaggedBlockReader *reader) override;
 
+    bool writeValue(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
 
     BlockTypes getBlockType() const override {
         return SCENE_LINE_ITEM_BLOCK;
+    }
+
+    static SceneLineItemBlock fromItem(const CrdtSequenceItem<Line> &item);
+
+private:
+    CrdtSequenceItem<> &itemBase() override {
+        return reinterpret_cast<CrdtSequenceItem<> &>(item);
+    }
+
+    const CrdtSequenceItem<> &itemBase() const override {
+        return reinterpret_cast<const CrdtSequenceItem<> &>(item);
     }
 };
 
@@ -265,10 +298,23 @@ struct SceneGlyphItemBlock final : SceneItemBlock {
 
     bool readValue(TaggedBlockReader *reader) override;
 
+    bool writeValue(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
 
     BlockTypes getBlockType() const override {
         return SCENE_GLYPH_ITEM_BLOCK;
+    }
+
+    static SceneGlyphItemBlock fromItem(const CrdtSequenceItem<GlyphRange> &item);
+
+private:
+    CrdtSequenceItem<> &itemBase() override {
+        return reinterpret_cast<CrdtSequenceItem<> &>(item);
+    }
+
+    const CrdtSequenceItem<> &itemBase() const override {
+        return reinterpret_cast<const CrdtSequenceItem<> &>(item);
     }
 };
 
@@ -294,9 +340,22 @@ struct SceneImageItemBlock final : SceneItemBlock {
 
     bool readValue(TaggedBlockReader *reader) override;
 
+    bool writeValue(TaggedBlockWriter *writer) const override;
+
     [[nodiscard]] json toJson() const override;
 
     BlockTypes getBlockType() const override {
         return SCENE_IMAGE_ITEM_BLOCK;
+    }
+
+    static SceneImageItemBlock fromItem(const CrdtSequenceItem<ImageItem> &item);
+
+private:
+    CrdtSequenceItem<> &itemBase() override {
+        return reinterpret_cast<CrdtSequenceItem<> &>(item);
+    }
+
+    const CrdtSequenceItem<> &itemBase() const override {
+        return reinterpret_cast<const CrdtSequenceItem<> &>(item);
     }
 };
