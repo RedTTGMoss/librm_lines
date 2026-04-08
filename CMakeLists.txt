@@ -74,7 +74,8 @@ add_executable(test tests/test.cpp)
 target_link_libraries(test PRIVATE rm_lines)
 target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 
-add_executable(test_writes tests/test_writes.cpp)
+add_executable(test_writes tests/test_writes.cpp
+        rm_lines/headers/other/stb_image.h)
 target_link_libraries(test_writes PRIVATE rm_lines)
 target_link_libraries(test_writes PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 

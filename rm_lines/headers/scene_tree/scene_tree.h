@@ -26,6 +26,18 @@ using SceneItemVariant = std::variant<
     CrdtSequenceItem<ImageItem>
 >;
 
+static CrdtId &getItemId(SceneItemVariant &item) {
+    return std::visit([](auto &x) -> CrdtId & {
+        return x.itemId;
+    }, item);
+}
+
+static const CrdtId &getItemId(const SceneItemVariant &item) {
+    return std::visit([](const auto &x) -> const CrdtId & {
+        return x.itemId;
+    }, item);
+}
+
 class SceneTree {
 public:
     SceneTree();

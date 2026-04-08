@@ -5,8 +5,8 @@
 #include <advanced/text_sequence.h>
 #include <common/data_types.h>
 #include <common/crdt_sequence_item.h>
-
 #include <nlohmann/json.hpp>
+
 
 class TaggedBlockWriter;
 using json = nlohmann::json;
@@ -58,12 +58,12 @@ enum PenColor {
 };
 
 struct Point {
-    float x;
-    float y;
-    uint32_t speed;
-    uint32_t direction;
-    uint32_t width;
-    uint32_t pressure;
+    float x = 0;
+    float y = 0;
+    uint32_t speed = 2;
+    uint32_t direction = 4;
+    uint32_t width = 12;
+    uint32_t pressure = 255; // FULL pressure
 
     bool read(TaggedBlockReader *reader, uint8_t version);
 
@@ -73,12 +73,12 @@ struct Point {
 };
 
 struct Line {
-    PenTool tool;
-    PenColor color;
-    double thicknessScale;
-    float startingLength;
+    PenTool tool = PENCIL_1;
+    PenColor color = BLACK;
+    double thicknessScale = 1.0;
+    float startingLength = 0.0;
     std::vector<Point> points;
-    CrdtId timestamp;
+    CrdtId timestamp = ROOT_NODE;
     std::optional<CrdtId> moveId;
     std::optional<Color> argbColor;
     uint8_t version = 2;

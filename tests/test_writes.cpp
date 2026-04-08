@@ -3,6 +3,9 @@
 #include <fstream>
 #include <queue>
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "other/stb_image.h"
+
 #include "library.h"
 #include "renderer/renderer_export.h"
 #include "scene_tree/scene_tree_editor.h"
@@ -36,12 +39,67 @@ public:
     explicit File(const std::string &name) : name(name) {
         tree = new SceneTreeEditor();
         tree->init();
+        drawCat();
         renderer = new Renderer(tree, NOTEBOOK, false);
     }
 
     ~File() {
         delete renderer;
         delete tree;
+    }
+
+    void drawCat() {
+        const int width = tree->sceneInfo->paperSize->first;
+        const int height = tree->sceneInfo->paperSize->second;
+
+        int w, h, channels;
+        int offset = 20;
+        unsigned char *data = stbi_load("lines_icon.png", &w, &h, &channels, 4);
+
+        logDebug(std::format("Paper size: {} x {}", width, height));
+        const int offsetX = width / 2 - w - offset;
+        const int offsetY = height - h - offset;
+        auto line_row = [&](int y) {
+            if (w <= 0 || h <= 0 || channels < 3) return;
+
+            const int base_x = offsetX;
+            const int draw_y = offsetY + y;
+
+            int run_start_x = 0;
+            int i = (y * w) * channels;
+
+            Color current{data[i + 2], data[i + 1], data[i + 0], data[i + 3]};
+
+            for (int x = 2; x < w; x += 2) {
+                i = (y * w + x) * channels;
+
+                const Color next{data[i + 2], data[i + 1], data[i + 0], data[i + 3]};
+
+                if (next.red != current.red || next.green != current.green || next.blue != current.blue || next.alpha !=
+                    current.alpha) {
+                    tree->startLine()
+                            .setPen(FINELINER_2)
+                            .setRGBA(current)
+                            .addPoint(base_x + run_start_x, draw_y)
+                            .addPoint(base_x + x, draw_y)
+                            .endLine();
+
+                    current = next;
+                    run_start_x = x;
+                }
+            }
+
+            tree->startLine()
+                    .setPen(FINELINER_2)
+                    .setRGBA(current)
+                    .addPoint(base_x + run_start_x, draw_y)
+                    .addPoint(base_x + w, draw_y)
+                    .endLine();
+        };
+
+        for (int y = 0; y < h; y += 2) {
+            line_row(y);
+        }
     }
 
     void save() {
