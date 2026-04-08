@@ -265,32 +265,91 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
     uint64_t numberOfRects;
     if (!reader->readValuint(numberOfRects)) return false;
 
-    rects = std::vector<AdvancedMath::Rect>(numberOfRects);
+    rects = std::vector<Rect>(numberOfRects);
 
     for (uint64_t i = 0; i < numberOfRects; i++) {
-        if (!reader->readBytes(sizeof(AdvancedMath::Rect), &rects[i])) return false;
+        double rect[4];
+        if (!reader->readBytes(sizeof(double) * 4, rect)) return false;
+        rects[i].x = rect[0];
+        rects[i].y = rect[1];
+        rects[i].w = rect[2];
+        rects[i].h = rect[3];
+    }
+    int colorIndex = 8;
+
+    reader->getTag();
+    if (reader->checkTag(7, TagType::ID)) {
+        if (!reader->readId(7, &firstId)) return false;
+        colorIndex = 8;
+    }
+    reader->getTag();
+    if (reader->checkTag(8, TagType::ID)) {
+        if (!reader->readId(8, &lastId)) return false;
+        colorIndex = 9;
+    }
+    reader->getTag();
+    if (reader->checkTag(9, TagType::Byte1)) {
+        if (!reader->readBool(9, &includeLastId)) return false;
+        colorIndex = 10;
     }
 
     // Optionally read argbColor, this is only for new highlighters
     reader->getTag();
-    if (color == ARGB && reader->checkTag(8, TagType::Byte4)) {
+    if (color == ARGB && reader->checkTag(colorIndex, TagType::Byte4)) {
         Color _argbColor;
-        if (!reader->readColor(8, &_argbColor)) return false;
+        if (!reader->readColor(colorIndex, &_argbColor)) return false;
         argbColor = _argbColor;
-    }
-    if (reader->hasBytesRemaining()) {
-        // TODO: Read unknown
-        logError("Unknown bytes remaining in GlyphRange");
-        // Skip for now...
-        reader->seekTo(reader->currentBlockInfo.offset + reader->currentBlockInfo.size);
     }
 
     return true;
 }
 
 bool GlyphRange::write(TaggedBlockWriter *writer) const {
-    // TODO: Write GLYPH RANGE
-    return false;
+    // Write optional start
+    if (start.has_value()) {
+        if (!writer->writeInt(2, &start.value())) return false;
+    }
+
+    // Write optional length
+    if (length.has_value()) {
+        if (!writer->writeInt(3, &length.value())) return false;
+    }
+
+    // Write color and text
+    const uint32_t colorId = static_cast<uint32_t>(color);
+    if (!writer->writeInt(4, &colorId)) return false;
+    if (!writer->writeString(5, &text)) return false;
+
+    // Write rects
+    uint32_t subBlockStart;
+    if (subBlockStart = writer->writeSubBlockStart(6); subBlockStart == 0) return false;
+
+    const uint64_t numberOfRects = rects.size();
+    if (!writer->writeValuint(numberOfRects)) return false;
+
+    for (const auto &rect: rects) {
+        double rectData[4] = {rect.x, rect.y, rect.w, rect.h};
+        if (!writer->writeBytes(sizeof(double) * 4, rectData)) return false;
+    }
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+
+    // Write the rest of the text data
+    int colorIndex = 8;
+    if (firstId != END_MARKER) {
+        if (!writer->writeId(7, &firstId)) return false;
+        if (lastId != END_MARKER) {
+            if (!writer->writeId(8, &lastId)) return false;
+        }
+        if (!writer->writeBool(9, &includeLastId)) return false;
+        colorIndex = 10;
+    }
+
+    // Write argbColor if needed
+    if (color == ARGB) {
+        if (!writer->writeColor(colorIndex, &argbColor)) return false;
+    }
+
+    return true;
 }
 
 json GlyphRange::toJson() const {

@@ -20,10 +20,10 @@ enum BlockTypes {
     MIGRATION_INFO_BLOCK = 0, // Writable!
     SCENE_TREE_BLOCK = 1, // Writable!
     TREE_NODE_BLOCK = 2, // Writable!
-    SCENE_GLYPH_ITEM_BLOCK = 3,
+    SCENE_GLYPH_ITEM_BLOCK = 3, // Writable!
     SCENE_GROUP_ITEM_BLOCK = 4, // Writable!
     SCENE_LINE_ITEM_BLOCK = 5, // Writable!
-    SCENE_TEXT_ITEM_BLOCK = 6,
+    SCENE_TEXT_ITEM_BLOCK = 6, // USUALLY NULL, IS IT OLD FORMAT?
     ROOT_TEXT_BLOCK = 7, // Writable!
     SCENE_TOMBSTONE_ITEM_BLOCK = 8,
     AUTHOR_IDS_BLOCK = 9, // Writable!

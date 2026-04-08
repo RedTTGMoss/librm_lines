@@ -110,6 +110,9 @@ struct GlyphRange {
     Color argbColor;
     std::string text;
     std::vector<AdvancedMath::Rect> rects;
+    CrdtId firstId = END_MARKER;
+    CrdtId lastId = END_MARKER;
+    bool includeLastId = false;
 
     bool read(TaggedBlockReader *reader);
 
