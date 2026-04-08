@@ -133,6 +133,7 @@ bool AuthorIdsBlock::read(TaggedBlockReader *reader) {
         if (!reader->readBytes(sizeof(authorId), &authorId)) return false;
 
         authorIds[authorId] = uuid;
+        _nextAuthorId = std::max(_nextAuthorId, static_cast<uint16_t>(authorId + 1));
     }
 
     return true;
@@ -166,6 +167,21 @@ json AuthorIdsBlock::toJson() const {
     return j;
 }
 
+AuthorIdsBlock::AuthorIdsBlock(const std::string &author) {
+    if (!author.empty()) {
+        addAuthor(author);
+    }
+    info = BlockInfo();
+    info->minVersion = 1;
+    info->currentVersion = 1;
+    info->blockType = AUTHOR_IDS_BLOCK;
+}
+
+void AuthorIdsBlock::addAuthor(const std::string &author) {
+    authorIds[_nextAuthorId] = author;
+    _nextAuthorId++;
+}
+
 bool MigrationInfoBlock::read(TaggedBlockReader *reader) {
     if (!reader->readId(1, &migrationId)) return false;
     if (!reader->readBool(2, &isDevice)) return false;
@@ -192,6 +208,13 @@ json MigrationInfoBlock::toJson() const {
         {"isDevice", isDevice},
         {"isV3", isV3.has_value() ? json(isV3.value()) : nullptr}
     };
+}
+
+MigrationInfoBlock::MigrationInfoBlock() {
+    info = BlockInfo();
+    info->minVersion = 1;
+    info->currentVersion = 1;
+    info->blockType = MIGRATION_INFO_BLOCK;
 }
 
 bool PageInfoBlock::read(TaggedBlockReader *reader) {
@@ -334,6 +357,13 @@ json SceneInfoBlock::toJson() const {
         j["preferredLayout"] = nullptr;
     }
     return j;
+}
+
+SceneInfoBlock::SceneInfoBlock() {
+    info = BlockInfo();
+    info->minVersion = 0;
+    info->currentVersion = 1;
+    info->blockType = SCENE_INFO_BLOCK;
 }
 
 SceneTreeBlock SceneTreeBlock::fromNode(const Group *node) {

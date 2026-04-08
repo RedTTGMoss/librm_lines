@@ -211,10 +211,25 @@ json Group::toJson() const {
 }
 
 json Group::toJsonNoItem() const {
+    std::string parentIsStr;
+    switch (parentIs) {
+        case TREE:
+            parentIsStr = "TREE";
+            break;
+        case NODE:
+            parentIsStr = "NODE";
+            break;
+        case TEXT:
+            parentIsStr = "TEXT";
+            break;
+        default:
+            parentIsStr = "UNKNOWN";
+    }
     return {
         {"label", label.toJson()},
         {"visible", visible.toJson()},
         {"parentId", parentId.toJson()},
+        {"parentIs", parentIsStr},
         {"anchorId", anchorId ? anchorId->toJson() : nullptr},
         {"anchorType", anchorType ? anchorType->toJson() : nullptr},
         {"anchorThreshold", anchorThreshold ? anchorThreshold->toJson() : nullptr},

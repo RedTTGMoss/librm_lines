@@ -48,6 +48,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/common/scene_items.cpp
         rm_lines/src/common/data_types.cpp
         rm_lines/src/scene_tree/scene_tree.cpp
+        rm_lines/src/scene_tree/scene_tree_editor.cpp
         rm_lines/src/common/crdt_sequence_item.cpp
         rm_lines/src/renderer/renderer.cpp
         rm_lines/src/renderer/renderer_export.cpp
@@ -57,7 +58,6 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         ${RENDERER_FILES}
         ${RM_PENS_FILES}
         ${RM_TEMPLATE_FILES}
-        rm_lines/src/renderer/rm_lines_stroker/rm_pens/debug_pen.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)

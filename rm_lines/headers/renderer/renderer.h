@@ -9,8 +9,6 @@
 #include "advanced/text.h"
 #include <unordered_map>
 #define TEXT_TOP_Y (180)
-#define BASE_PAPER_SIZE_X 1404
-#define BASE_PAPER_SIZE_Y 1872
 
 class Renderer;
 using ImageBuffer = RMLinesRenderer::ImageBuffer;

@@ -25,6 +25,8 @@ namespace fs = std::filesystem;
 #define COLOR_YELLOW "\033[33m"
 #define COLOR_RED    "\033[31m"
 
+static bool singleFile = false;
+
 std::string getTextItemContents(const TextItem item) {
     if (!item.value.has_value()) {
         return "";
@@ -136,7 +138,6 @@ bool processFile(const std::string &filename, const std::string &path) {
 
     std::ofstream htmlFilePtr(htmlFile.c_str());
     std::ofstream mdFilePtr(mdFile.c_str());
-    std::ofstream rmFilePtr(rmFile.c_str());
     std::ofstream svgFilePtr(svgFile.c_str());
     std::ofstream pngFilePtr(pngFile.c_str());
     std::ofstream paraFilePtr(paraFile.c_str());
@@ -144,7 +145,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     std::ofstream rawTextFilePtr(rawTextFile.c_str());
     std::ofstream textExpandPythonFilePtr(textExpandPythonFile.c_str());
     std::ofstream anchorTestPythonFilePtr(anchorTestPythonFile.c_str());
-    if (!htmlFilePtr || !mdFilePtr || !rmFilePtr || !svgFilePtr || !pngFilePtr || !paraFilePtr || !layersFilePtr || !
+    if (!htmlFilePtr || !mdFilePtr || !svgFilePtr || !pngFilePtr || !paraFilePtr || !layersFilePtr || !
         rawTextFilePtr ||
         !textExpandPythonFilePtr || !anchorTestPythonFilePtr) {
         logError(std::format("Failed to open output files for page \"{}\"", filename));
@@ -154,7 +155,12 @@ bool processFile(const std::string &filename, const std::string &path) {
     try {
         renderer->toHtml(htmlFilePtr);
         renderer->toMd(mdFilePtr);
-        renderer->toRM(rmFilePtr);
+        if (singleFile) {
+            std::ofstream rmFilePtr(rmFile.c_str());
+            if (rmFilePtr) {
+                renderer->toRM(rmFilePtr);
+            }
+        }
         json paragraphs = renderer->getParagraphs();
         paraFilePtr << paragraphs.dump(4);
         json layers = renderer->getLayers();
@@ -305,6 +311,7 @@ int main(const int argc, char *argv[]) {
     if (argc > 1) {
         fileFilter = argv[1];
         setDebugMode(true);
+        singleFile = true;
     }
 
     runColorAssertTest();

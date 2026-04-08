@@ -9,7 +9,7 @@ struct CrdtSequenceItem {
     CrdtId itemId;
     CrdtId leftId;
     CrdtId rightId;
-    uint32_t deletedLength;
+    uint32_t deletedLength = 0;
     std::optional<T> value = std::nullopt;
 
     void applyTreeValue(SceneTree &tree, const CrdtId &nodeId);

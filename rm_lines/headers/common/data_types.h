@@ -11,6 +11,9 @@
 
 #include <nlohmann/json.hpp>
 
+#define BASE_PAPER_SIZE_X 1404
+#define BASE_PAPER_SIZE_Y 1872
+
 using json = nlohmann::json;
 
 struct CrdtId {

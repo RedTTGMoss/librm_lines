@@ -99,11 +99,18 @@ struct AuthorIdsBlock final : Block {
     BlockTypes getBlockType() const override {
         return AUTHOR_IDS_BLOCK;
     }
+
+    AuthorIdsBlock(const std::string &author = "");
+
+    void addAuthor(const std::string &author);
+
+private:
+    uint16_t _nextAuthorId = 1;
 };
 
 struct MigrationInfoBlock final : Block {
-    CrdtId migrationId;
-    bool isDevice;
+    CrdtId migrationId{1, 1};
+    bool isDevice = true;
     std::optional<bool> isV3 = std::nullopt;
 
     bool read(TaggedBlockReader *reader) override;
@@ -115,6 +122,8 @@ struct MigrationInfoBlock final : Block {
     BlockTypes getBlockType() const override {
         return MIGRATION_INFO_BLOCK;
     }
+
+    MigrationInfoBlock();
 };
 
 struct PageInfoBlock final : Block {
@@ -136,10 +145,10 @@ struct PageInfoBlock final : Block {
 };
 
 struct SceneInfoBlock final : Block {
-    LwwItem<CrdtId> currentLayer;
-    std::optional<LwwItem<bool> > backgroundVisible;
-    std::optional<LwwItem<bool> > rootDocumentVisible;
-    std::optional<IntPair> paperSize;
+    LwwItem<CrdtId> currentLayer{ROOT_TEXT_NODE};
+    std::optional<LwwItem<bool> > backgroundVisible{true};
+    std::optional<LwwItem<bool> > rootDocumentVisible{true};
+    std::optional<IntPair> paperSize{{BASE_PAPER_SIZE_X, BASE_PAPER_SIZE_Y}};
     std::optional<LwwItem<RectPair> > extendedContentRect;
     std::optional<DoublePair> paperSizeF;
     std::optional<LwwItem<DoublePair> > lwwPaperSizeF;
@@ -154,6 +163,8 @@ struct SceneInfoBlock final : Block {
     BlockTypes getBlockType() const override {
         return SCENE_INFO_BLOCK;
     }
+
+    SceneInfoBlock();
 };
 
 struct SceneTreeBlock final : Block {

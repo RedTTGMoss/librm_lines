@@ -48,6 +48,7 @@ public:
     json toJson();
 
     friend class TaggedBlockWriter;
+    friend class SceneTreeEditor;
 
 private:
     std::map<CrdtId, std::unique_ptr<Group> > _nodeIds;
