@@ -4,6 +4,7 @@
 struct LineInfo {
     Line line;
     CrdtId groupId;
+    CrdtId itemId;
     float offsetX;
     float offsetY;
 };

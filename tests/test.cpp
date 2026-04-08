@@ -166,11 +166,12 @@ bool processFile(const std::string &filename, const std::string &path) {
             layerJ["label"] = layer.getLabel();
             layerJ["visible"] = layer.visible;
             layerJ["lines"] = json::array();
-            for (const auto &[line, groupId, offsetX, offsetY]: layer.lines) {
+            for (const auto &[line, groupId, itemId, offsetX, offsetY]: layer.lines) {
                 json lineJ;
                 lineJ["offsetX"] = offsetX;
                 lineJ["offsetY"] = offsetY;
                 lineJ["groupId"] = groupId.toJson();
+                lineJ["itemId"] = itemId.toJson();
                 lineJ["value"] = line.toJson();
                 layerJ["lines"].push_back(lineJ);
             }

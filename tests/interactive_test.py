@@ -52,7 +52,7 @@ class GC(pe.GameContext):
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
 
-        for folder in (files_draw_folder, files_folder, files_color_folder):
+        for folder in (files_draw_folder, files_folder, files_color_folder, rm_output_folder):
             for filename in os.listdir(folder):
                 file = os.path.join(folder, filename)
                 self.items.append(file)

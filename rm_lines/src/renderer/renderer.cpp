@@ -129,6 +129,7 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
             layer.lines.push_back(LineInfo{
                 .line = std::move(line.value.value()),
                 .groupId = groupId,
+                .itemId = line.itemId,
                 .offsetX = trackX(layer.groupId, offsetX),
                 .offsetY = trackY(layer.groupId, offsetY),
             });

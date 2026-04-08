@@ -67,6 +67,8 @@ struct Point {
 
     bool read(TaggedBlockReader *reader, uint8_t version);
 
+    bool write(TaggedBlockWriter *writer, uint8_t version) const;
+
     json toJson() const;
 };
 

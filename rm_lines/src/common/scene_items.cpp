@@ -4,6 +4,8 @@
 #include <reader/tagged_block_reader.h>
 #include <common/blocks.h>
 
+#include "writer/tagged_block_writer.h"
+
 size_t getPointSizeSerialized(uint8_t version) {
     switch (version) {
         case 1:
@@ -72,8 +74,35 @@ bool Line::read(TaggedBlockReader *reader, const uint8_t version) {
 }
 
 bool Line::write(TaggedBlockWriter *writer) const {
-    // TODO: write LINE
-    return false;
+    const uint32_t toolId = static_cast<uint32_t>(tool);
+    const uint32_t colorId = static_cast<uint32_t>(color);
+    if (!writer->writeInt(1, &toolId)) return false;
+    if (!writer->writeInt(2, &colorId)) return false;
+    if (!writer->writeDouble(3, &thicknessScale)) return false;
+    if (!writer->writeFloat(4, &startingLength)) return false;
+
+    // The points
+    uint32_t subBlockStart;
+    if (subBlockStart = writer->writeSubBlockStart(5); subBlockStart == 0) return false;
+    for (const auto &point: points) {
+        point.write(writer, version);
+    }
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+
+    // Write timestamp
+    if (!writer->writeId(6, &timestamp)) return false;
+
+    // if we have moveId, write it
+    if (moveId.has_value()) {
+        if (!writer->writeId(7, &moveId.value())) return false;
+    }
+
+    // if we have argb color, write it
+    if (argbColor.has_value()) {
+        if (!writer->writeColor(8, &argbColor.value())) return false;
+    }
+
+    return true;
 }
 
 json Line::toJson() const {
@@ -118,7 +147,7 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
 
         float _direction;
         if (!reader->readFloat(&_direction)) return false;
-        direction = 255 * _direction / (PI * 2);
+        direction = 255.0 * _direction / (PI * 2);
 
         float _width;
         if (!reader->readFloat(&_width)) return false;
@@ -150,6 +179,41 @@ bool Point::read(TaggedBlockReader *reader, uint8_t version) {
     } else {
         logError(std::format("Unknown line version {}", version));
         return false;
+    }
+    return true;
+}
+
+bool Point::write(TaggedBlockWriter *writer, const uint8_t version) const {
+    if (!writer->writeFloat(&x)) return false;
+    if (!writer->writeFloat(&y)) return false;
+    if (version == 1) {
+        // Old style, values are in different formats
+        const float _speed = speed / 4.0;
+        if (!writer->writeFloat(&_speed)) return false;
+
+        const float _direction = direction * (PI * 2) / 255.0;
+        if (!writer->writeFloat(&_direction)) return false;
+
+        const float _width = width / 4.0;
+        if (!writer->writeFloat(&_width)) return false;
+
+        const float _pressure = pressure / 255.0;
+        if (!writer->writeFloat(&_pressure)) return false;
+    } else if (version == 2) {
+        // ReSharper disable once CppTooWideScopeInitStatement
+        const uint16_t _speed = speed;
+        if (!writer->writeObj(_speed)) return false;
+        // ReSharper disable once CppTooWideScopeInitStatement
+        const uint16_t _width = width;
+        if (!writer->writeObj(_width)) return false;
+
+        // ReSharper disable once CppTooWideScopeInitStatement
+        const uint8_t _direction = direction;
+        if (!writer->writeObj(_direction)) return false;
+
+        // ReSharper disable once CppTooWideScopeInitStatement
+        const uint8_t _pressure = pressure;
+        if (!writer->writeObj(_pressure)) return false;
     }
     return true;
 }

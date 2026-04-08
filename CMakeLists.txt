@@ -74,9 +74,17 @@ add_executable(test tests/test.cpp)
 target_link_libraries(test PRIVATE rm_lines)
 target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 
+add_executable(test_writes tests/test_writes.cpp)
+target_link_libraries(test_writes PRIVATE rm_lines)
+target_link_libraries(test_writes PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
+
 if (WIN32)
     target_link_libraries(test PRIVATE DbgHelp)
+    target_link_libraries(test_writes PRIVATE DbgHelp)
 endif ()
 
 target_compile_options(test PRIVATE -fsanitize=address)
 target_link_options(test PRIVATE -fsanitize=address)
+
+target_compile_options(test_writes PRIVATE -fsanitize=address)
+target_link_options(test_writes PRIVATE -fsanitize=address)

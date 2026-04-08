@@ -476,6 +476,8 @@ bool SceneItemBlock::write(TaggedBlockWriter *writer) const {
     if (!writer->writeId(4, &item.rightId)) return false;
     if (!writer->writeInt(5, &item.deletedLength)) return false;
 
+    if (!hasValue()) return true; // No value to write, so we're done
+
     uint32_t subBlockStart;
     if (subBlockStart = writer->writeSubBlockStart(6); subBlockStart == 0) return false;
 
@@ -532,8 +534,14 @@ json SceneLineItemBlock::toJson() const {
 SceneLineItemBlock SceneLineItemBlock::fromItem(const CrdtSequenceItem<Line> &item) {
     SceneLineItemBlock block;
     block.info = BlockInfo();
-    block.info->minVersion = item.value.value().version;
-    block.info->currentVersion = item.value.value().version;
+    if (item.value.has_value()) {
+        block.info->minVersion = item.value->version;
+        block.info->currentVersion = item.value->version;
+    } else {
+        // Assume new format
+        block.info->minVersion = 2;
+        block.info->currentVersion = 2;
+    }
     block.info->blockType = block.getBlockType();
 
     block.item = item;

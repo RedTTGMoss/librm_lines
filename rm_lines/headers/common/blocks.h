@@ -22,7 +22,7 @@ enum BlockTypes {
     TREE_NODE_BLOCK = 2, // Writable!
     SCENE_GLYPH_ITEM_BLOCK = 3,
     SCENE_GROUP_ITEM_BLOCK = 4, // Writable!
-    SCENE_LINE_ITEM_BLOCK = 5,
+    SCENE_LINE_ITEM_BLOCK = 5, // Writable!
     SCENE_TEXT_ITEM_BLOCK = 6,
     ROOT_TEXT_BLOCK = 7, // Writable!
     SCENE_TOMBSTONE_ITEM_BLOCK = 8,
@@ -211,6 +211,8 @@ private:
 
     virtual const CrdtSequenceItem<> &itemBase() const = 0;
 
+    virtual bool hasValue() const = 0;
+
     virtual bool readValue(TaggedBlockReader *reader) = 0;
 
     virtual bool writeValue(TaggedBlockWriter *writer) const = 0;
@@ -242,6 +244,10 @@ private:
     const CrdtSequenceItem<> &itemBase() const override {
         return reinterpret_cast<const CrdtSequenceItem<> &>(item);
     }
+
+    bool hasValue() const override {
+        return item.value.has_value();
+    }
 };
 
 struct SceneLineItemBlock final : SceneItemBlock {
@@ -270,6 +276,10 @@ private:
 
     const CrdtSequenceItem<> &itemBase() const override {
         return reinterpret_cast<const CrdtSequenceItem<> &>(item);
+    }
+
+    bool hasValue() const override {
+        return item.value.has_value();
     }
 };
 
@@ -316,6 +326,10 @@ private:
     const CrdtSequenceItem<> &itemBase() const override {
         return reinterpret_cast<const CrdtSequenceItem<> &>(item);
     }
+
+    bool hasValue() const override {
+        return item.value.has_value();
+    }
 };
 
 struct ImageInfoBlock final : Block {
@@ -357,5 +371,9 @@ private:
 
     const CrdtSequenceItem<> &itemBase() const override {
         return reinterpret_cast<const CrdtSequenceItem<> &>(item);
+    }
+
+    bool hasValue() const override {
+        return item.value.has_value();
     }
 };

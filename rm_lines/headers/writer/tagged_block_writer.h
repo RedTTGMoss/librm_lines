@@ -46,8 +46,8 @@ public:
     bool writeRootText(const Text &text);
 
     template<typename T>
-    void writeObj(T value) {
-        writeBytes(sizeof(T), &value);
+    bool writeObj(T value) {
+        return writeBytes(sizeof(T), &value);
     }
 
     // Begin types
@@ -99,6 +99,10 @@ public:
 
     bool writeInt(const uint32_t *value);
 
+    bool writeColor(uint8_t index, const Color *value);
+
+    bool writeColor(const Color *value);
+
     bool writeDouble(uint8_t index, const double *value);
 
     bool writeDouble(const double *value);
@@ -140,4 +144,6 @@ public:
     [[nodiscard]] uint32_t writeBlockInfoHeaderStart(const BlockInfo &blockInfo);
 
     bool writeBlockInfoHeaderEnd(uint32_t blockStartOffset);
+
+    uint32_t writeBlockInfoHeaderEndSize(uint32_t blockStartOffset);
 };

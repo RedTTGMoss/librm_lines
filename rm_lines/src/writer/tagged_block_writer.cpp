@@ -41,10 +41,10 @@ bool TaggedBlockWriter::buildRM() {
     }
 
     // Prefetch lines
-    std::map<CrdtId, std::vector<Line> > linesFromLayers;
+    std::map<CrdtId, std::map<CrdtId, Line> > linesFromLayers;
     for (auto &layer: renderer->layers) {
         for (auto &lineInfo: layer.lines) {
-            linesFromLayers[layer.groupId].push_back(lineInfo.line);
+            linesFromLayers[layer.groupId][lineInfo.itemId] = lineInfo.line;
         }
     }
 
@@ -57,11 +57,10 @@ bool TaggedBlockWriter::buildRM() {
                 block.parentId = parentId;
                 if (!writeBlock(&block)) return false;
             } else if (const auto item = std::get_if<CrdtSequenceItem<Line> >(&child)) {
-                return true;
-                item->value = linesFromLayers[parentId].empty()
-                                  ? std::optional<Line>()
-                                  : std::optional<Line>(linesFromLayers[parentId].back());
-                if (!item->value.has_value()) continue;
+                if (auto it = linesFromLayers[parentId].find(item->itemId); it != linesFromLayers[parentId].end()) {
+                    item->value = it->second;
+                }
+
                 SceneLineItemBlock block = SceneLineItemBlock::fromItem(*item);
                 block.parentId = parentId;
                 if (!writeBlock(&block)) return false;
@@ -121,9 +120,9 @@ bool TaggedBlockWriter::writeBlock(const Block *block) {
         logError(std::format("Failed to write block of type {}", block->info->blockType));
         return false;
     }
-    writeBlockInfoHeaderEnd(startOffset);
-    logDebug(std::format("Successfully wrote block of type {}", block->info->blockType));
-    return true;
+    const uint32_t size = writeBlockInfoHeaderEndSize(startOffset);
+    logDebug(std::format("Successfully wrote block of type {} size: {}", block->info->blockType, size));
+    return size != 0;
 }
 
 bool TaggedBlockWriter::writeSceneTree(const Group *node) {
@@ -300,6 +299,16 @@ bool TaggedBlockWriter::writeInt(const uint32_t *value) {
     return writeBytes(sizeof(uint32_t), value);
 }
 
+bool TaggedBlockWriter::writeColor(const uint8_t index, const Color *value) {
+    if (!writeTag(index, TagType::Byte4)) return false;
+    return writeColor(value);
+}
+
+bool TaggedBlockWriter::writeColor(const Color *value) {
+    const uint32_t rawColor = value->toRGBA();
+    return writeObj(rawColor);
+}
+
 bool TaggedBlockWriter::writeDouble(const uint8_t index, const double *value) {
     if (!writeTag(index, TagType::Byte8)) return false;
     return writeDouble(value);
@@ -474,17 +483,24 @@ uint32_t TaggedBlockWriter::writeBlockInfoHeaderStart(const BlockInfo &blockInfo
     temp[1] = blockInfo.currentVersion;
     temp[2] = blockInfo.blockType;
     if (!writeBytes(3, temp)) return 0; // Write 3 bytes for block info
-
+    logDebug(std::format(
+        "Write block info header m{}/c{} OF: {} BT: {}",
+        blockInfo.minVersion, blockInfo.currentVersion, currentOffset, blockInfo.blockType
+    ));
     return startOffset;
 }
 
 bool TaggedBlockWriter::writeBlockInfoHeaderEnd(const uint32_t blockStartOffset) {
+    return writeBlockInfoHeaderEndSize(blockStartOffset) != 0;
+}
+
+uint32_t TaggedBlockWriter::writeBlockInfoHeaderEndSize(const uint32_t blockStartOffset) {
     const uint32_t size = currentOffset - blockStartOffset - 8;
     const uint32_t returnOffset = currentOffset;
     seekTo(blockStartOffset);
-    if (!writeBytes(sizeof(uint32_t), &size)) return false;
+    if (!writeBytes(sizeof(uint32_t), &size)) return 0;
     seekTo(returnOffset);
-    return true;
+    return size;
 }
 
 
