@@ -150,7 +150,7 @@ bool AuthorIdsBlock::write(TaggedBlockWriter *writer) const {
 
         if (!writer->writeValuint(uuidLength)) return false;
 
-        if (!writer->writeUUID(uuid)) return false;
+        if (!writer->writeUUID(&uuid)) return false;
 
         if (!writer->writeBytes(sizeof(uint16_t), &authorId)) return false;
 
@@ -751,7 +751,6 @@ json SceneGlyphItemBlock::toJson() const {
 SceneGlyphItemBlock SceneGlyphItemBlock::fromItem(const CrdtSequenceItem<GlyphRange> &item) {
     SceneGlyphItemBlock block;
     block.info = BlockInfo();
-    // TODO: Check correct version here for glyph
     block.info->minVersion = 1;
     block.info->currentVersion = 1;
     block.info->blockType = block.getBlockType();
@@ -798,7 +797,7 @@ bool ImageInfoBlock::write(TaggedBlockWriter *writer) const {
     for (const auto image: images) {
         uint32_t subBlockStart;
         if (subBlockStart = writer->writeSubBlockStart(0); subBlockStart == 0) return false;
-        if (!writer->writeUUID(image.uuid)) return false;
+        if (!writer->writeUUID(&image.uuid)) return false;
         if (!writer->writeLwwString(1, &image.fileName)) return false;
         if (!writer->writeLwwBytes(2, &image.flags)) return false;
 
@@ -830,6 +829,7 @@ bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {
     if (!reader->readId(2, &_boundsTimestamp)) return false;
     value.boundsTimestamp = _boundsTimestamp;
 
+    // Read vertices
     std::vector<float> _vertices;
     uint64_t verticesCount;
     reader->getTag();
@@ -868,8 +868,37 @@ bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {
 }
 
 bool SceneImageItemBlock::writeValue(TaggedBlockWriter *writer) const {
-    // TODO: Implement writing Image item
-    return false;
+    if (!writer->writeLwwUUID(1, &item.value->imageRef)) return false;
+    if (!writer->writeId(2, &item.value->boundsTimestamp)) return false;
+
+    // Write vertices
+    uint32_t subBlockStart;
+    if (subBlockStart = writer->writeSubBlockStart(3); subBlockStart == 0) return false;
+
+    const uint64_t verticesCount = item.value->vertices.size();
+    if (!writer->writeValuint(verticesCount)) return false;
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+    for (const auto vertex: item.value->vertices) {
+        if (!writer->writeFloat(&vertex)) return false;
+    }
+
+    // Write indices
+    if (subBlockStart = writer->writeSubBlockStart(4); subBlockStart == 0) return false;
+
+    const uint64_t indicesCount = item.value->indices.size();
+    if (!writer->writeValuint(indicesCount)) return false;
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+
+    for (const auto index: item.value->indices) {
+        if (!writer->writeInt(&index)) return false;
+    }
+
+
+    // Write move id
+    if (item.value->moveId.has_value()) {
+        if (!writer->writeId(5, &item.value->moveId.value())) return false;
+    }
+    return true;
 }
 
 json SceneImageItemBlock::toJson() const {
@@ -880,7 +909,6 @@ json SceneImageItemBlock::toJson() const {
 SceneImageItemBlock SceneImageItemBlock::fromItem(const CrdtSequenceItem<ImageItem> &item) {
     SceneImageItemBlock block;
     block.info = BlockInfo();
-    // TODO: Check correct version here for glyph
     block.info->minVersion = 1;
     block.info->currentVersion = 1;
     block.info->blockType = block.getBlockType();

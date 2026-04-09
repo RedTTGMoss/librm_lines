@@ -67,6 +67,8 @@ public:
 
     bool writeLwwString(uint8_t index, const LwwItem<std::string> *value);
 
+    bool writeLwwUUID(uint8_t index, const LwwItem<std::string> *value);
+
     bool writeLwwByteSub(uint8_t index, const LwwItem<uint8_t> *value);
 
     template<typename T>
@@ -135,7 +137,9 @@ public:
 
     bool writeDoublePair(const DoublePair *value);
 
-    bool writeUUID(const std::string &uuid);
+    bool writeUUID(uint8_t index, const std::string *uuid);
+
+    bool writeUUID(const std::string *uuid);
 
     bool writeTextItem(const TextItem *textItem);
 

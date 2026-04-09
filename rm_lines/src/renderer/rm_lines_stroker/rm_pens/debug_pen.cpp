@@ -3,7 +3,7 @@
 void DebugPen(rMPenFill *fill, const int x, const int y, const int length, Varying2D v, const Varying2D dx) {
     unsigned int *dst = fill->buffer.scanline(y) + x;
     for (int i = 0; i < length; ++i) {
-        dst[i] = fill->baseColor.toRGBA();
+        dst[i] = fill->baseColor.toARGB();
         v = v + dx;
     }
 }

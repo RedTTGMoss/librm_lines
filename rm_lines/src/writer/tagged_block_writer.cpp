@@ -206,6 +206,13 @@ bool TaggedBlockWriter::writeLwwString(const uint8_t index, const LwwItem<std::s
     return writeSubBlockEnd(subBlockStart);
 }
 
+bool TaggedBlockWriter::writeLwwUUID(const uint8_t index, const LwwItem<std::string> *value) {
+    uint32_t subBlockStart;
+    if (subBlockStart = _writeLwwItemId<std::string>(index, value); subBlockStart == 0) return false;
+    if (!writeUUID(2, &value->value)) return false;
+    return writeSubBlockEnd(subBlockStart);
+}
+
 bool TaggedBlockWriter::writeLwwByteSub(const uint8_t index, const LwwItem<uint8_t> *value) {
     uint32_t subBlockStart;
     if (subBlockStart = _writeLwwItemId<uint8_t>(index, value); subBlockStart == 0) return false;
@@ -307,7 +314,7 @@ bool TaggedBlockWriter::writeColor(const uint8_t index, const Color *value) {
 }
 
 bool TaggedBlockWriter::writeColor(const Color *value) {
-    const uint32_t rawColor = value->toRGBA();
+    const uint32_t rawColor = value->toARGB();
     return writeObj(rawColor);
 }
 
@@ -377,11 +384,18 @@ bool TaggedBlockWriter::writeDoublePair(const DoublePair *value) {
     return writeBytes(sizeof(DoublePair), value);
 }
 
-bool TaggedBlockWriter::writeUUID(const std::string &uuid) {
+bool TaggedBlockWriter::writeUUID(const uint8_t index, const std::string *uuid) {
+    uint32_t subBlockStart;
+    if (subBlockStart = writeSubBlockStart(index); subBlockStart == 0) return false;
+    if (!writeUUID(uuid)) return false;
+    return writeSubBlockEnd(subBlockStart);
+}
+
+bool TaggedBlockWriter::writeUUID(const std::string *uuid) {
     std::string hex;
     hex.reserve(32);
 
-    for (char c: uuid) {
+    for (char c: *uuid) {
         if (c == '-')
             continue;
 

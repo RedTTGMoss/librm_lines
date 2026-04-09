@@ -254,11 +254,6 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
 
     if (!reader->readString(5, &text)) return false;
 
-    // If we didn't get the length, set it to the length of the text
-    if (!length.has_value()) {
-        length = text.length();
-    }
-
     reader->getTag();
     if (!reader->readSubBlock(6)) return false; // Rects
 
@@ -329,7 +324,7 @@ bool GlyphRange::write(TaggedBlockWriter *writer) const {
 
     for (const auto &rect: rects) {
         double rectData[4] = {rect.x, rect.y, rect.w, rect.h};
-        if (!writer->writeBytes(sizeof(double) * 4, rectData)) return false;
+        if (!writer->writeBytes(sizeof(rectData), rectData)) return false;
     }
     if (!writer->writeSubBlockEnd(subBlockStart)) return false;
 
@@ -340,7 +335,7 @@ bool GlyphRange::write(TaggedBlockWriter *writer) const {
         if (lastId != END_MARKER) {
             if (!writer->writeId(8, &lastId)) return false;
         }
-        if (!writer->writeBool(9, &includeLastId)) return false;
+        if (!writer->writeBool(9, includeLastId)) return false;
         colorIndex = 10;
     }
 

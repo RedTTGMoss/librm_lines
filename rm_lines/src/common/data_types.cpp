@@ -154,9 +154,9 @@ std::string Color::repr() const {
     return std::format("Color(r={}, g={}, b={}, a={})", red, green, blue, alpha);
 }
 
-uint32_t Color::toRGBA() const {
+uint32_t Color::toARGB() const {
     // Writing to buffer (RGBA)
-    return alpha << 24 | blue << 16 | green << 8 | red;
+    return alpha << 24 | red << 16 | green << 8 | blue;
 }
 
 Color Color::operator*(const Color &other) const {
@@ -186,17 +186,17 @@ Color Color::operator+(const Color &other) const {
     );
 }
 
-Color Color::fromRGBA(const uint32_t *rgbaColor) {
+Color Color::fromARGB(const uint32_t *rgbaColor) {
     // Reading from buffer (RGBA)
     return Color(
-        static_cast<uint8_t>(*rgbaColor & 0xFF),
+        static_cast<uint8_t>(*rgbaColor >> 16 & 0xFF),
         static_cast<uint8_t>((*rgbaColor >> 8) & 0xFF),
-        static_cast<uint8_t>((*rgbaColor >> 16) & 0xFF),
+        static_cast<uint8_t>((*rgbaColor) & 0xFF),
         static_cast<uint8_t>((*rgbaColor >> 24) & 0xFF)
     );
 }
 
-void Color::inplaceFromRGBA(const uint32_t *rgbaColor) {
+void Color::inplaceFromARGB(const uint32_t *rgbaColor) {
     // Reading from rM file (ARGB)
     red = static_cast<uint8_t>((*rgbaColor >> 16) & 0xFF);
     green = static_cast<uint8_t>((*rgbaColor >> 8) & 0xFF);

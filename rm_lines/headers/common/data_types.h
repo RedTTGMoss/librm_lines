@@ -349,7 +349,7 @@ struct Color {
 
     std::string repr() const;
 
-    uint32_t toRGBA() const;
+    uint32_t toARGB() const;
 
     constexpr explicit Color(const uint8_t r = 0,
                              const uint8_t g = 0,
@@ -365,9 +365,9 @@ struct Color {
 
     Color operator+(const Color &other) const;
 
-    static Color fromRGBA(const uint32_t *rgbaColor);
+    static Color fromARGB(const uint32_t *rgbaColor);
 
-    void inplaceFromRGBA(const uint32_t *rgbaColor);
+    void inplaceFromARGB(const uint32_t *rgbaColor);
 };
 
 struct ImageInfo {

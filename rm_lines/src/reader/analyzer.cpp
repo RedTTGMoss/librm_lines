@@ -128,7 +128,7 @@ void Analyzer::analyzeData(TaggedBlockReader *reader) {
                 reader->readInt(&value);
 
                 const float value_f = *reinterpret_cast<float *>(&value);
-                const Color value_c = Color::fromRGBA(&value);
+                const Color value_c = Color::fromARGB(&value);
 
                 logDebug(std::format("{}Read [Byte4]", paddingStrSub));
                 logDebug(std::format("{} -- as int: {}", paddingStrSub, value));
