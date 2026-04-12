@@ -2,6 +2,7 @@
 #include <stack>
 
 #include "scene_tree.h"
+#include "scene_tree_export.h"
 
 class LineBuilder;
 class TextBuilder;
@@ -15,15 +16,26 @@ public:
 
     Group createSceneTree(const CrdtId &id, const std::string &label = "");
 
-    void addSceneTree(const Group &&node);
+    CrdtId addSceneTree(const Group &&node);
 
-    void addItemNode(SceneItemVariant item);
+    CrdtId addItemNode(SceneItemVariant item);
 
     void init();
 
     void initText();
 
+    void initImageInfoBlock();
+
+    // Edit functions that will be exposed
     LineBuilder startLine();
+
+    std::string addImageInfo(std::string filename, const std::string &uuid);
+
+    std::string addImageInfo(const std::string &filename) {
+        return addImageInfo(filename, generateUUID());
+    }
+
+    CrdtId addImage(std::string uuid, std::vector<AdvancedMath::Vector> vertices);
 
     friend class LineBuilder;
     TextBuilder *text;
@@ -46,7 +58,7 @@ public:
 
     LineBuilder &setPen(PenTool tool);
 
-    void endLine();
+    CrdtId endLine();
 
 private:
     static uint8_t angleTo255(const float angle) {

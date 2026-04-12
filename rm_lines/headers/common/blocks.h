@@ -164,7 +164,7 @@ struct SceneInfoBlock final : Block {
         return SCENE_INFO_BLOCK;
     }
 
-    SceneInfoBlock();
+    static SceneInfoBlock newBlock();
 };
 
 struct SceneTreeBlock final : Block {
@@ -355,6 +355,8 @@ struct ImageInfoBlock final : Block {
     BlockTypes getBlockType() const override {
         return IMAGE_INFO_BLOCK;
     }
+
+    static ImageInfoBlock newBlock();
 };
 
 struct SceneImageItemBlock final : SceneItemBlock {

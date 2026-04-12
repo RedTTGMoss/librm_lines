@@ -239,7 +239,7 @@ struct LwwItem {
     explicit LwwItem(T value) : value(value) {
     };
 
-    explicit LwwItem(const CrdtId timestamp, T value) : timestamp(timestamp), value(value) {
+    LwwItem(const CrdtId timestamp, T value) : timestamp(timestamp), value(value) {
     };
 
     LwwItem() = default;

@@ -1,5 +1,7 @@
 #include "scene_tree/scene_tree_editor.h"
 
+#include "scene_tree/scene_tree_export.h"
+
 CrdtId SceneTreeEditor::createLayer(const std::string &label) {
     const auto layerId = ids;
     const auto node = createSceneTree(layerId, label);
@@ -22,7 +24,7 @@ Group SceneTreeEditor::createSceneTree(const CrdtId &id, const std::string &labe
     return group;
 }
 
-void SceneTreeEditor::addSceneTree(const Group &&node) {
+CrdtId SceneTreeEditor::addSceneTree(const Group &&node) {
     _nodeIds[node.nodeId] = std::make_unique<Group>(std::move(node));
     _nodeIds[node.nodeId].get()->parentIs = TREE;
 
@@ -30,17 +32,25 @@ void SceneTreeEditor::addSceneTree(const Group &&node) {
     childItem.itemId = ids++;
     childItem.value = node.nodeId;
     addItem(childItem, node.parentId);
+    return childItem.itemId;
 }
 
-void SceneTreeEditor::addItemNode(SceneItemVariant item) {
+CrdtId SceneTreeEditor::addItemNode(SceneItemVariant item) {
+    CrdtId itemId = END_MARKER;
     std::visit([&](auto &typedItem) {
-        typedItem.itemId = ids++;
+        if (typedItem.itemId != END_MARKER) {
+            itemId = typedItem.itemId;
+        } else {
+            itemId = ids++;
+        }
+        typedItem.itemId = itemId;
 
         if (!_groupChildren[currentLayer].empty()) {
             typedItem.leftId = getItemId(_groupChildren[currentLayer].back());
         }
     }, item);
     addItem(item, currentLayer);
+    return itemId;
 }
 
 void SceneTreeEditor::init() {
@@ -55,15 +65,50 @@ void SceneTreeEditor::init() {
     ids.first++;
 
     // Initialize SceneInfo
-    sceneInfo = SceneInfoBlock();
+    sceneInfo = SceneInfoBlock::newBlock();
 }
 
 void SceneTreeEditor::initText() {
     // TODO: Implement initializing text
 }
 
+void SceneTreeEditor::initImageInfoBlock() {
+    if (!imageInfo) {
+        imageInfo = ImageInfoBlock::newBlock();
+    }
+}
+
 LineBuilder SceneTreeEditor::startLine() {
     return LineBuilder(this);
+}
+
+std::string SceneTreeEditor::addImageInfo(std::string filename, const std::string &uuid) {
+    initImageInfoBlock();
+    ImageInfo info = {uuid, {ids++, filename}};
+    imageInfo->images.push_back(info);
+    return info.uuid;
+}
+
+CrdtId SceneTreeEditor::addImage(std::string uuid, std::vector<AdvancedMath::Vector> vertices) {
+    if (vertices.size() != 4) {
+        throw std::runtime_error("Invalid number of vertices");
+    }
+    CrdtSequenceItem<ImageItem> imageItem;
+    imageItem.itemId = ids++;
+    imageItem.value = ImageItem();
+    imageItem.value->boundsTimestamp = ids++;
+    imageItem.value->imageRef.timestamp = ids++;
+    imageItem.value->imageRef.value = uuid;
+    imageItem.value->vertices = {
+        vertices[0].x, vertices[0].y, 0.0, 0.0,
+        vertices[1].x, vertices[1].y, 1.0, 0.0,
+        vertices[2].x, vertices[2].y, 1.0, 1.0,
+        vertices[3].x, vertices[3].y, 0.0, 1.0
+    };
+
+    addItemNode(imageItem);
+
+    return imageItem.itemId;
 }
 
 LineBuilder::LineBuilder(SceneTreeEditor *editor, const PenTool tool, const PenColor color)
@@ -96,14 +141,16 @@ LineBuilder &LineBuilder::setPen(const PenTool tool) {
 }
 
 
-void LineBuilder::endLine() {
+CrdtId LineBuilder::endLine() {
     // assignDirections();
-    if (color == ARGB && argbColor->alpha == 0) return;
+    if (color == ARGB && argbColor->alpha == 0) return END_MARKER;
 
     CrdtSequenceItem<Line> lineItem;
     lineItem.itemId = nodeId;
     lineItem.value = *this;
     editor->addItemNode(lineItem);
+
+    return nodeId;
 }
 
 uint32_t LineBuilder::calculateDirection(const Point &prev, const float x2, const float y2) {

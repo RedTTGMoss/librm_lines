@@ -17,6 +17,7 @@ namespace fs = std::filesystem;
 #define COLOR_RESET  "\033[0m"
 #define COLOR_YELLOW "\033[33m"
 #define COLOR_RED    "\033[31m"
+using V = AdvancedMath::Vector;
 
 void loggerDefault(const char *msg) {
     std::cout << msg << COLOR_RESET << std::endl;
@@ -101,7 +102,14 @@ public:
         }
     }
 
-    void addText() {
+    void addImage() {
+        auto uuid = tree->addImageInfo("lines_icon.png");
+        tree->addImage(uuid, {
+                           V{-137.14f, 286.50f},
+                           V{129.82f, 286.50f},
+                           V{129.82f, 19.53f},
+                           V{-137.14f, 19.53f},
+                       });
     }
 
     void save() {
@@ -140,7 +148,7 @@ int main(const int argc, char *argv[]) {
     testDrawCat.drawCat();
     testDrawCat.save();
 
-    auto testText = File("Text");
-    testText.addText();
-    testText.save();
+    auto testImage = File("Image");
+    testImage.addImage();
+    testImage.save();
 }

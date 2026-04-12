@@ -359,11 +359,13 @@ json SceneInfoBlock::toJson() const {
     return j;
 }
 
-SceneInfoBlock::SceneInfoBlock() {
-    info = BlockInfo();
-    info->minVersion = 0;
-    info->currentVersion = 1;
-    info->blockType = SCENE_INFO_BLOCK;
+SceneInfoBlock SceneInfoBlock::newBlock() {
+    SceneInfoBlock block;
+    block.info = BlockInfo();
+    block.info->minVersion = 0;
+    block.info->currentVersion = 1;
+    block.info->blockType = SCENE_INFO_BLOCK;
+    return block;
 }
 
 SceneTreeBlock SceneTreeBlock::fromNode(const Group *node) {
@@ -816,6 +818,15 @@ json ImageInfoBlock::toJson() const {
         j[image.uuid] = infoJson;
     }
     return j;
+}
+
+ImageInfoBlock ImageInfoBlock::newBlock() {
+    ImageInfoBlock block;
+    block.info = BlockInfo();
+    block.info->minVersion = 3;
+    block.info->currentVersion = 3;
+    block.info->blockType = IMAGE_INFO_BLOCK;
+    return block;
 }
 
 bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {

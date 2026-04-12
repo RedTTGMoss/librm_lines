@@ -125,7 +125,7 @@ struct ImageItem {
     LwwItem<std::string> imageRef;
     CrdtId boundsTimestamp;
     std::vector<float> vertices;
-    std::vector<uint32_t> indices;
+    std::vector<uint32_t> indices = {0, 1, 2, 2, 3, 0};
 
     std::optional<CrdtId> moveId;
 
