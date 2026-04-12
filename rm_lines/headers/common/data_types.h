@@ -373,5 +373,5 @@ struct Color {
 struct ImageInfo {
     std::string uuid;
     LwwItem<std::string> fileName;
-    LwwItem<std::vector<uint8_t> > flags;
+    LwwItem<std::vector<uint8_t> > flags = {END_MARKER, {17, 0}};
 };

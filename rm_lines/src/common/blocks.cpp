@@ -877,21 +877,22 @@ bool SceneImageItemBlock::writeValue(TaggedBlockWriter *writer) const {
 
     const uint64_t verticesCount = item.value->vertices.size();
     if (!writer->writeValuint(verticesCount)) return false;
-    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
+
     for (const auto vertex: item.value->vertices) {
         if (!writer->writeFloat(&vertex)) return false;
     }
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
 
     // Write indices
     if (subBlockStart = writer->writeSubBlockStart(4); subBlockStart == 0) return false;
 
     const uint64_t indicesCount = item.value->indices.size();
     if (!writer->writeValuint(indicesCount)) return false;
-    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
 
     for (const auto index: item.value->indices) {
         if (!writer->writeInt(&index)) return false;
     }
+    if (!writer->writeSubBlockEnd(subBlockStart)) return false;
 
 
     // Write move id
@@ -909,8 +910,8 @@ json SceneImageItemBlock::toJson() const {
 SceneImageItemBlock SceneImageItemBlock::fromItem(const CrdtSequenceItem<ImageItem> &item) {
     SceneImageItemBlock block;
     block.info = BlockInfo();
-    block.info->minVersion = 1;
-    block.info->currentVersion = 1;
+    block.info->minVersion = 2;
+    block.info->currentVersion = 2;
     block.info->blockType = block.getBlockType();
 
     block.item = item;
