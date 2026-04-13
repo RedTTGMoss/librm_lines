@@ -89,6 +89,15 @@ class GC(pe.GameContext):
             return
         self.loaded[item] = (tree_id, renderer_id)
         self.set_template(self.TEMPLATES[self.template_index])
+        image_info = lib.getImageInfo(tree_id)
+        if image_info:
+            info = json.loads(image_info)
+            for uuid, image in info.items():
+                for name in os.listdir(images_folder):
+                    if name != image['fileName']['value']:
+                        continue
+                    image_path = os.path.join(images_folder, name)
+                    lib.addImage(renderer_id, uuid.encode(), image_path.encode())
 
     def get_renderer(self):
         renderer = self.loaded.get(self.item)

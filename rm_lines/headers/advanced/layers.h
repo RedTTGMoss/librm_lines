@@ -3,7 +3,7 @@
 #include "scene_tree/scene_tree.h"
 #include <nlohmann/json.hpp>
 
-#include "line_info.h"
+#include "layer_info.h"
 
 using json = nlohmann::json;
 
@@ -39,17 +39,19 @@ public:
 
     CrdtId groupId;
     bool visible;
-    std::vector<LineInfo> lines;
+    std::vector<LayerInfo::LineInfo> lines;
+    std::vector<LayerInfo::ImageInfo> images;
+
 private:
     SceneTree *tree;
 };
 
 inline std::vector<Layer> layersFromSceneTree(SceneTree *tree) {
     std::vector<Layer> layers;
-    for (const auto layerInfo = tree->getGroupChildren(LAYER_INFO_NODE); const auto &child : layerInfo) {
+    for (const auto layerInfo = tree->getGroupChildren(LAYER_INFO_NODE); const auto &child: layerInfo) {
         assert(std::holds_alternative<CrdtSequenceItem<CrdtId> >(child));
         auto item = std::get<CrdtSequenceItem<CrdtId> >(child);
-        if(!item.value.has_value())
+        if (!item.value.has_value())
             continue;
         auto groupId = item.value.value();
         const auto group = tree->getNode(groupId);
@@ -57,7 +59,6 @@ inline std::vector<Layer> layersFromSceneTree(SceneTree *tree) {
 
         Layer layer(tree, groupId);
         layers.push_back(layer);
-
     }
     return layers;
 }

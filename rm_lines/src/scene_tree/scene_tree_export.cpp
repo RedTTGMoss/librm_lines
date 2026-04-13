@@ -144,6 +144,25 @@ EXPORT const char *getSceneInfo(const char *treeId) {
     return result.c_str();
 }
 
+EXPORT const char * getImageInfo(const char *treeId) {
+    const auto tree = getSceneTree(treeId);
+    if (!tree) {
+        logError("Invalid treeId provided");
+        return "";
+    }
+
+    if (!tree->imageInfo) {
+        return "";
+    }
+
+    const json j = tree->imageInfo.value().toJson();
+
+    thread_local std::string result;
+    result = j.dump();
+
+    return result.c_str();
+}
+
 EXPORT const char *buildTree(const char *rmPath) {
     std::shared_ptr<TaggedBlockReader> reader;
     FILE *inputFile = std::fopen(rmPath, "rb");

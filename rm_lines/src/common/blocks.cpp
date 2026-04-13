@@ -781,7 +781,7 @@ bool ImageInfoBlock::read(TaggedBlockReader *reader) {
         LwwItem<std::vector<uint8_t> > unknownFlag;
         if (!reader->readLwwBytes(2, &unknownFlag)) return false;
 
-        images.push_back(ImageInfo{uuid, fileName, unknownFlag});
+        images.push_back(ImageRecordInfo{uuid, fileName, unknownFlag});
     }
 
     return true;
@@ -830,7 +830,7 @@ ImageInfoBlock ImageInfoBlock::newBlock() {
 }
 
 bool SceneImageItemBlock::readValue(TaggedBlockReader *reader) {
-    ImageItem value;
+    Image value;
 
     LwwItem<std::string> _imageRef;
     if (!reader->readLwwUUID(1, &_imageRef)) return false;
@@ -918,7 +918,7 @@ json SceneImageItemBlock::toJson() const {
     return {};
 }
 
-SceneImageItemBlock SceneImageItemBlock::fromItem(const CrdtSequenceItem<ImageItem> &item) {
+SceneImageItemBlock SceneImageItemBlock::fromItem(const CrdtSequenceItem<Image> &item) {
     SceneImageItemBlock block;
     block.info = BlockInfo();
     block.info->minVersion = 2;

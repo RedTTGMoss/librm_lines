@@ -23,7 +23,7 @@ using SceneItemVariant = std::variant<
     CrdtSequenceItem<GlyphRange>,
     CrdtSequenceItem<Line>,
     CrdtSequenceItem<Text>,
-    CrdtSequenceItem<ImageItem>
+    CrdtSequenceItem<Image>
 >;
 
 static CrdtId &getItemId(SceneItemVariant &item) {

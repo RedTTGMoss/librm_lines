@@ -262,3 +262,12 @@ const char *getSizeTracker(const char *rendererId, const char *stringlayerId) {
 
     return result.c_str();
 }
+
+void addImage(const char *rendererId, const char *uuid, const char *path) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid treeId provided");
+        return;
+    }
+    renderer->addImage(uuid, path);
+}

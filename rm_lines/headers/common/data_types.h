@@ -370,7 +370,7 @@ struct Color {
     void inplaceFromARGB(const uint32_t *rgbaColor);
 };
 
-struct ImageInfo {
+struct ImageRecordInfo {
     std::string uuid;
     LwwItem<std::string> fileName;
     LwwItem<std::vector<uint8_t> > flags = {END_MARKER, {17, 0}};

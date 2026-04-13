@@ -4,7 +4,7 @@
 #include <queue>
 
 #define STB_IMAGE_IMPLEMENTATION
-#include "other/stb_image.h"
+#include "../rm_lines/headers/stb/stb_image.h"
 
 #include "library.h"
 #include "renderer/renderer_export.h"
@@ -107,8 +107,8 @@ public:
         auto uuid = tree->addImageInfo("textures.png");
         const int width = tree->sceneInfo->paperSize->first;
         const int height = tree->sceneInfo->paperSize->second;
-        const int offset = 10;
-        const int size = 32;
+        constexpr int offset = 10;
+        constexpr int size = 128;
         V topleft{-width / 2 + offset, offset};
 
         int w, h, channels;
@@ -129,7 +129,7 @@ public:
             topleft.x += size + offset;
 
             // Overflow down
-            if (topleft.x + size + offset > width) {
+            if (topleft.x + size + offset > width / 2) {
                 topleft.x = -width / 2 + offset;
                 topleft.y += size + offset;
             }

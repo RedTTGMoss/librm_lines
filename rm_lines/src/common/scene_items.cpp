@@ -362,7 +362,7 @@ json GlyphRange::toJson() const {
     };
 }
 
-json ImageItem::toJson() const {
+json Image::toJson() const {
     return {
         {"imageRef", imageRef.toJson()},
         {"boundsTimestamp", boundsTimestamp.toJson()},

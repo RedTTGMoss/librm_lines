@@ -84,7 +84,7 @@ LineBuilder SceneTreeEditor::startLine() {
 
 std::string SceneTreeEditor::addImageInfo(std::string filename, const std::string &uuid) {
     initImageInfoBlock();
-    ImageInfo info = {uuid, {ids++, filename}};
+    ImageRecordInfo info = {uuid, {ids++, filename}};
     imageInfo->images.push_back(info);
     return info.uuid;
 }
@@ -93,9 +93,9 @@ CrdtId SceneTreeEditor::addImage(const std::string &uuid, std::vector<AdvancedMa
     if (vertices.size() != 4) {
         throw std::runtime_error("Invalid number of vertices");
     }
-    CrdtSequenceItem<ImageItem> imageItem;
+    CrdtSequenceItem<Image> imageItem;
     imageItem.itemId = ids++;
-    imageItem.value = ImageItem();
+    imageItem.value = Image();
     imageItem.value->boundsTimestamp = ids++;
     imageItem.value->imageRef.timestamp = ids++;
     imageItem.value->imageRef.value = uuid;

@@ -31,7 +31,7 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
 
     for (auto &layer: layers) {
         initSizeTracker(layer.groupId);
-        groupLines(layer, LAYER_INFO_NODE, layer.groupId);
+        groupLayerItems(layer, LAYER_INFO_NODE, layer.groupId);
     }
     setTemplate("Blank");
 }
@@ -101,7 +101,7 @@ void Renderer::calculateAnchors() {
     }
 }
 
-void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId groupId, int offsetX, int offsetY) {
+void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId groupId, int offsetX, int offsetY) {
     const auto nodes = sceneTree->getGroupChildren(groupId);
     if (const auto group = sceneTree->getNode(groupId); group->anchorId.has_value()) {
         offsetX += group->anchorOriginX.value().value;
@@ -115,7 +115,7 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
         if (std::holds_alternative<CrdtSequenceItem<CrdtId> >(node)) {
             const auto subGroupId = std::get<CrdtSequenceItem<CrdtId> >(node);
             if (!subGroupId.value.has_value()) continue;
-            groupLines(layer, groupId, subGroupId.value.value(), offsetX, offsetY);
+            groupLayerItems(layer, groupId, subGroupId.value.value(), offsetX, offsetY);
         } else if (IS_LIKELY(std::holds_alternative<CrdtSequenceItem<Line>>(node))) {
             auto line = std::get<CrdtSequenceItem<Line> >(node);
             if (!line.value.has_value()) continue;
@@ -126,10 +126,27 @@ void Renderer::groupLines(Layer &layer, const CrdtId parentId, const CrdtId grou
                 trackX(layer.groupId, x);
                 trackY(layer.groupId, y);
             }
-            layer.lines.push_back(LineInfo{
+            layer.lines.push_back(LayerInfo::LineInfo{
                 .line = std::move(line.value.value()),
                 .groupId = groupId,
                 .itemId = line.itemId,
+                .offsetX = trackX(layer.groupId, offsetX),
+                .offsetY = trackY(layer.groupId, offsetY),
+            });
+        } else if (std::holds_alternative<CrdtSequenceItem<Image> >(node)) {
+            auto image = std::get<CrdtSequenceItem<Image> >(node);
+            if (!image.value.has_value()) continue;
+            for (int i = 0; i < image.value->vertices.size(); i += 4) {
+                auto x = image.value->vertices[i] + offsetX;
+                auto y = image.value->vertices[i + 1] + offsetY;
+                // ReSharper disable once CppNoDiscardExpression
+                trackX(layer.groupId, x);
+                trackY(layer.groupId, y);
+            }
+            layer.images.push_back(LayerInfo::ImageInfo{
+                .image = std::move(image.value.value()),
+                .groupId = groupId,
+                .itemId = image.itemId,
                 .offsetX = trackX(layer.groupId, offsetX),
                 .offsetY = trackY(layer.groupId, offsetY),
             });
@@ -341,6 +358,27 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
             stroker.finish();
         }
+        for (const auto &image: layer.images) {
+            stroker.raster.raster.fill.baseColor = Color(255, 0, 255, 255);
+            stroker.raster.raster.fill.debugTool(3.0f);
+            double startX, startY;
+            for (int i = 0; i < image.image.vertices.size(); i += 4) {
+                auto x = position.x + image.image.vertices[i] + image.offsetX + this->frameSize.x / 2;
+                auto y = position.y + image.image.vertices[i + 1] + image.offsetY;
+                x *= scale.x;
+                y *= scale.y;
+                if (i == 0) {
+                    startX = x;
+                    startY = y;
+                    stroker.moveTo(x, y);
+                } else {
+                    stroker.lineTo(x, y);
+                }
+            }
+            stroker.lineTo(startX, startY);
+            stroker.finish();
+            // TODO: Render image
+        }
         if (getDebugMode()) {
             const DocumentSizeTracker *sizeTracker = getSizeTracker(layer.groupId);
             auto x = static_cast<size_t>(sizeTracker->getFrameWidth()) / 2;
@@ -468,4 +506,9 @@ void Renderer::setTemplate(const std::string &templateName) {
             templateFunction = Blank;
             break;
     }
+}
+
+void Renderer::addImage(const char *uuid, const char *path) {
+    auto ref = ImageRef::load(path);
+    imageRefMap[uuid] = std::make_shared<ImageRef>(ref);
 }

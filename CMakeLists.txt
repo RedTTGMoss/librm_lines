@@ -51,6 +51,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_editor.cpp
         rm_lines/src/common/crdt_sequence_item.cpp
         rm_lines/src/renderer/renderer.cpp
+        rm_lines/src/renderer/image_ref.cpp
         rm_lines/src/renderer/renderer_export.cpp
         rm_lines/src/advanced/text_sequence.cpp
         rm_lines/src/advanced/text.cpp
@@ -74,8 +75,7 @@ add_executable(test tests/test.cpp)
 target_link_libraries(test PRIVATE rm_lines)
 target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 
-add_executable(test_writes tests/test_writes.cpp
-        rm_lines/headers/other/stb_image.h)
+add_executable(test_writes tests/test_writes.cpp)
 target_link_libraries(test_writes PRIVATE rm_lines)
 target_link_libraries(test_writes PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 

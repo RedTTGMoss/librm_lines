@@ -50,6 +50,14 @@ bool TaggedBlockWriter::buildRM() {
         }
     }
 
+    // Prefetch images
+    std::map<CrdtId, std::map<CrdtId, Image> > imagesFromLayers;
+    for (auto &layer: renderer->layers) {
+        for (auto &imageInfo: layer.images) {
+            imagesFromLayers[layer.groupId][imageInfo.itemId] = imageInfo.image;
+        }
+    }
+
     // Start writing scene items
     for (auto &[parentId, children]: renderer->sceneTree->_groupChildren) {
         if (parentId == END_MARKER) continue;
@@ -70,7 +78,11 @@ bool TaggedBlockWriter::buildRM() {
                 SceneGlyphItemBlock block = SceneGlyphItemBlock::fromItem(*item);
                 block.parentId = parentId;
                 if (!writeBlock(&block)) return false;
-            } else if (const auto item = std::get_if<CrdtSequenceItem<ImageItem> >(&child)) {
+            } else if (const auto item = std::get_if<CrdtSequenceItem<Image> >(&child)) {
+                if (auto it = imagesFromLayers[parentId].find(item->itemId); it != imagesFromLayers[parentId].end()) {
+                    item->value = it->second;
+                }
+
                 SceneImageItemBlock block = SceneImageItemBlock::fromItem(*item);
                 block.parentId = parentId;
                 if (!writeBlock(&block)) return false;

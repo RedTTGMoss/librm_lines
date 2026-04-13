@@ -8,6 +8,8 @@
 #include "advanced/layers.h"
 #include "advanced/text.h"
 #include <unordered_map>
+
+#include "image_ref.h"
 #define TEXT_TOP_Y (180)
 
 class Renderer;
@@ -50,7 +52,7 @@ public:
 
     void calculateAnchors();
 
-    void groupLines(Layer &layer, CrdtId parentId, CrdtId groupId, int offsetX = 0, int offsetY = 0);
+    void groupLayerItems(Layer &layer, CrdtId parentId, CrdtId groupId, int offsetX = 0, int offsetY = 0);
 
     json getParagraphs() const;
 
@@ -81,11 +83,19 @@ public:
         return &stroker;
     }
 
+    // Images
+    void addImage(const char *uuid, const char *path);
+
+    void addImage(const std::string &uuid, const std::string &path) {
+        return addImage(uuid.c_str(), path.c_str());
+    }
+
     friend class TaggedBlockWriter;
 
 private:
     SceneTree *sceneTree;
     Vector frameSize;
+    std::unordered_map<std::string, std::shared_ptr<ImageRef> > imageRefMap;
     std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         VaryingGeneratorLengthWidth> stroker;

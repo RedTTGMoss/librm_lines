@@ -121,7 +121,7 @@ struct GlyphRange {
     json toJson() const;
 };
 
-struct ImageItem {
+struct Image {
     LwwItem<std::string> imageRef;
     CrdtId boundsTimestamp;
     std::vector<float> vertices;

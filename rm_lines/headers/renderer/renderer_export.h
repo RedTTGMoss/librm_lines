@@ -40,3 +40,5 @@ EXPORT void getFrame(
 EXPORT void setTemplate(const char *rendererId, const char *templateName);
 
 EXPORT const char *getSizeTracker(const char *rendererId, const char *layerId);
+
+EXPORT void addImage(const char *rendererId, const char *uuid, const char *path);

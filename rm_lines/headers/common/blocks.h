@@ -344,7 +344,7 @@ private:
 };
 
 struct ImageInfoBlock final : Block {
-    std::vector<ImageInfo> images;
+    std::vector<ImageRecordInfo> images;
 
     bool read(TaggedBlockReader *reader) override;
 
@@ -363,7 +363,7 @@ struct SceneImageItemBlock final : SceneItemBlock {
     SceneImageItemBlock() : SceneItemBlock(0x07) {
     }
 
-    CrdtSequenceItem<ImageItem> item = {};
+    CrdtSequenceItem<Image> item = {};
 
     bool readValue(TaggedBlockReader *reader) override;
 
@@ -375,7 +375,7 @@ struct SceneImageItemBlock final : SceneItemBlock {
         return SCENE_IMAGE_ITEM_BLOCK;
     }
 
-    static SceneImageItemBlock fromItem(const CrdtSequenceItem<ImageItem> &item);
+    static SceneImageItemBlock fromItem(const CrdtSequenceItem<Image> &item);
 
 private:
     CrdtSequenceItem<> &itemBase() override {

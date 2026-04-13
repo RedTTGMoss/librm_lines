@@ -13,6 +13,7 @@ EXPORT int destroyTree(const char *treeId);
 EXPORT bool convertToJsonFile(const char *treeId, const char *outPath);
 EXPORT const char* convertToJson(const char *treeId);
 EXPORT const char *getSceneInfo(const char *treeId);
+EXPORT const char *getImageInfo(const char *treeId);
 
 std::string generateUUID();
 std::shared_ptr<SceneTree> getSceneTree(const std::string &treeId);

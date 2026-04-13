@@ -54,6 +54,7 @@ html_output_folder = os.path.join(output_folder, 'html')
 files_draw_folder = os.path.join(script_folder, 'draw_files')
 files_color_folder = os.path.join(script_folder, 'color_files')
 files_folder = os.path.join(script_folder, 'files')
+images_folder = os.path.join(script_folder, 'images')
 
 os.makedirs(svg_output_folder, exist_ok=True)
 os.makedirs(png_output_folder, exist_ok=True)

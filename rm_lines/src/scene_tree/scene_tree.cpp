@@ -90,7 +90,7 @@ json SceneTree::toJson() {
                 json obj = item->toJson();
                 obj["_type"] = "Text";
                 nodeJson["children"].push_back(obj);
-            } else if (auto item = std::get_if<CrdtSequenceItem<ImageItem> >(&child)) {
+            } else if (auto item = std::get_if<CrdtSequenceItem<Image> >(&child)) {
                 json obj = item->toJson();
                 obj["_type"] = "Image";
                 nodeJson["children"].push_back(obj);

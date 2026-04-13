@@ -26,6 +26,9 @@ class LibAnnotations(ctypes.Structure):
     def getSceneInfo(self, tree_id: bytes) -> bytes:
         pass
 
+    def getImageInfo(self, tree_id: bytes) -> bytes:
+        pass
+
     # Renderer stuff
     def makeRenderer(self, tree_id: bytes, page_type: int, landscape: bool) -> bytes:
         pass
@@ -69,6 +72,10 @@ class LibAnnotations(ctypes.Structure):
 
     def getSizeTracker(self, renderer_id: bytes, layer_id: bytes) -> bytes:
         """Get the size tracker for the library."""
+        pass
+
+    def addImage(self, renderer_id: bytes, image_uuid: bytes, image_path: bytes):
+        """Include an image file for an image UUID"""
         pass
 
     # Library control functions
@@ -123,6 +130,10 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function getSceneInfo(str) -> str
     _lib.getSceneInfo.argtypes = [ctypes.c_char_p]
     _lib.getSceneInfo.restype = ctypes.c_char_p
+
+    # Function getImageInfo(str) -> str
+    _lib.getImageInfo.argtypes = [ctypes.c_char_p]
+    _lib.getImageInfo.restype = ctypes.c_char_p
 
     # Add function signatures for renderer
 
@@ -180,6 +191,9 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function getSizeTracker(str, int, int) -> str
     _lib.getSizeTracker.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
     _lib.getSizeTracker.restype = ctypes.c_char_p
+
+    # Function addImage(str, str, str)
+    _lib.addImage.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
 
     # Function setDebugMode(bool)
     _lib.setDebugMode.argtypes = [ctypes.c_bool]
