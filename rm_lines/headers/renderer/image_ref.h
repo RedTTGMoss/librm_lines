@@ -1,9 +1,10 @@
 #pragma once
 #include <string>
+#include <memory>
 
 struct ImageRef {
     int w, h, channels;
-    unsigned char *data;
+    std::shared_ptr<unsigned char> data;
 
     static ImageRef load(const char *fileName);
 

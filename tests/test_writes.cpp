@@ -55,7 +55,7 @@ public:
 
         int w, h, channels;
         int offset = 20;
-        unsigned char *data = stbi_load("lines_icon.png", &w, &h, &channels, 4);
+        unsigned char *data = stbi_load("images/lines_icon.png", &w, &h, &channels, 4);
 
         logDebug(std::format("Paper size: {} x {}", width, height));
         const int offsetX = width / 2 - w - offset;
@@ -104,42 +104,23 @@ public:
     }
 
     void addImage() {
-        auto uuid = tree->addImageInfo("textures.png");
-        const int width = tree->sceneInfo->paperSize->first;
-        const int height = tree->sceneInfo->paperSize->second;
-        constexpr int offset = 10;
-        constexpr int size = 128;
-        V topleft{-width / 2 + offset, offset};
+        auto rainbow = tree->addImageInfo("rainbow.png");
+        auto sillyCat = tree->addImageInfo("silly_cat.png");
 
-        int w, h, channels;
-        unsigned char *data = stbi_load("images/textures.png", &w, &h, &channels, 4);
-        const double incX = 16.0 / w;
-        const double incY = 16.0 / h;
-        double currentImgX = 0;
-        double currentImgY = 0;
-        const int imageCount = (w / 16) * (h / 16);
-
-        for (int i = 0; i < imageCount; i++) {
-            tree->addImage(uuid, std::vector{
-                               R{topleft, currentImgX, currentImgY},
-                               R{topleft + V{size, 0}, currentImgX + incX, currentImgY},
-                               R{topleft + V{size, size}, currentImgX + incX, currentImgY + incY},
-                               R{topleft + V{0, size}, currentImgX, currentImgY + incY}
-                           });
-            topleft.x += size + offset;
-
-            // Overflow down
-            if (topleft.x + size + offset > width / 2) {
-                topleft.x = -width / 2 + offset;
-                topleft.y += size + offset;
-            }
-
-            currentImgX += incX;
-            if (currentImgX + incX >= 1) {
-                currentImgX = 0;
-                currentImgY += incY;
-            }
-        }
+        tree->addImage(rainbow, {
+                           V{322.65, 1699.82},
+                           V{560.82, 1499.97},
+                           V{760.67, 1738.15},
+                           V{522.50, 1938.00},
+                       }
+        );
+        tree->addImage(sillyCat, {
+                           V{-667.22, 5.42},
+                           V{-368.84, 31.53},
+                           V{-394.94, 329.91},
+                           V{-693.32, 303.80},
+                       }
+        );
     }
 
     void save() {

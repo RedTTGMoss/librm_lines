@@ -51,6 +51,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_editor.cpp
         rm_lines/src/common/crdt_sequence_item.cpp
         rm_lines/src/renderer/renderer.cpp
+        rm_lines/src/renderer/image_renderer.cpp
         rm_lines/src/renderer/image_ref.cpp
         rm_lines/src/renderer/renderer_export.cpp
         rm_lines/src/advanced/text_sequence.cpp

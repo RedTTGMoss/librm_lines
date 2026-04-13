@@ -2,6 +2,7 @@
 #include <format>
 
 #include "advanced/text.h"
+#include "renderer/image_renderer.h"
 #include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
 #include "renderer/rm_lines_stroker/templates/template_functions.h"
 #include "writer/tagged_block_writer.h"
@@ -53,7 +54,7 @@ DocumentSizeTracker *Renderer::getSizeTracker(const CrdtId layerId) {
 }
 
 DocumentSizeTracker *Renderer::initSizeTracker(CrdtId layerId) {
-    auto [it, inserted] = sizeTrackers.emplace(layerId, DocumentSizeTracker(paperSize, pageType, landscape));
+    auto it = sizeTrackers.emplace(layerId, DocumentSizeTracker(paperSize, pageType, landscape)).first;
     return &it->second;
 }
 
@@ -377,7 +378,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
             stroker.lineTo(startX, startY);
             stroker.finish();
-            // TODO: Render image
+
+            const auto textureIt = imageRefMap.find(image.image.imageRef.value);
+            if (textureIt == imageRefMap.end() || !textureIt->second || !textureIt->second->data) {
+                logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
+                continue;
+            }
+
+            RendererImage::renderImage(*buf, *textureIt->second, image, position, this->frameSize, scale);
         }
         if (getDebugMode()) {
             const DocumentSizeTracker *sizeTracker = getSizeTracker(layer.groupId);
