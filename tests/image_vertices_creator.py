@@ -70,16 +70,20 @@ class GC(pe.GameContext):
         self.shift_hold = mods & pe.KMOD_SHIFT
 
     def loop(self):
+        pe.draw.line(pe.colors.darkaqua, self.rect.midleft, self.rect.midright, 2)
+        pe.draw.line(pe.colors.darkaqua, self.rect.midtop, self.rect.midbottom, 2)
+
         pe.draw.rect(pe.colors.aqua, self.rect, 2)
 
         drag, pos = self.draggable.check()
 
         points = self.points(pos)
-        top = pe.math.lerp(points[2], points[3], 0.5)
+        top = pe.math.lerp(points[0], points[1], 0.5)
+
+        pe.draw.line(pe.colors.darkred, points[1], points[3], 2)
+        pe.draw.line(pe.colors.darkred, top, pos, 2)
 
         pe.draw.polygon(pe.colors.red, points, 4)
-        pe.draw.line(pe.colors.darkred, points[0], points[2], 2)
-        pe.draw.line(pe.colors.darkred, top, pos, 2)
 
     def points(self, pos: Tuple[int, int]):
         # Account for rotation
@@ -95,10 +99,10 @@ class GC(pe.GameContext):
         bottom_left = tsx_bottom[self.rotation - 90]
         bottom_right = tsx_bottom[self.rotation + 90]
         return [
-            bottom_left,
-            bottom_right,
-            top_right,
             top_left,
+            top_right,
+            bottom_right,
+            bottom_left,
         ]
 
     def points_final(self):
