@@ -26,7 +26,8 @@ void GridBase(rMPenFill *fill, Renderer *renderer) {
     float offset_x = (std::fmod(fill->position->x, cellSize) + grid_offset_x) * fill->scale;
     const float offset_y = (std::fmod(fill->position->y, cellSize) + grid_offset_y) * fill->scale;
     if (grid_margin_x > 0) {
-        offset_x = std::max(offset_x, (fill->position->x + grid_margin_x - grid_offset_x) * fill->scale);
+        offset_x = std::max(static_cast<double>(offset_x),
+                            (fill->position->x + grid_margin_x - grid_offset_x) * fill->scale);
     }
     cellSize *= fill->scale;
     float x = offset_x;

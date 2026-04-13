@@ -35,7 +35,9 @@ public:
         return addImageInfo(filename, generateUUID());
     }
 
-    CrdtId addImage(std::string uuid, std::vector<AdvancedMath::Vector> vertices);
+    CrdtId addImage(const std::string &uuid, std::vector<AdvancedMath::Rect> vertices);
+
+    CrdtId addImage(const std::string &uuid, const std::vector<AdvancedMath::Vector> &vertices);
 
     friend class LineBuilder;
     TextBuilder *text;

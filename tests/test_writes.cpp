@@ -18,6 +18,7 @@ namespace fs = std::filesystem;
 #define COLOR_YELLOW "\033[33m"
 #define COLOR_RED    "\033[31m"
 using V = AdvancedMath::Vector;
+using R = AdvancedMath::Rect;
 
 void loggerDefault(const char *msg) {
     std::cout << msg << COLOR_RESET << std::endl;
@@ -103,13 +104,42 @@ public:
     }
 
     void addImage() {
-        auto uuid = tree->addImageInfo("lines_icon.png");
-        tree->addImage(uuid, {
-                           V{-137.14f, 286.50f},
-                           V{129.82f, 286.50f},
-                           V{129.82f, 19.53f},
-                           V{-137.14f, 19.53f},
-                       });
+        auto uuid = tree->addImageInfo("textures.png");
+        const int width = tree->sceneInfo->paperSize->first;
+        const int height = tree->sceneInfo->paperSize->second;
+        const int offset = 10;
+        const int size = 32;
+        V topleft{-width / 2 + offset, offset};
+
+        int w, h, channels;
+        unsigned char *data = stbi_load("images/textures.png", &w, &h, &channels, 4);
+        const double incX = 16.0 / w;
+        const double incY = 16.0 / h;
+        double currentImgX = 0;
+        double currentImgY = 0;
+        const int imageCount = (w / 16) * (h / 16);
+
+        for (int i = 0; i < imageCount; i++) {
+            tree->addImage(uuid, std::vector{
+                               R{topleft, currentImgX, currentImgY},
+                               R{topleft + V{size, 0}, currentImgX + incX, currentImgY},
+                               R{topleft + V{size, size}, currentImgX + incX, currentImgY + incY},
+                               R{topleft + V{0, size}, currentImgX, currentImgY + incY}
+                           });
+            topleft.x += size + offset;
+
+            // Overflow down
+            if (topleft.x + size + offset > width) {
+                topleft.x = -width / 2 + offset;
+                topleft.y += size + offset;
+            }
+
+            currentImgX += incX;
+            if (currentImgX + incX >= 1) {
+                currentImgX = 0;
+                currentImgY += incY;
+            }
+        }
     }
 
     void save() {

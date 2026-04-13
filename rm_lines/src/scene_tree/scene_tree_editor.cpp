@@ -89,7 +89,7 @@ std::string SceneTreeEditor::addImageInfo(std::string filename, const std::strin
     return info.uuid;
 }
 
-CrdtId SceneTreeEditor::addImage(std::string uuid, std::vector<AdvancedMath::Vector> vertices) {
+CrdtId SceneTreeEditor::addImage(const std::string &uuid, std::vector<AdvancedMath::Rect> vertices) {
     if (vertices.size() != 4) {
         throw std::runtime_error("Invalid number of vertices");
     }
@@ -100,15 +100,27 @@ CrdtId SceneTreeEditor::addImage(std::string uuid, std::vector<AdvancedMath::Vec
     imageItem.value->imageRef.timestamp = ids++;
     imageItem.value->imageRef.value = uuid;
     imageItem.value->vertices = {
-        vertices[0].x, vertices[0].y, 0.0, 0.0,
-        vertices[1].x, vertices[1].y, 1.0, 0.0,
-        vertices[2].x, vertices[2].y, 1.0, 1.0,
-        vertices[3].x, vertices[3].y, 0.0, 1.0
+        vertices[0].x, vertices[0].y, vertices[0].w, vertices[0].h,
+        vertices[1].x, vertices[1].y, vertices[1].w, vertices[1].h,
+        vertices[2].x, vertices[2].y, vertices[2].w, vertices[2].h,
+        vertices[3].x, vertices[3].y, vertices[3].w, vertices[3].h
     };
 
     addItemNode(imageItem);
 
     return imageItem.itemId;
+}
+
+CrdtId SceneTreeEditor::addImage(const std::string &uuid, const std::vector<AdvancedMath::Vector> &vertices) {
+    if (vertices.size() != 4) {
+        throw std::runtime_error("Invalid number of vertices");
+    }
+    std::vector<AdvancedMath::Rect> rects;
+    rects.push_back(AdvancedMath::Rect{vertices[0].x, vertices[0].y, 0, 0});
+    rects.push_back(AdvancedMath::Rect{vertices[1].x, vertices[1].y, 1, 0});
+    rects.push_back(AdvancedMath::Rect{vertices[2].x, vertices[2].y, 1, 1});
+    rects.push_back(AdvancedMath::Rect{vertices[3].x, vertices[3].y, 0, 1});
+    return addImage(uuid, rects);
 }
 
 LineBuilder::LineBuilder(SceneTreeEditor *editor, const PenTool tool, const PenColor color)

@@ -8,15 +8,15 @@ using json = nlohmann::json;
 
 namespace AdvancedMath {
     struct Vector {
-        float x;
-        float y;
+        double x;
+        double y;
 
         Vector() = default;
 
         template<typename T1, typename T2, typename = std::enable_if_t<
             std::is_arithmetic_v<T1> && std::is_arithmetic_v<T2>> >
         explicit Vector(T1 x, T2 y)
-            : x(static_cast<float>(x)), y(static_cast<float>(y)) {
+            : x(static_cast<double>(x)), y(static_cast<double>(y)) {
         }
 
         [[nodiscard]] json toJson() const {
@@ -40,25 +40,25 @@ namespace AdvancedMath {
             };
         }
 
-        Vector operator+(const float &other) const {
+        Vector operator+(const double &other) const {
             return Vector{
                 x + other,
                 y + other
             };
         }
 
-        Vector operator-(const float &other) const {
+        Vector operator-(const double &other) const {
             return Vector{
                 x - other,
                 y - other
             };
         }
 
-        float halfX() const {
+        double halfX() const {
             return x / 2;
         }
 
-        float halfY() const {
+        double halfY() const {
             return y / 2;
         }
 
@@ -69,14 +69,14 @@ namespace AdvancedMath {
             };
         }
 
-        Vector operator*(const float m) const {
+        Vector operator*(const double m) const {
             return Vector{
                 x * m,
                 y * m
             };
         }
 
-        Vector operator/(const float d) const {
+        Vector operator/(const double d) const {
             return Vector{
                 x / d,
                 y / d
@@ -105,7 +105,7 @@ namespace AdvancedMath {
             y *= other.y;
         }
 
-        void operator*=(const float &other) {
+        void operator*=(const double &other) {
             x *= other;
             y *= other;
         }
@@ -117,8 +117,8 @@ namespace AdvancedMath {
     };
 
     struct Rect : Vector {
-        float w;
-        float h;
+        double w;
+        double h;
 
         Rect() = default;
 
@@ -126,7 +126,13 @@ namespace AdvancedMath {
             std::is_arithmetic_v<T1> && std::is_arithmetic_v<T2> &&
             std::is_arithmetic_v<T3> && std::is_arithmetic_v<T4>> >
         explicit Rect(T1 x, T2 y, T3 w, T4 h)
-            : Vector(x, y), w(static_cast<float>(w)), h(static_cast<float>(h)) {
+            : Vector(x, y), w(static_cast<double>(w)), h(static_cast<double>(h)) {
+        }
+
+        template<typename T1, typename T2, typename = std::enable_if_t<
+            std::is_arithmetic_v<T1> && std::is_arithmetic_v<T2>> >
+        explicit Rect(const Vector v, T1 w, T2 h)
+            : Vector(v.x, v.y), w(static_cast<double>(w)), h(static_cast<double>(h)) {
         }
 
         [[nodiscard]] json toJson() const {
@@ -138,25 +144,25 @@ namespace AdvancedMath {
             };
         }
 
-        void setTop(const float top) {
-            const float diff = top - y;
+        void setTop(const double top) {
+            const double diff = top - y;
             y = top;
             h -= diff;
         }
 
-        void setBottom(const float bottom) {
-            const float diff = bottom - (y + h);
+        void setBottom(const double bottom) {
+            const double diff = bottom - (y + h);
             h += diff;
         }
 
-        void setLeft(const float left) {
-            const float diff = left - x;
+        void setLeft(const double left) {
+            const double diff = left - x;
             x = left;
             w -= diff;
         }
 
-        void setRight(const float right) {
-            const float diff = right - (x + w);
+        void setRight(const double right) {
+            const double diff = right - (x + w);
             w += diff;
         }
 
@@ -166,29 +172,29 @@ namespace AdvancedMath {
             this->y += y;
         }
 
-        void setCenterX(const float centerX) {
-            const float diff = centerX - getCenterX();
+        void setCenterX(const double centerX) {
+            const double diff = centerX - getCenterX();
             x += diff;
         }
 
-        void setCenterY(const float centerY) {
-            const float diff = centerY - getCenterY();
+        void setCenterY(const double centerY) {
+            const double diff = centerY - getCenterY();
             y += diff;
         }
 
-        float getTop() const {
+        double getTop() const {
             return y;
         }
 
-        float getBottom() const {
+        double getBottom() const {
             return y + h;
         }
 
-        float getLeft() const {
+        double getLeft() const {
             return x;
         }
 
-        float getRight() const {
+        double getRight() const {
             return x + w;
         }
 
@@ -199,15 +205,15 @@ namespace AdvancedMath {
             };
         }
 
-        float getCenterX() const {
+        double getCenterX() const {
             return x + w / 2;
         }
 
-        float getCenterY() const {
+        double getCenterY() const {
             return y + h / 2;
         }
 
-        static Rect fromSides(const float top, const float bottom, const float left, const float right) {
+        static Rect fromSides(const double top, const double bottom, const double left, const double right) {
             return Rect(
                 left,
                 top,
@@ -225,9 +231,9 @@ namespace AdvancedMath {
         Triangle(const Vector a, const Vector b, const Vector c) : a(a), b(b), c(c) {
         }
 
-        Triangle(const float a0, const float a1,
-                 const float b0, const float b1,
-                 const float c0, const float c1) : a{a0, a1}, b{b0, b1}, c{c0, c1} {
+        Triangle(const double a0, const double a1,
+                 const double b0, const double b1,
+                 const double c0, const double c1) : a{a0, a1}, b{b0, b1}, c{c0, c1} {
         }
 
         [[nodiscard]] json toJson() const {
