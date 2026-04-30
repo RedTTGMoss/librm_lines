@@ -270,29 +270,25 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
         rects[i].w = rect[2];
         rects[i].h = rect[3];
     }
-    int colorIndex = 8;
 
     reader->getTag();
     if (reader->checkTag(7, TagType::ID)) {
         if (!reader->readId(7, &firstId)) return false;
-        colorIndex = 8;
     }
     reader->getTag();
     if (reader->checkTag(8, TagType::ID)) {
         if (!reader->readId(8, &lastId)) return false;
-        colorIndex = 9;
     }
     reader->getTag();
     if (reader->checkTag(9, TagType::Byte1)) {
         if (!reader->readBool(9, &includeLastId)) return false;
-        colorIndex = 10;
     }
 
     // Optionally read argbColor, this is only for new highlighters
     reader->getTag();
-    if (color == ARGB && reader->checkTag(colorIndex, TagType::Byte4)) {
+    if (color == ARGB && reader->checkTag(10, TagType::Byte4)) {
         Color _argbColor;
-        if (!reader->readColor(colorIndex, &_argbColor)) return false;
+        if (!reader->readColor(10, &_argbColor)) return false;
         argbColor = _argbColor;
     }
 

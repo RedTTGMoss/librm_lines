@@ -340,14 +340,16 @@ typedef std::pair<CrdtId, LwwItem<ParagraphStyleNew> > TextFormat;
 json textFormatToJson(const TextFormat &textFormat);
 
 struct Color {
-    uint8_t red;
-    uint8_t green;
-    uint8_t blue;
-    uint8_t alpha;
+    uint8_t red = 0;
+    uint8_t green = 0;
+    uint8_t blue = 0;
+    uint8_t alpha = 255;
 
     json toJson() const;
 
     std::string repr() const;
+
+    uint32_t toRGBA() const;
 
     uint32_t toARGB() const;
 
@@ -365,7 +367,9 @@ struct Color {
 
     Color operator+(const Color &other) const;
 
-    static Color fromARGB(const uint32_t *rgbaColor);
+    static Color fromRGBA(const uint32_t *rgbaColor);
+
+    static Color fromARGB(const uint32_t *argbColor);
 
     void inplaceFromARGB(const uint32_t *rgbaColor);
 };

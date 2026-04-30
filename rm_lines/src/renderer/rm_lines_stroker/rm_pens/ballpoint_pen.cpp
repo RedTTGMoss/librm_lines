@@ -15,7 +15,7 @@ void BallpointPen(rMPenFill *fill, const int x, const int y, const int length, V
                 fill->baseColor.blue,
                 static_cast<uint8_t>(255.0f * std::max(n, fill->intensity))
             );
-            dst[i] = color.toARGB();
+            dst[i] = color.toRGBA();
         }
         v = v + dx;
         baseV = baseV + dx;

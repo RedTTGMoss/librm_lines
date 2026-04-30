@@ -28,7 +28,7 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
                 color.alpha = static_cast<uint8_t>(color.alpha * alphaMultiplier);
             }
 
-            const uint32_t colorRGBA = color.toARGB();
+            const uint32_t colorRGBA = color.toRGBA();
             if (dst[i] < colorRGBA) {
                 dst[i] = colorRGBA;
             }

@@ -8,7 +8,7 @@ void ShaderPen(rMPenFill *fill, const int x, const int y, const int length, Vary
         if (lineDst[i] != fill->lineCounter) {
             // Save guard drawing to the same spot during a single line draw
             // Shader/blend pen darkens like a transparent marker with low alpha (typically 64)
-            dst[i] = blendShader(Color::fromARGB(&dst[i]), fill->baseColor).toARGB();
+            dst[i] = blendShader(Color::fromRGBA(&dst[i]), fill->baseColor).toRGBA();
             lineDst[i] = fill->lineCounter;
         }
 
