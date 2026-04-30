@@ -131,7 +131,7 @@ LineBuilder::LineBuilder(SceneTreeEditor *editor, const PenTool tool, const PenC
 }
 
 LineBuilder &LineBuilder::addPoint(const float x, const float y) {
-    points.push_back({x, y, pointSpeed, pointDirection, pointWidth, pointPressure});
+    points.push_back({toSpaceX(x), toSpaceY(y), pointSpeed, pointDirection, pointWidth, pointPressure});
     return *this;
 }
 
@@ -149,6 +149,41 @@ LineBuilder &LineBuilder::setRGBA(const Color &color) {
 
 LineBuilder &LineBuilder::setPen(const PenTool tool) {
     this->tool = tool;
+    return *this;
+}
+
+LineBuilder &LineBuilder::setColor(const PenColor color) {
+    this->color = color;
+    return *this;
+}
+
+LineBuilder &LineBuilder::usePaperSpace() {
+    usingPaperSpace = true;
+    return *this;
+}
+
+LineBuilder &LineBuilder::useCoordinateSpace() {
+    usingPaperSpace = false;
+    return *this;
+}
+
+LineBuilder &LineBuilder::setSpeed(const uint32_t speed) {
+    pointSpeed = speed;
+    return *this;
+}
+
+LineBuilder &LineBuilder::setDirection(const uint32_t direction) {
+    pointDirection = direction;
+    return *this;
+}
+
+LineBuilder &LineBuilder::setWidth(const uint32_t width) {
+    pointWidth = width;
+    return *this;
+}
+
+LineBuilder &LineBuilder::setPressure(const uint32_t pressure) {
+    pointPressure = pressure;
     return *this;
 }
 

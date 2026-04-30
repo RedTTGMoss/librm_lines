@@ -60,9 +60,38 @@ public:
 
     LineBuilder &setPen(PenTool tool);
 
+    LineBuilder &setColor(PenColor color);
+
+    LineBuilder &usePaperSpace();
+
+    LineBuilder &useCoordinateSpace();
+
+    LineBuilder &setSpeed(const uint32_t speed);
+
+    LineBuilder &setDirection(const uint32_t direction);
+
+    LineBuilder &setWidth(const uint32_t width);
+
+    LineBuilder &setPressure(const uint32_t pressure);
+
     CrdtId endLine();
 
 private:
+    [[nodiscard]] float toSpaceX(const float x) const {
+        if (usingPaperSpace) {
+            const float halfWidth = static_cast<float>(editor->sceneInfo->paperSize->first) * 0.5f;
+            return x * static_cast<float>(editor->sceneInfo->paperSize->first) - halfWidth;
+        }
+        return x;
+    }
+
+    [[nodiscard]] float toSpaceY(const float y) const {
+        if (usingPaperSpace) {
+            return y * static_cast<float>(editor->sceneInfo->paperSize->second);
+        }
+        return y;
+    }
+
     static uint8_t angleTo255(const float angle) {
         const float v = angle * 255.0f / (2.0f * PI);
         int iv = static_cast<int>(std::lround(v)) % 256;
@@ -112,6 +141,7 @@ private:
 
     uint32_t calculateDirection(const Point &prev, float x2, float y2);
 
+    bool usingPaperSpace = false;
     CrdtId nodeId;
     SceneTreeEditor *editor;
     uint32_t pointSpeed = 2;
