@@ -54,6 +54,9 @@ public:
 
     LineBuilder &addPoint(float x, float y);
 
+    LineBuilder &addPoint(float x, float y, uint32_t speed, uint32_t direction, uint32_t width = 16,
+                          uint32_t pressure = 255);
+
     LineBuilder &setRGBA(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
 
     LineBuilder &setRGBA(const Color &color);

@@ -184,6 +184,50 @@ public:
         drawLine(HIGHLIGHTER_2, 0.31, 50, 50, 255, 255, 0.725);
     }
 
+    void drawDirections() {
+        tree->startLine().setPen(PAINTBRUSH_2).setColor(RED).usePaperSpace()
+                .addPoint(0.1, 0.1, 20, 0)
+                .addPoint(0.5, 0.1, 20, 246, 20)
+                .addPoint(0.9, 0.1, 20, 246).endLine();
+        tree->startLine().setPen(PAINTBRUSH_2).setColor(RED).usePaperSpace()
+                .addPoint(0.1, 0.2, 20, 0)
+                .addPoint(0.5, 0.2, 20, 1, 20)
+                .addPoint(0.9, 0.2, 20, 1).endLine();
+        tree->startLine().setPen(PAINTBRUSH_2).setColor(RED).usePaperSpace()
+                .addPoint(0.1, 0.3, 20, 0)
+                .addPoint(0.5, 0.3, 20, 63, 20)
+                .addPoint(0.9, 0.3, 20, 63).endLine();
+        tree->startLine().setPen(PAINTBRUSH_2).setColor(RED).usePaperSpace()
+                .addPoint(0.1, 0.4, 20, 0)
+                .addPoint(0.5, 0.4, 20, 43, 20)
+                .addPoint(0.9, 0.4, 20, 43).endLine();
+        auto line = tree->startLine().setPen(CALLIGRAPHY).setColor(RED).usePaperSpace();
+        auto mid = Vector{0.5, 0.7};
+        float radius = 0.2;
+        float center_angle = M_PI; // left
+        float arc_span = M_PI / 3.0f; // 60 degrees
+        float start = center_angle - arc_span / 2; // 150°
+        float end = center_angle + arc_span / 2; // 210°
+
+        int steps = 40; // smoothness
+        for (int i = 0; i <= steps; i++) {
+            float t = (float) i / steps;
+            float a = start + (end - start) * t;
+
+            Vector p;
+            p.x = mid.x + std::cos(a) * radius;
+            p.y = mid.y + std::sin(a) * radius;
+
+            if (t < 0.5) {
+                line.addPoint(p.x, p.y, 8, 4, 20, 30);
+            } else {
+                line.addPoint(p.x, p.y, 8, 4, 20.0f + 30.0f * t,
+                              std::min(255.0f, 120.0f + 230.0f * t));
+            }
+        }
+        line.endLine();
+    }
+
     void save() {
         const std::string jsonFile = JSON_OUT + name + " - test write.json";
         const std::string rmFile = RM_OUT + name + " - test write.rm";
@@ -227,4 +271,8 @@ int main(const int argc, char *argv[]) {
     auto testLines = File("Lines");
     testLines.drawLines();
     testLines.save();
+
+    auto testDirections = File("Directions");
+    testDirections.drawDirections();
+    testDirections.save();
 }

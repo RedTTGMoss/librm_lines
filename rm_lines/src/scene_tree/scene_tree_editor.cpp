@@ -135,6 +135,12 @@ LineBuilder &LineBuilder::addPoint(const float x, const float y) {
     return *this;
 }
 
+LineBuilder &LineBuilder::addPoint(const float x, const float y, const uint32_t speed, const uint32_t direction,
+                                   const uint32_t width, const uint32_t pressure) {
+    points.push_back({toSpaceX(x), toSpaceY(y), speed, direction, width, pressure});
+    return *this;
+}
+
 LineBuilder &LineBuilder::setRGBA(const uint8_t r, const uint8_t g, const uint8_t b, const uint8_t a) {
     color = ARGB;
     argbColor = Color{r, g, b, a};
