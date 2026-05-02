@@ -42,9 +42,14 @@ void rMPenFill::newLine() {
             stroker->joinStyle = RMLinesRenderer::BevelJoin;
             stroker->width = 30 * scale;
             break;
-        // case MARKER_1:
-        // case MARKER_2:
-        //     break;
+        case MARKER_1:
+        case MARKER_2:
+            operatorFunction = MarkerPen;
+            stroker->capStyle = RMLinesRenderer::RoundCap;
+            stroker->joinStyle = RMLinesRenderer::RoundJoin;
+            stroker->varying.lengthFactor = 0.01f;
+            stroker->varying.widthFactor = 0.5f;
+            break;
         // case MECHANICAL_PENCIL_1:
         // case MECHANICAL_PENCIL_2:
         //     break;
@@ -128,6 +133,16 @@ void rMPenFill::newPoint() {
                                                 0.6f * (static_cast<float>(point->speed) / 4) / 10);
             const float maxWidth = baseWidth * 64 + (static_cast<float>(point->width) / 1.2f);
             stroker->width = std::max(30.0f, std::min(segmentWidth, maxWidth)) / K * scale;
+        }
+        case MARKER_1:
+        case MARKER_2: {
+            intensity = 0.1 * -(static_cast<float>(point->speed) / 4 / 35) + 1.1 * point->pressure / 255 + 0.6;
+            // cap between 0 and 1
+            intensity = std::max(0.0f, std::min(1.0f, intensity));
+            const float segmentWidth = (0.5f + static_cast<float>(point->pressure) / 100.0f + 1.0f * static_cast<float>(
+                                            point->width) / 4 - 0.5f * (
+                                            static_cast<float>(point->speed) / 4 / 50)) * 2.0f * 2.3f;
+            stroker->width = segmentWidth / K * scale;
         }
         default:
             break;

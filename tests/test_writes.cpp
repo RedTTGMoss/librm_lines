@@ -135,6 +135,9 @@ public:
         if (tool == HIGHLIGHTER_2) {
             line.setRGBA(255, 50, 150, 255);
         }
+        if (tool == MARKER_1 || tool == MARKER_2) {
+            line.setColor(RED);
+        }
         auto lerp = [](int a, int b, float t) { return static_cast<float>(a) + static_cast<float>(b - a) * t; };
 
         float x = startX;
