@@ -292,7 +292,7 @@ void loggerError(const char *msg) {
 void runColorAssertTest() {
     constexpr Color initialColor(150, 0, 55, 255);
     const auto rgbaColor = initialColor.toRGBA();
-    const Color fromRgbaColor = Color::fromARGB(&rgbaColor);
+    const Color fromRgbaColor = Color::fromRGBA(&rgbaColor);
 
     assert(initialColor == fromRgbaColor);
 }
