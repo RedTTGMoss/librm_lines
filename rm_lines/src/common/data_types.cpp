@@ -212,6 +212,15 @@ Color Color::fromARGB(const uint32_t *argbColor) {
     );
 }
 
+Color Color::random() {
+    Color c;
+    c.red = static_cast<uint8_t>(rand() % 255);
+    c.green = static_cast<uint8_t>(rand() % 255);
+    c.blue = static_cast<uint8_t>(rand() % 255);
+    c.alpha = 255;
+    return c;
+}
+
 void Color::inplaceFromARGB(const uint32_t *rgbaColor) {
     // Reading from rM file (ARGB)
     red = static_cast<uint8_t>((*rgbaColor >> 16) & 0xFF);

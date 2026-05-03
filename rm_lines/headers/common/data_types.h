@@ -371,6 +371,8 @@ struct Color {
 
     static Color fromARGB(const uint32_t *argbColor);
 
+    static Color random();
+
     void inplaceFromARGB(const uint32_t *rgbaColor);
 };
 
