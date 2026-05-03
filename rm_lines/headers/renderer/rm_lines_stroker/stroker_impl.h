@@ -1,3 +1,4 @@
+// ReSharper disable CppParameterNamesMismatch
 #pragma once
 #include "advanced/math.h"
 #include <cassert>
@@ -8,25 +9,25 @@
 
 #include "renderer/rm_lines_stroker/stroker.h"
 
-using Vector = AdvancedMath::Vector;
+using Vertex = AdvancedMath::Vector;
 using Triangle = AdvancedMath::Triangle;
 
 namespace RMLinesRenderer {
     template<typename Rasterizer, typename VaryingGenerator>
-    Stroker<Rasterizer, VaryingGenerator>::Segment::Segment(const SegmentType type,
-                                                            const float x, const float y, const float width,
-                                                            const float length,
-                                                            const JoinStyle joinStyle, const CapStyle capStyle,
+    Stroker<Rasterizer, VaryingGenerator>::Segment::Segment(const SegmentType type_,
+                                                            const float x_, const float y_, const float width_,
+                                                            const float length_,
+                                                            const JoinStyle joinStyle_, const CapStyle capStyle_,
                                                             Varyings left, Varyings right)
-        : x(x)
-          , y(y)
-          , width(width)
-          , length(length)
+        : x(x_)
+          , y(y_)
+          , width(width_)
+          , length(length_)
           , leftVarying(left)
           , rightVarying(right)
-          , type(type)
-          , joinStyle(joinStyle)
-          , capStyle(capStyle) {
+          , type(type_)
+          , joinStyle(joinStyle_)
+          , capStyle(capStyle_) {
     }
 
 
@@ -88,6 +89,10 @@ namespace RMLinesRenderer {
         float chw = width / 2;
         const float lhw = m_lastSegment.width / 2;
 
+        // std::cout << "lineTo(" << x << ", " << y << ")" << " length=" << len
+        //           << ", width=" << chw << "(" << lhw << ")"
+        //           << ", normal=" << ndx << "," << ndy << ", totalLength=" << length
+        //           << std::endl;
 
         const Line right{
             line.x0 + ndx * lhw,
@@ -101,18 +106,29 @@ namespace RMLinesRenderer {
             line.x1 - ndx * chw,
             line.y1 - ndy * chw
         };
-
-        if (m_lastSegment.type == LineToSegment) {
-            join(m_lastLeft, m_lastRight, left, right, m_lastSegment.leftVarying, m_lastSegment.rightVarying);
-        }
-
         length += len;
         Varyings leftVarying = varying.left(length, chw);
         Varyings rightVarying = varying.right(length, chw);
 
-        stroke(left, right,
-               m_lastSegment.leftVarying, m_lastSegment.rightVarying,
-               leftVarying, rightVarying);
+        const float mw = std::max(m_lastSegment.width, width);
+        const float x0 = minx - mw;
+        const float y0 = miny - mw;
+        const float x1 = maxx + mw;
+        const float y1 = maxy + mw;
+        const bool outside = (m_lastSegment.x < x0 && x < x0)
+                             || (m_lastSegment.y < y0 && y < y0)
+                             || (m_lastSegment.x > x1 && x > x1)
+                             || (m_lastSegment.y > y1 && y > y1);
+
+        if (!outside) {
+            if (m_lastSegment.type == LineToSegment) {
+                join(m_lastLeft, m_lastRight, left, right, m_lastSegment.leftVarying, m_lastSegment.rightVarying);
+            }
+
+            stroke(left, right,
+                   m_lastSegment.leftVarying, m_lastSegment.rightVarying,
+                   leftVarying, rightVarying);
+        }
 
         if (m_lastSegment.type == MoveToSegment) {
             m_firstLeft = left;
@@ -274,8 +290,11 @@ namespace RMLinesRenderer {
     }
 
     template<typename Rasterizer, typename VaryingGenerator>
-    void Stroker<Rasterizer, VaryingGenerator>::cap(Line left, Line right, Segment s, const bool endCap) {
-        if (s.width <= 0.0f)
+    void Stroker<Rasterizer, VaryingGenerator>::cap(Line left, Line right, Segment segment, const bool endCap) {
+        // std::cout << " - cap(" << segment.x << "," << segment.y << ", " << (endCap ? "end-cap" : "start-cap")
+        //           << ", left=" << left << ", right=" << right << ", width=" << segment.width << std::endl;
+
+        if (segment.width <= 0.0f)
             return;
 
         if (capStyle == FlatCap) {
@@ -289,10 +308,10 @@ namespace RMLinesRenderer {
         }
 
         if (capStyle == RoundCap) {
-            const float angle = std::atan2(left.y1 - s.y, left.x1 - s.x);
+            const float angle = std::atan2(left.y1 - segment.y, left.x1 - segment.x);
 
-            const float radius = s.width / 2;
-            const float arcLength = radius * M_PI; // half a circle...
+            const float radius = segment.width / 2;
+            const float arcLength = static_cast<float>(radius * M_PI); // half a circle...
             int steps = std::min(30, static_cast<int>(std::ceil(std::abs(arcLength / M_PI))));
             assert(steps > 0);
 
@@ -308,15 +327,15 @@ namespace RMLinesRenderer {
             steps = std::max(1, steps / 2);
 
             for (int i = 0; i < steps; ++i) {
-                const float nlx = radius * std::cos(lt) + s.x;
-                const float nly = radius * std::sin(lt) + s.y;
-                const float nrx = radius * std::cos(rt) + s.x;
-                const float nry = radius * std::sin(rt) + s.y;
+                const float nlx = radius * std::cos(lt) + segment.x;
+                const float nly = radius * std::sin(lt) + segment.y;
+                const float nrx = radius * std::cos(rt) + segment.x;
+                const float nry = radius * std::sin(rt) + segment.y;
 
                 stroke(Line{lx, ly, nlx, nly},
                        Line{rx, ry, nrx, nry},
-                       s.leftVarying, s.rightVarying,
-                       s.leftVarying, s.rightVarying);
+                       segment.leftVarying, segment.rightVarying,
+                       segment.leftVarying, segment.rightVarying);
 
                 lx = nlx;
                 ly = nly;
@@ -346,8 +365,8 @@ namespace RMLinesRenderer {
 
             stroke(Line{left.x1, left.y1, lx, ly},
                    Line{right.x1, right.y1, rx, ry},
-                   s.leftVarying, s.rightVarying,
-                   s.leftVarying, s.rightVarying);
+                   segment.leftVarying, segment.rightVarying,
+                   segment.leftVarying, segment.rightVarying);
         }
     }
 
@@ -375,6 +394,12 @@ namespace RMLinesRenderer {
         if (m_lastSegment.type == LineToSegment) {
             assert(m_firstSegment.type == MoveToSegment);
             lineTo(m_firstSegment.x, m_firstSegment.y);
+
+            // std::cout << " - lineTo(" << m_firstSegment.x << "," << m_firstSegment.y << ")" << std::endl;
+            // std::cout << " - lastLeft:   " << m_lastLeft << std::endl
+            //           << " - lastRight:  " << m_lastRight << std::endl
+            //           << " - firstLeft:  " << m_firstLeft << std::endl
+            //           << " - firstRight: " << m_firstRight << std::endl;
 
             join(m_lastLeft, m_lastRight, m_firstLeft, m_firstRight,
                  m_lastSegment.leftVarying, m_lastSegment.rightVarying);
@@ -410,10 +435,10 @@ namespace RMLinesRenderer {
     }
 
     template<typename Rasterizer, typename VaryingGenerator>
-    auto Stroker<Rasterizer, VaryingGenerator>::stroke(const Line left, Line right,
-                                                       Varyings lastLeftVarying, Varyings lastRightVarying,
-                                                       Varyings leftVarying, Varyings rightVarying,
-                                                       const bool checkDirection) -> void {
+    void Stroker<Rasterizer, VaryingGenerator>::stroke(const Line left, Line right,
+                                                       Varyings leftVarying0, Varyings rightVarying0,
+                                                       Varyings leftVarying1, Varyings rightVarying1,
+                                                       const bool checkDirection) {
         if (checkDirection) {
             // Catch the case where we've decided to stroke lines that pass in
             // opposite directions. This typically happens whenever we join two line
@@ -423,22 +448,22 @@ namespace RMLinesRenderer {
             // direction. Since we only care about the sign and not the length, we
             // can skip the sqrt() and simplify the function a bit
 
-            if ((right.x1 - right.x0) * (left.x1 - left.x0) + (right.y1 - right.y0) * (left.y1 - left.y0) < 0) {
+            if (((right.x1 - right.x0) * (left.x1 - left.x0)) + ((right.y1 - right.y0) * (left.y1 - left.y0)) < 0) {
                 // If opposite, flip the right line and its varyings...
                 right = Line{right.x1, right.y1, right.x0, right.y0};
-                std::swap(lastRightVarying, rightVarying);
+                std::swap(rightVarying0, rightVarying1);
             }
         }
 
-        raster(Triangle(Vector(left.x0, left.y0),
-                        Vector(left.x1, left.y1),
-                        Vector(right.x0, right.y0)),
-               lastLeftVarying, leftVarying, lastRightVarying);
+        raster(Triangle(Vertex(left.x0, left.y0),
+                        Vertex(left.x1, left.y1),
+                        Vertex(right.x0, right.y0)),
+               leftVarying0, leftVarying1, rightVarying0);
 
-        raster(Triangle(Vector(right.x0, right.y0),
-                        Vector(left.x1, left.y1),
-                        Vector(right.x1, right.y1)),
-               lastRightVarying, leftVarying, rightVarying);
+        raster(Triangle(Vertex(right.x0, right.y0),
+                        Vertex(left.x1, left.y1),
+                        Vertex(right.x1, right.y1)),
+               rightVarying0, leftVarying1, rightVarying1);
 
         triangleCount += 2;
     }

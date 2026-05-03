@@ -10,19 +10,19 @@ namespace RMLinesRenderer {
     };
 
     template<typename FillFunction>
-    void LerpRaster<FillFunction>::operator()(Triangle t, Varyings a, Varyings b, Varyings c) {
+    void LerpRaster<FillFunction>::operator()(Triangle t, Varyings va, Varyings vb, Varyings vc) {
         // Sort the triangle and the varyings
         if (t.b.y < t.a.y) {
             std::swap(t.a, t.b);
-            std::swap(a, b);
+            std::swap(va, vb);
         }
         if (t.c.y < t.a.y) {
             std::swap(t.a, t.c);
-            std::swap(a, c);
+            std::swap(va, vc);
         }
         if (t.c.y < t.b.y) {
             std::swap(t.c, t.b);
-            std::swap(c, b);
+            std::swap(vc, vb);
         }
 
         float y;
@@ -63,14 +63,17 @@ namespace RMLinesRenderer {
          *                 --C
          */
 
+        // std::cout << "rasterizing: " << t << " " << va << vb << vc << std::endl;
+        // std::cout << " - y=" << y << ", yaFloored=" << yaFloored << std::endl;
+
         if (y <= yb) {
-            float difYAB = t.b.y - t.a.y;
-            float difYAC = t.c.y - t.a.y;
+            float difYAB = (t.b.y - t.a.y);
+            float difYAC = (t.c.y - t.a.y);
 
             float dxl = (t.b.x - t.a.x) / difYAB;
             float dxr = (t.c.x - t.a.x) / difYAC;
-            Varyings difXLD = (b - a) / difYAB;
-            Varyings difXRD = (c - a) / difYAC;
+            Varyings difXLD = (vb - va) / difYAB;
+            Varyings difXRD = (vc - va) / difYAC;
 
             if (dxr < dxl) {
                 std::swap(dxl, dxr);
@@ -83,19 +86,20 @@ namespace RMLinesRenderer {
             const float acbx = t.a.x + dxr * height;
             float wb = acbx - bx;
 
-            Varyings varB = a + difXLD * height;
-            Varyings varACB = a + difXRD * height;
+            Varyings varB = va + difXLD * height;
+            Varyings varACB = va + difXRD * height;
             Varyings varDX = (varACB - varB) / wb;
 
             float yOffset = y - t.a.y;
             float left = t.a.x + dxl * yOffset;
             float right = t.a.x + dxr * yOffset;
-            Varyings varLeft = a + difXLD * yOffset;
+            Varyings varLeft = va + difXLD * yOffset;
 
             while (y <= yb) {
                 const int l = static_cast<int>(left + 0.5f);
+                const int r = static_cast<int>(right - 0.5f);
 
-                if (const int r = static_cast<int>(right - 0.5f); r >= l) {
+                if (r >= l) {
                     Varyings var = varLeft + varDX * (static_cast<float>(l) + 0.5f - left);
                     fill(static_cast<int>(l), static_cast<int>(y), r - l + 1, var, varDX);
                 }
@@ -113,8 +117,8 @@ namespace RMLinesRenderer {
 
             float dxl = (t.c.x - t.b.x) / difYBC;
             float dxr = (t.c.x - t.a.x) / difYAC;
-            Varyings difXLD = (c - b) / difYBC;
-            Varyings difXRD = (c - a) / difYAC;
+            Varyings difXLD = (vc - vb) / difYBC;
+            Varyings difXRD = (vc - va) / difYAC;
 
             if (dxl < dxr) {
                 std::swap(dxl, dxr);
@@ -126,10 +130,16 @@ namespace RMLinesRenderer {
             float right = t.c.x - dxr * height;
             float width = right - left;
 
-            Varyings varLeft = c - difXLD * height;
-            Varyings varRight = c - difXRD * height;
+            // std::cout << "2nd-half: y=" << y << ", height=" << height << ", dyac=" << dyac
+            //           << ", dybc=" << dybc << ", dxr=" << dxr << ", dxl=" << dxl << ", leftx=" << left << ", right=" << right
+            //           << ", width=" << width << std::endl;
+
+            Varyings varLeft = vc - difXLD * height;
+            Varyings varRight = vc - difXRD * height;
 
             Varyings varDX = (varRight - varLeft) / width;
+
+            // std::cout << "          dxld=" << dxld << ", dxrd=" << dxrd << ", varLeft=" << varLeft << ", varRight=" << varRight << ", varDX=" << varDX << endl;
 
             while (y <= yc) {
                 const int l = static_cast<int>(left + 0.5f);

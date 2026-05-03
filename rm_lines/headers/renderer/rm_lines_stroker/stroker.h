@@ -44,23 +44,28 @@ namespace RMLinesRenderer {
         int triangleCount = 0;
         float length = 0.0f;
 
-        Stroker(); //del
+        float minx = std::numeric_limits<float>::lowest();
+        float miny = std::numeric_limits<float>::lowest();
+        float maxx = std::numeric_limits<float>::max();
+        float maxy = std::numeric_limits<float>::max();
 
-        ~Stroker(); //del
+        Stroker();
 
-        void moveTo(float x, float y); //del
+        ~Stroker();
 
-        void lineTo(float x, float y); //del
+        void moveTo(float x, float y);
 
-        void close(); //del
+        void lineTo(float x, float y);
 
-        void finish(); //del
+        void close();
 
-        void reset(); //del
+        void finish();
 
-        void flushStartCap(); //del
+        void reset();
 
-        void flushEndCap(); //del
+        void flushStartCap();
+
+        void flushEndCap();
 
         // ********************
         // Internals
@@ -95,22 +100,21 @@ namespace RMLinesRenderer {
                              JoinStyle joinStyle = BevelJoin,
                              CapStyle capStyle = FlatCap,
                              Varyings left = Varyings(),
-                             Varyings right = Varyings()); //del
+                             Varyings right = Varyings());
         };
 
-        void lineToSlanted(float x, float y); //del
+        void lineToSlanted(float x, float y);
 
-        void cap(Line left, Line right, Segment s, bool endCap); //del
+        void cap(Line left, Line right, Segment s, bool endCap);
 
-        void store(float x, float y, SegmentType type, Varyings left, Varyings right); //del
+        void store(float x, float y, SegmentType type, Varyings left, Varyings right);
 
-        void join(Line lastLeft, Line lastRight, Line left, Line right, Varyings leftVarying,
-                  Varyings rightVarying); //del
+        void join(Line lastLeft, Line lastRight, Line left, Line right, Varyings leftVarying, Varyings rightVarying);
 
         void stroke(Line left, Line right,
-                    Varyings lastLeftVarying, Varyings lastRightVarying,
-                    Varyings leftVarying, Varyings rightVarying,
-                    bool checkDirection = false); //del
+                    Varyings leftVarying0, Varyings rightVarying0,
+                    Varyings leftVarying1, Varyings rightVarying1,
+                    bool checkDirection = false);
 
         Segment m_lastSegment;
         Line m_lastLeft;
