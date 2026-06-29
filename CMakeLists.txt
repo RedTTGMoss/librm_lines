@@ -63,6 +63,7 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
+target_compile_options(rm_lines PRIVATE -Wno-narrowing) # It's so annoying, ffs
 
 if (WIN32)
     target_link_libraries(rm_lines PRIVATE DbgHelp)
