@@ -131,3 +131,6 @@ struct Image {
 
     json toJson() const;
 };
+
+#define PENCOLOR_EXTRA(c) ((c) == PenColor::ARGB)
+#define PENCOLOR_EXTRA_HIGHLIGHTER(c) (static_cast<int>(c) < static_cast<int>(PenColor::ARGB))
