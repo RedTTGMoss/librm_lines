@@ -95,9 +95,23 @@ std::string getStackTrace() {
     return stackTrace;
 }
 
+
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+
+std::string getStackTrace() {
+    char buffer[4096];
+
+    emscripten_get_callstack(
+        1,
+        buffer,
+        sizeof(buffer)
+    );
+
+    return std::string(buffer);
+}
 #else
 #include <execinfo.h>
-#include <sstream>
 
 std::string getStackTrace() {
     void *buffer[100];

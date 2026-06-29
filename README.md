@@ -22,11 +22,26 @@ This project will try to maintain compatibility as remarkable updates their file
 
 The project contains a cmake file with everything preconfigured.
 
-**To build the shared library file**
-```cmake build --target rm_lines```
+- **To build the shared library file for your operating system**
 
-You can also build the test executable
-```cmake build --target test```
+```bash
+cmake build --target rm_lines
+```
+
+- **To build the library for wasm / web**
+
+> Make sure you have [emscripten](https://emscripten.org/docs/getting_started/downloads.html) installed and configured
+
+```bash
+emcmake cmake -B build-web -S .
+cmake --build build-web --target rm_lines_wasm
+```
+
+- You can also build the test executable
+
+```bash
+cmake build --target test
+```
 
 ## Testing
 

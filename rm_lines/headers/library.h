@@ -4,6 +4,9 @@
 // Export macro
 #ifdef _WIN32
 #define EXPORT extern "C" __declspec(dllexport)
+#elif defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#define EXPORT extern "C" EMSCRIPTEN_KEEPALIVE
 #else
 #define EXPORT extern "C" __attribute__((visibility("default")))
 #endif

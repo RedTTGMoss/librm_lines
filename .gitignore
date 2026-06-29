@@ -1,6 +1,7 @@
 cmake-build-debug/
 cmake-build-release/
 build/
+build-web/
 .idea/
 .venv/
 /tests/output/

@@ -30,14 +30,21 @@ FetchContent_MakeAvailable(utf8cpp)
 FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(cppcodec)
 
+# Check python3 for the script later
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
 include_directories(rm_lines/headers)
 
 file(GLOB RENDERER_FILES rm_lines/src/renderer/rm_lines_stroker/*.cpp)
 file(GLOB RM_PENS_FILES rm_lines/src/renderer/rm_lines_stroker/rm_pens/*.cpp)
 file(GLOB RM_TEMPLATE_FILES rm_lines/src/renderer/rm_lines_stroker/templates/*.cpp)
 file(GLOB STB rm_lines/src/stb/*.cpp)
+set(RM_LINES_LIBRARY_TYPE SHARED)
 
-add_library(rm_lines SHARED rm_lines/src/library.cpp
+if (EMSCRIPTEN)
+    set(RM_LINES_LIBRARY_TYPE STATIC)
+endif ()
+add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_export.cpp
         rm_lines/src/reader/analyzer.cpp
         rm_lines/src/reader/tagged_block_reader.cpp
@@ -65,10 +72,47 @@ add_library(rm_lines SHARED rm_lines/src/library.cpp
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 target_compile_options(rm_lines PRIVATE -Wno-narrowing) # It's so annoying, ffs
 
+# Extract exported functions from rm_lines and generate exports.cmake
+add_custom_command(
+        OUTPUT ${CMAKE_BINARY_DIR}/exports.cmake
+        COMMAND ${Python3_EXECUTABLE}
+        ${CMAKE_SOURCE_DIR}/tools/find_exports.py
+        ${CMAKE_SOURCE_DIR}/rm_lines
+        DEPENDS
+        ${CMAKE_SOURCE_DIR}/tools/find_exports.py
+        COMMENT "Extracting EXPORT functions"
+)
+add_custom_target(generate_exports DEPENDS ${CMAKE_BINARY_DIR}/exports.cmake)
+
 if (WIN32)
     target_link_libraries(rm_lines PRIVATE DbgHelp)
     set_target_properties(rm_lines PROPERTIES OUTPUT_NAME "rm_lines" PREFIX "")
     #    target_compile_features(rm_lines PUBLIC cxx_std_20)
+endif ()
+
+# Building for web with emscripten
+if (EMSCRIPTEN)
+    add_executable(rm_lines_wasm rm_lines/src/wasm_entry.cpp)
+    target_link_libraries(rm_lines_wasm PRIVATE rm_lines)
+    add_dependencies(rm_lines_wasm generate_exports)
+    target_link_libraries(rm_lines_wasm PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
+
+    file(READ ${CMAKE_BINARY_DIR}/exports.cmake EXPORTED_FUNCTIONS_LIST)
+    target_link_options(rm_lines_wasm PRIVATE
+            "SHELL:-s MODULARIZE=1"
+            "SHELL:-s EXPORT_NAME=RMLines"
+            "SHELL:-s ENVIRONMENT=web"
+            "SHELL:-no-entry"
+            "SHELL:-s EXPORTED_FUNCTIONS=[${EXPORTED_FUNCTIONS_LIST}]"
+
+            "SHELL:-s ALLOW_MEMORY_GROWTH=1"
+            "SHELL:-O2"
+
+            "SHELL:-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString','stringToUTF8']"
+
+            "SHELL:-gsource-map"
+            "SHELL:-s ASSERTIONS=2"
+    )
 endif ()
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
