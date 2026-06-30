@@ -72,9 +72,9 @@ add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 target_compile_options(rm_lines PRIVATE -Wno-narrowing) # It's so annoying, ffs
 
-# Extract exported functions from rm_lines and generate exports.cmake
+# Extract exported functions from rm_lines and generate exported_functions.txt
 add_custom_command(
-        OUTPUT ${CMAKE_BINARY_DIR}/exports.cmake
+        OUTPUT ${CMAKE_BINARY_DIR}/exported_functions.txt
         COMMAND ${Python3_EXECUTABLE}
         ${CMAKE_SOURCE_DIR}/tools/find_exports.py
         ${CMAKE_SOURCE_DIR}/rm_lines
@@ -82,7 +82,7 @@ add_custom_command(
         ${CMAKE_SOURCE_DIR}/tools/find_exports.py
         COMMENT "Extracting EXPORT functions"
 )
-add_custom_target(generate_exports DEPENDS ${CMAKE_BINARY_DIR}/exports.cmake)
+add_custom_target(generate_exports DEPENDS ${CMAKE_BINARY_DIR}/exported_functions.txt)
 
 if (WIN32)
     target_link_libraries(rm_lines PRIVATE DbgHelp)
@@ -97,13 +97,12 @@ if (EMSCRIPTEN)
     add_dependencies(rm_lines_wasm generate_exports)
     target_link_libraries(rm_lines_wasm PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 
-    file(READ ${CMAKE_BINARY_DIR}/exports.cmake EXPORTED_FUNCTIONS_LIST)
     target_link_options(rm_lines_wasm PRIVATE
             "SHELL:-s MODULARIZE=1"
             "SHELL:-s EXPORT_NAME=RMLines"
             "SHELL:-s ENVIRONMENT=web"
             "SHELL:-no-entry"
-            "SHELL:-s EXPORTED_FUNCTIONS=['_malloc','_free',${EXPORTED_FUNCTIONS_LIST}]"
+            "SHELL:$<IF:$<BOOL:1>,@${CMAKE_BINARY_DIR}/exported_functions.txt,>"
 
             "SHELL:-s ALLOW_MEMORY_GROWTH=1"
             "SHELL:-s ALLOW_TABLE_GROWTH=1"

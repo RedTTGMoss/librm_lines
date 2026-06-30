@@ -23,7 +23,10 @@ exports = sorted(exports)
 Path("exports.txt").write_text("\n".join(exports))
 
 # wasm export format (_ prefix required)
-cmake_list = ",".join([f"'_{e}'" for e in exports])
-Path("exports.cmake").write_text(cmake_list)
+flags = ",".join([f"_{e}" for e in exports])
+
+Path("exported_functions.txt").write_text(
+    f"-s EXPORTED_FUNCTIONS=[_malloc,_free,{flags}]\n"
+)
 
 print(f"Found EXPORT functions: {len(exports)}")
