@@ -100,10 +100,14 @@ CrdtId SceneTreeEditor::addImage(const std::string &uuid, std::vector<AdvancedMa
     imageItem.value->imageRef.timestamp = ids++;
     imageItem.value->imageRef.value = uuid;
     imageItem.value->vertices = {
-        vertices[0].x, vertices[0].y, vertices[0].w, vertices[0].h,
-        vertices[1].x, vertices[1].y, vertices[1].w, vertices[1].h,
-        vertices[2].x, vertices[2].y, vertices[2].w, vertices[2].h,
-        vertices[3].x, vertices[3].y, vertices[3].w, vertices[3].h
+        static_cast<float>(vertices[0].x), static_cast<float>(vertices[0].y), static_cast<float>(vertices[0].w),
+        static_cast<float>(vertices[0].h),
+        static_cast<float>(vertices[1].x), static_cast<float>(vertices[1].y), static_cast<float>(vertices[1].w),
+        static_cast<float>(vertices[1].h),
+        static_cast<float>(vertices[2].x), static_cast<float>(vertices[2].y), static_cast<float>(vertices[2].w),
+        static_cast<float>(vertices[2].h),
+        static_cast<float>(vertices[3].x), static_cast<float>(vertices[3].y), static_cast<float>(vertices[3].w),
+        static_cast<float>(vertices[3].h)
     };
 
     addItemNode(imageItem);
