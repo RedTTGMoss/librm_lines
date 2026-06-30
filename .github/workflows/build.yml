@@ -58,7 +58,7 @@ jobs:
           echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
       - name: Cache CMake build files
-        uses: actions/cache@v3
+        uses: actions/cache@v6
         with:
           path: ${{ steps.strings.outputs.build-output-dir }}
           key: ${{ runner.os }}-cmake-${{ matrix.cpp_compiler }}-${{ matrix.c_compiler }}-${{ hashFiles('**/CMakeLists.txt') }}
@@ -147,7 +147,7 @@ jobs:
           mv "$file" "$new_name"
 
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ${{ runner.os }}-${{ matrix.target }}
           path: |
@@ -166,7 +166,7 @@ jobs:
 
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: artifacts/
 
@@ -193,7 +193,7 @@ jobs:
 
     steps:
       - name: Download all the dists
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: artifacts/
       - name: Move wheels to dist
