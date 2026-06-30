@@ -1,6 +1,6 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake for Emscripten web
+name: CMake for Emscripten web and publish to NPM
 
 on:
   push:
@@ -118,3 +118,71 @@ jobs:
           name: Lib rMLines Draft Release
           files: artifacts/**/*
           prerelease: true
+
+  publish-to-npm:
+    name: >-
+      Publish Sys Package to NPM
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to NPM on tag pushes
+    needs:
+      - build-sys
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+    permissions:
+      contents: read
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download all the dists
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts/
+
+      - name: Assemble sys package
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          SYS_DIR="rm_lines_wasm_sys"
+          
+          # ensure clean state
+          mkdir -p "$SYS_DIR"
+          
+          # copy wasm artifacts safely
+          find artifacts -type f \( \
+            -name "rm_lines_wasm.js" -o \
+            -name "rm_lines_wasm.wasm" -o \
+            -name "rm_lines_wasm.wasm.map" \
+          \) -exec cp {} "$SYS_DIR/" \;
+          
+          ls -R "$SYS_DIR"
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"   # v1.3.5 -> 1.3.5
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Sync package.json version
+        shell: bash
+        run: |
+          cd rm_lines_wasm_sys
+          npm version "${{ steps.version.outputs.VERSION }}" --no-git-tag-version
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Publish to npm (trusted publishing)
+        working-directory: rm_lines_wasm_sys
+        run: |
+          set -euo pipefail
+          npm pkg get name
+          npm pkg get version
+          npm publish --provenance --access public
