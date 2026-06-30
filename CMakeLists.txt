@@ -70,7 +70,13 @@ add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
-target_compile_options(rm_lines PRIVATE -Wno-narrowing) # It's so annoying, ffs
+
+# Remove warnings about narrowing conversions in MSVC and GCC/Clang
+if (MSVC)
+    target_compile_options(rm_lines PRIVATE /wd4244 /wd4267)
+else ()
+    target_compile_options(rm_lines PRIVATE -Wno-narrowing)
+endif ()
 
 # Extract exported functions from rm_lines and generate exported_functions.txt
 add_custom_command(
