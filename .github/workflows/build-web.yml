@@ -1,0 +1,112 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: CMake for Emscripten web
+
+on:
+  push:
+    tags: [ "*" ]
+    branches-ignore: [ "main" ]
+    paths:
+      - 'CMakeLists.txt'
+      - '.github/workflows/build-web.yml'
+      - 'tests/**'
+      - 'rm_lines/**'
+  pull_request:
+    branches: [ "main", "experimental" ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-sys:
+    name: Build for Emscripten web
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup emsdk
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          # Make sure to set a version number!
+          version: 5.0.1
+          # Optional emsdk version (set if not the same as emscripten version)
+          emsdk-version: 5.0.5
+          # This is the name of the cache folder.
+          # The cache folder will be placed in the build directory,
+          #  so make sure it doesn't conflict with anything!
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Verify emsdk installation
+        run: emcc -v
+
+      - name: Fetch tags for current commit
+        run: git fetch --tags --depth=1
+
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build-web" >> "$GITHUB_OUTPUT"
+
+      - name: Cache CMake build files
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.strings.outputs.build-output-dir }}
+          key: ${{ runner.os }}-cmake-web-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-cmake-web-
+
+      - name: Set up python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Configure CMake
+        run: >
+          emcmake cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
+
+      - name: Build
+        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target rm_lines_wasm
+
+
+      - name: Gather files into temp dir
+        shell: bash
+        run: |
+          mkdir -p artifact
+          mv "${{ steps.strings.outputs.build-output-dir }}/rm_lines_wasm.js" artifact/
+          mv "${{ steps.strings.outputs.build-output-dir }}/rm_lines_wasm.wasm" artifact/
+          mv "${{ steps.strings.outputs.build-output-dir }}/rm_lines_wasm.wasm.map" artifact/
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web
+          path: |
+            artifact/rm_lines_wasm.*
+          retention-days: 5
+
+  create-draft-release:
+    name: Create Draft Release
+    needs: build-sys
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Create Draft Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Lib rMLines Release WASM ${{ github.ref_name }}
+          draft: true
+          files: artifacts/**/*
