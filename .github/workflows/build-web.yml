@@ -104,9 +104,10 @@ jobs:
           path: artifacts/
 
       - name: Create Draft Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Lib rMLines Release WASM ${{ github.ref_name }}
-          draft: true
+          tag_name: draft-${{ github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          name: Lib rMLines Release ${{ github.ref_name }}
           files: artifacts/**/*
+          prerelease: true

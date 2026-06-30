@@ -171,12 +171,13 @@ jobs:
           path: artifacts/
 
       - name: Create Draft Release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref_name }}
+          tag_name: draft-${{ github.ref_name }}
+          target_commitish: ${{ github.sha }}
           name: Lib rMLines Release ${{ github.ref_name }}
-          draft: true
           files: artifacts/**/*
+          prerelease: true
 
   publish-to-pypi:
     name: >-
