@@ -1,0 +1,18 @@
+{
+    "files": [
+        "rm_lines_wasm.js",
+        "rm_lines_wasm.wasm",
+        "rm_lines_wasm.wasm.map",
+        "index.js"
+    ],
+    "name": "rm-lines-sys",
+    "version": "0.0.0+replaced-by-ci",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs"
+}
