@@ -212,7 +212,7 @@ async function run() {
                 "number",  // fh
                 "number",  // w
                 "number",  // h
-                "number"   // bool
+                "number"   // antialias
             ],
             [
                 renderer_id,
@@ -224,7 +224,7 @@ async function run() {
                 height,
                 width,
                 height,
-                true
+                false
             ]
         );
         const view = new Uint8Array(rmLines.HEAPU8.buffer, bufferPtr, byteSize);
