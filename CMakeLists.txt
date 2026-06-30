@@ -41,9 +41,12 @@ file(GLOB RM_TEMPLATE_FILES rm_lines/src/renderer/rm_lines_stroker/templates/*.c
 file(GLOB STB rm_lines/src/stb/*.cpp)
 set(RM_LINES_LIBRARY_TYPE SHARED)
 
+# If building for web with emscripten, build a static library instead of a shared library
 if (EMSCRIPTEN)
     set(RM_LINES_LIBRARY_TYPE STATIC)
 endif ()
+
+# Build the rm_lines library
 add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
         rm_lines/src/scene_tree/scene_tree_export.cpp
         rm_lines/src/reader/analyzer.cpp
