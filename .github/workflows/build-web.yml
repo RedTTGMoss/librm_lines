@@ -24,16 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      EM_VERSION: 5.0.1
+      EM_CACHE_FOLDER: 'emsdk-cache'
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup emsdk
-        uses: emscripten-core/setup-emsdk@v15
+      - name: Setup cache
+        id: cache-system-libraries
+        uses: actions/cache@v5
         with:
-          version: 5.0.1
-          emsdk-version: 5.0.5
-          no-cache: true
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{ runner.os }}
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
 
       - name: Verify emsdk installation
         run: emcc -v
