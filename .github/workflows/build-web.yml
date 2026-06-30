@@ -55,14 +55,6 @@ jobs:
         run: |
           echo "build-output-dir=${{ github.workspace }}/build-web" >> "$GITHUB_OUTPUT"
 
-      - name: Cache CMake build files
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.strings.outputs.build-output-dir }}
-          key: ${{ runner.os }}-cmake-web-${{ hashFiles('**/CMakeLists.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-cmake-web-
-
       - name: Set up python
         uses: actions/setup-python@v6
         with:
