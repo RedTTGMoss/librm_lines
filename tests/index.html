@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html class="w-100 h-100" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RMLines test</title>
+    <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" rel="stylesheet">
+</head>
+<body class="w-100 h-100 m-0 p-0">
+<div class="d-flex flex-column w-100 h-25 bg-black overflow-auto" id="logs"></div>
+<div class="container-fluid p-2">
+    <div class="row g-2" id="grid"></div>
+</div>
+<div class="modal fade" id="imgModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-body p-0 text-center">
+                <img class="img-fluid w-100" id="modalImg"/>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+<script src="../build-web/rm_lines_wasm.js"></script>
+<script src="rm_lines_test.js" type="module"></script>
+
+<script crossorigin="anonymous"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+</html>

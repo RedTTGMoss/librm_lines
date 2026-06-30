@@ -22,13 +22,13 @@ This project will try to maintain compatibility as remarkable updates their file
 
 The project contains a cmake file with everything preconfigured.
 
-- **To build the shared library file for your operating system**
+### **To build the shared library file for your operating system**
 
 ```bash
 cmake build --target rm_lines
 ```
 
-- **To build the library for wasm / web**
+### **To build the library for wasm / web**
 
 > Make sure you have [emscripten](https://emscripten.org/docs/getting_started/downloads.html) installed and configured
 
@@ -37,7 +37,15 @@ emcmake cmake -B build-web -S .
 cmake --build build-web --target rm_lines_wasm
 ```
 
-- You can also build the test executable
+You can then run the small web demo, first host the root folder
+
+```bash
+python -m http.server 8000
+```
+
+Then open [http://127.0.0.1:8000/tests/](http://127.0.0.1:8000/tests/)
+
+### You can also build the test executable
 
 ```bash
 cmake build --target test

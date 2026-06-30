@@ -103,12 +103,13 @@ if (EMSCRIPTEN)
             "SHELL:-s EXPORT_NAME=RMLines"
             "SHELL:-s ENVIRONMENT=web"
             "SHELL:-no-entry"
-            "SHELL:-s EXPORTED_FUNCTIONS=[${EXPORTED_FUNCTIONS_LIST}]"
+            "SHELL:-s EXPORTED_FUNCTIONS=['_malloc','_free',${EXPORTED_FUNCTIONS_LIST}]"
 
             "SHELL:-s ALLOW_MEMORY_GROWTH=1"
+            "SHELL:-s ALLOW_TABLE_GROWTH=1"
             "SHELL:-O2"
 
-            "SHELL:-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString','stringToUTF8']"
+            "SHELL:-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString','stringToUTF8','FS_writeFile','FS_readFile','HEAPU8','HEAPU32','addFunction','removeFunction']"
 
             "SHELL:-gsource-map"
             "SHELL:-s ASSERTIONS=2"
