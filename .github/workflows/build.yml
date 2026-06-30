@@ -162,7 +162,7 @@ jobs:
       - uses: rickstaa/action-create-tag@v1
         if: matrix.os == 'ubuntu-latest'
         with:
-          tag: draft-${{ github.head_ref || github.ref_name }}
+          tag: latest-draft
           force_push_tag: true
 
   create-draft-release:
@@ -181,8 +181,8 @@ jobs:
       - name: Create Draft Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: draft-${{ github.ref_name }}
-          target_commitish: ${{ github.sha }}
+          tag_name: latest-draft
+          body: "Reference: ${{ github.ref_name }}. Commit: ${{ github.sha }}."
           name: Lib rMLines Release ${{ github.ref_name }}
           files: artifacts/**/*
           prerelease: true
