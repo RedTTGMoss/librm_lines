@@ -11,6 +11,10 @@
     "main": "index.js",
     "scripts": {
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/RedTTGMoss/librm_lines.git"
+    },
     "keywords": [],
     "author": "",
     "license": "ISC",
