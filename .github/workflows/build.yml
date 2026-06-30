@@ -45,7 +45,7 @@ jobs:
             c_compiler: 'clang'
             build_type: 'Release'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Fetch tags for current commit
         run: git fetch --tags --depth=1
@@ -78,7 +78,7 @@ jobs:
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rm_lines
 
       - name: Set up python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.9'
           cache: 'pip'

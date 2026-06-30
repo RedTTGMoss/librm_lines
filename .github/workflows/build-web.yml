@@ -24,7 +24,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup emsdk
         uses: emscripten-core/setup-emsdk@v15
@@ -60,7 +60,7 @@ jobs:
             ${{ runner.os }}-cmake-web-
 
       - name: Set up python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v6
         with:
           python-version: '3.13'
           cache: 'pip'
