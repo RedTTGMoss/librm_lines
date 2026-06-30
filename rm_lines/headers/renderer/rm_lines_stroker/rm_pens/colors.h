@@ -30,9 +30,13 @@ inline Color blendMultiply(const Color base, const Color blend, const float blen
     // Interpolate between the base and the multiplied color based on blend_amount.
     Color final = base * (1.0f - blend_amount) + mul * blend_amount;
     // Compute output alpha using standard alpha compositing.
-    final.alpha = blend.alpha + base.alpha * (1.0f - blend.alpha);
+    float ba = base.alpha / 255.0f;
+    float la = blend.alpha / 255.0f;
 
-    // Convert back to [0,255] integer values.
+    final.alpha = static_cast<uint8_t>(
+        (la + ba * (1.0f - la)) * 255.0f
+    );
+
     return final;
 }
 

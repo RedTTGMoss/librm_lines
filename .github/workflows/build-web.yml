@@ -1,6 +1,6 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
-name: CMake for Emscripten web
+name: CMake for Emscripten web and publish to NPM
 
 on:
   push:
@@ -24,21 +24,23 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    env:
+      EM_VERSION: 5.0.1
+      EM_CACHE_FOLDER: 'emsdk-cache'
 
     steps:
       - uses: actions/checkout@v6
 
-      - name: Setup emsdk
-        uses: emscripten-core/setup-emsdk@v15
+      - name: Setup cache
+        id: cache-system-libraries
+        uses: actions/cache@v5
         with:
-          # Make sure to set a version number!
-          version: 5.0.1
-          # Optional emsdk version (set if not the same as emscripten version)
-          emsdk-version: 5.0.5
-          # This is the name of the cache folder.
-          # The cache folder will be placed in the build directory,
-          #  so make sure it doesn't conflict with anything!
-          actions-cache-folder: 'emsdk-cache'
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{ runner.os }}
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
 
       - name: Verify emsdk installation
         run: emcc -v
@@ -52,14 +54,6 @@ jobs:
         shell: bash
         run: |
           echo "build-output-dir=${{ github.workspace }}/build-web" >> "$GITHUB_OUTPUT"
-
-      - name: Cache CMake build files
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.strings.outputs.build-output-dir }}
-          key: ${{ runner.os }}-cmake-web-${{ hashFiles('**/CMakeLists.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-cmake-web-
 
       - name: Set up python
         uses: actions/setup-python@v6
@@ -94,7 +88,7 @@ jobs:
 
       - uses: rickstaa/action-create-tag@v1
         with:
-          tag: draft-${{ github.head_ref || github.ref_name }}
+          tag: latest-draft
           force_push_tag: true
 
   create-draft-release:
@@ -113,8 +107,76 @@ jobs:
       - name: Create Draft Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: draft-${{ github.ref_name }}
-          target_commitish: ${{ github.sha }}
-          name: Lib rMLines Release ${{ github.ref_name }}
+          tag_name: latest-draft
+          body: "Ref: ${{ github.ref_name }}."
+          name: Lib rMLines Draft Release
           files: artifacts/**/*
           prerelease: true
+
+  publish-to-npm:
+    name: >-
+      Publish Sys Package to NPM
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to NPM on tag pushes
+    needs:
+      - build-sys
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+    permissions:
+      contents: read
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download all the dists
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts/
+
+      - name: Assemble sys package
+        shell: bash
+        run: |
+          set -euo pipefail
+          
+          SYS_DIR="rm_lines_wasm_sys"
+          
+          # ensure clean state
+          mkdir -p "$SYS_DIR"
+          
+          # copy wasm artifacts safely
+          find artifacts -type f \( \
+            -name "rm_lines_wasm.js" -o \
+            -name "rm_lines_wasm.wasm" -o \
+            -name "rm_lines_wasm.wasm.map" \
+          \) -exec cp {} "$SYS_DIR/" \;
+          
+          ls -R "$SYS_DIR"
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"   # v1.3.5 -> 1.3.5
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Sync package.json version
+        shell: bash
+        run: |
+          cd rm_lines_wasm_sys
+          npm version "${{ steps.version.outputs.VERSION }}" --no-git-tag-version
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Publish to npm (trusted publishing)
+        working-directory: rm_lines_wasm_sys
+        run: |
+          set -euo pipefail
+          npm pkg get name
+          npm pkg get version
+          npm publish --provenance --access public
