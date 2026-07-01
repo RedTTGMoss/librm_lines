@@ -117,7 +117,7 @@ if (EMSCRIPTEN)
             "SHELL:-s ALLOW_TABLE_GROWTH=1"
             "SHELL:-O2"
 
-            "SHELL:-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString','stringToUTF8','FS_writeFile','FS_readFile','HEAPU8','HEAPU32','addFunction','removeFunction']"
+            "SHELL:-s EXPORTED_RUNTIME_METHODS=['ccall','cwrap','UTF8ToString','stringToUTF8','FS_writeFile','FS_readFile','FS_unlink','HEAPU8','HEAPU32','addFunction','removeFunction']"
 
             "SHELL:-gsource-map"
             "SHELL:-s ASSERTIONS=2"
