@@ -18,6 +18,15 @@ This project will try to maintain compatibility as remarkable updates their file
 - A real time renderer
 - ~~A `.rm` lines writer~~ *not yet*
 
+## Dependencies
+
+- cmake - for building
+- gcc - for building
+- [emscripten](https://emscripten.org/docs/getting_started/downloads.html) - for building the wasm variant
+- python3 - for running the web variant
+
+If you have nix, run `nix develop` to get all of the above.
+
 ## Building
 
 The project contains a cmake file with everything preconfigured.
