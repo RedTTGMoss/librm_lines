@@ -23,7 +23,7 @@ This project will try to maintain compatibility as remarkable updates their file
 - cmake - for building
 - gcc - for building
 - [emscripten](https://emscripten.org/docs/getting_started/downloads.html) - for building the wasm variant
-- python3 - for running the web variant
+- python3 - for building and running
 
 If you have nix, run `nix develop` to get all of the above.
 
