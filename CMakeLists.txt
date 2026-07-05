@@ -35,6 +35,26 @@ find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 include_directories(rm_lines/headers)
 
+# Custom function, by Red
+function(embed_resource resource_file_path source_file_name variable_name)
+    file(READ ${resource_file_path} hex_content HEX)
+
+    string(REPEAT "[0-9a-f]" 32 column_pattern)
+    string(REGEX REPLACE "(${column_pattern})" "\\1\n" content "${hex_content}")
+
+    string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1, " content "${content}")
+
+    string(REGEX REPLACE ", $" "" content "${content}")
+
+    set(array_definition "#pragma once\nstatic inline constexpr unsigned char ${variable_name}[] =\n{\n${content}\n};")
+    get_filename_component(resource_file_name "${resource_file_path}" NAME)
+
+    set(source "// Auto generated file.\n// Original: ${resource_file_name}\n${array_definition}\n")
+
+    file(WRITE "${source_file_name}" "${source}")
+endfunction()
+# Custom function, by Red
+
 file(GLOB RENDERER_FILES rm_lines/src/renderer/rm_lines_stroker/*.cpp)
 file(GLOB RM_PENS_FILES rm_lines/src/renderer/rm_lines_stroker/rm_pens/*.cpp)
 file(GLOB RM_TEMPLATE_FILES rm_lines/src/renderer/rm_lines_stroker/templates/*.cpp)
@@ -73,6 +93,78 @@ add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
 )
 
 target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
+
+option(INCLUDE_FONTS "Embed built-in font resources" ON)
+if (INCLUDE_FONTS)
+    set(REMARKABLE_SERIF "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/reMarkableSerif.ttf")
+    set(REMARKABLE_SERIF_ITALIC "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/reMarkableSerifItalic.ttf")
+    set(REMARKABLE_SANS "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/reMarkableSans.ttf")
+
+    set(HAS_REMARKABLE_FONTS TRUE)
+
+    foreach (FONT
+            "${REMARKABLE_SERIF}"
+            "${REMARKABLE_SERIF_ITALIC}"
+            "${REMARKABLE_SANS}"
+    )
+        if (NOT EXISTS "${FONT}")
+            set(HAS_REMARKABLE_FONTS FALSE)
+        endif ()
+    endforeach ()
+
+    if (HAS_REMARKABLE_FONTS)
+        embed_resource(
+                "${REMARKABLE_SERIF}"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/serif.h"
+                serifFontData
+        )
+        embed_resource(
+                "${REMARKABLE_SERIF_ITALIC}"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/serif_italic.h"
+                serifItalicFontData
+        )
+        embed_resource(
+                "${REMARKABLE_SANS}"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/sans.h"
+                sansFontData
+        )
+        message(WARNING
+                "\n"
+                "============================================================\n"
+                "  ⚠️  LICENSE WARNING\n"
+                "============================================================\n"
+                "  The selected fonts (reMarkable Serif/Sans) may have\n"
+                "  restrictions on commercial usage.\n\n"
+                "  You are responsible for verifying font licensing terms\n"
+                "  before distributing any build using these assets.\n"
+                "============================================================\n"
+        )
+    else ()
+        embed_resource(
+                "rm_lines/assets/fonts/EBGaramond-Italic-VariableFont_wght.ttf"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/serif_italic.h"
+                serifItalicFontData
+        )
+        embed_resource(
+                "rm_lines/assets/fonts/EBGaramond-VariableFont_wght.ttf"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/serif.h"
+                serifFontData
+        )
+        embed_resource(
+                "rm_lines/assets/fonts/NotoSans-VariableFont_wdth,wght.ttf"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/sans.h"
+                sansFontData
+        )
+        message(STATUS "Using open source fonts (EB Garamond and Noto Sans) instead of reMarkable fonts.")
+    endif ()
+    target_compile_definitions(rm_lines
+            PRIVATE RM_LINES_INCLUDE_FONTS
+    )
+    target_include_directories(rm_lines
+            PRIVATE
+            ${CMAKE_CURRENT_BINARY_DIR}/generated
+    )
+endif ()
 
 # Remove warnings about narrowing conversions in MSVC and GCC/Clang
 if (MSVC)
