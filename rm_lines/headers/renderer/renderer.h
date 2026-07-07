@@ -10,6 +10,7 @@
 #include <unordered_map>
 
 #include "image_ref.h"
+#include "text_renderer.h"
 #define TEXT_TOP_Y (180)
 
 class Renderer;
@@ -34,6 +35,7 @@ public:
     bool landscape;
     PageType pageType;
     TemplateOperationFunction *templateFunction = nullptr;
+    TextRenderer *textRenderer;
     std::string templateName = "Blank";
 
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);

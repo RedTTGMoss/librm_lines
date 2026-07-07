@@ -67,7 +67,7 @@ void rMPenFill::newLine() {
             stroker->joinStyle = RMLinesRenderer::BevelJoin;
             break;
         default:
-            logDebug(std::format("Unknown pen {}", getPenToolName(line->tool)));
+            // logDebug(std::format("Unknown pen {}", getPenToolName(line->tool)));
             operatorFunction = BasicPen;
             stroker->capStyle = RMLinesRenderer::RoundCap;
             stroker->width = 20 * baseWidth * scale;
@@ -168,4 +168,8 @@ void rMPenFill::debugTool(const float width) {
 
     line = &TestLine;
     point = &TestPoint;
+}
+
+void rMPenFill::debugToolSetWidth(const float width) const {
+    stroker->width = width * stroker->raster.raster.fill.scale;
 }

@@ -23,6 +23,8 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
                           ? Vector(paperSize.second, paperSize.first)
                           : Vector(paperSize.first, paperSize.second);
 
+    this->textRenderer = new TextRenderer(this);
+
     initSizeTracker(TEXT_LAYER);
 
     layers = layersFromSceneTree(sceneTree);
@@ -72,7 +74,8 @@ void Renderer::calculateAnchors() {
 
     // Map special anchors
     anchors[ANCHOR_ID_START] = TEXT_TOP_Y; // You expect this to be 0 but actually the text area starts a bit lower
-    anchors[ANCHOR_ID_END] = paperSize.second;
+    anchors[ANCHOR_ID_END] = TEXT_TOP_Y;
+    logDebug(std::format("Anchor text start: {} end: {}", TEXT_TOP_Y, paperSize.second));
 
     // Check for the root text
     if (!sceneTree->hasText()) return;
@@ -91,7 +94,9 @@ void Renderer::calculateAnchors() {
 
         // Save the anchor for this paragraph
         anchors[paragraph.startId] = posY;
-        // logDebug(std::format("Anchor for paragraph {}: {}", paragraph.startId.repr(), posY));
+        anchors[ANCHOR_ID_END] = std::max<float>(anchors[ANCHOR_ID_END], posY);
+        // logDebug(std::format("Anchor for paragraph {}: {} (height added: {})", paragraph.startId.repr(), posY,
+        //                      styleHeight));
         for (const auto &formattedText: paragraph.contents) {
             for (const auto &characterId: formattedText.characterIDs) {
                 anchors[characterId] = posY;
@@ -104,7 +109,8 @@ void Renderer::calculateAnchors() {
 
 void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId groupId, int offsetX, int offsetY) {
     const auto nodes = sceneTree->getGroupChildren(groupId);
-    if (const auto group = sceneTree->getNode(groupId); group->anchorId.has_value()) {
+    const auto group = sceneTree->getNode(groupId);
+    if (group->anchorId.has_value()) {
         offsetX += group->anchorOriginX.value().value;
         if (!anchors.contains(group->anchorId.value().value)) {
             logError(std::format("need anchor id {}", group->anchorId.value().value.repr()));
@@ -123,6 +129,10 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
             for (const auto point: line.value.value().points) {
                 auto x = point.x + offsetX;
                 auto y = point.y + offsetY;
+                // if (offsetY) {
+                //     logDebug(std::format("OffsetY: {} for line {} point ({}, {}) AnchorID: {}", offsetY,
+                //                          line.itemId.repr(), x, y, group->anchorId.value().value.repr()));
+                // }
                 // ReSharper disable once CppNoDiscardExpression
                 trackX(layer.groupId, x);
                 trackY(layer.groupId, y);
@@ -330,8 +340,6 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     stroker.raster.x1 = static_cast<float>(buf->width);
     stroker.raster.y1 = static_cast<float>(buf->height);
 
-    // TODO: render the text
-
     for (const auto &layer: layers) {
         // For each layer, each line, each point
         for (const auto &line: layer.lines) {
@@ -423,7 +431,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
 
             // Make basic test tool and a point
 
-            stroker.raster.raster.fill.baseColor = Color(150, 0, 150, 255);
+            stroker.raster.raster.fill.baseColor = Color(150, 0, 150, 200);
             stroker.raster.raster.fill.debugTool(5.0f);
 
             // Draw a rect and cross of the frame
@@ -437,7 +445,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.lineTo(left, bottom);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(0, 150, 150);
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 150, 200);
             top = (position.y + sizeTracker->getTop()) * scale.y;
             bottom = (position.y + sizeTracker->getBottom()) * scale.y;
             left = (position.x + sizeTracker->getLeft()) * scale.x;
@@ -453,14 +461,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.lineTo(left, bottom);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(150, 0, 0);
+            stroker.raster.raster.fill.baseColor = Color(150, 0, 0, 200);
             stroker.moveTo(x, 0);
             stroker.lineTo(x, buf->height);
             stroker.moveTo(0, y);
             stroker.lineTo(buf->width, y);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(0, 150, 0);
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 0, 200);
             stroker.moveTo(x2, 0);
             stroker.lineTo(x2, buf->height);
             stroker.moveTo(0, y2);
@@ -468,8 +476,12 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.finish();
 
             bool alternate = true;
-            for (auto anchor: anchors | std::views::values) {
-                if (alternate)
+            for (auto &[anchorId, anchor]: anchors) {
+                stroker.raster.raster.fill.debugToolSetWidth(5.0f);
+                if (anchorId == ANCHOR_ID_START || anchorId == ANCHOR_ID_END) {
+                    stroker.raster.raster.fill.baseColor = Color(255, 150, 150, 255);
+                    stroker.raster.raster.fill.debugToolSetWidth(10.0f);
+                } else if (alternate)
                     stroker.raster.raster.fill.baseColor = Color(150, 200, 0, 200);
                 else
                     stroker.raster.raster.fill.baseColor = Color(150, 150, 255, 200);
@@ -488,6 +500,8 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
         }
     }
+
+    this->textRenderer->renderText(stroker.raster.raster.fill.position, stroker.raster.raster.fill.scale);
 
     templateFunction(&stroker.raster.raster.fill, this);
 

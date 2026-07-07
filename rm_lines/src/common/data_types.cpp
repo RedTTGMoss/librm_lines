@@ -150,6 +150,40 @@ float ParagraphStyleNew::getTabOffset() const {
     return TAB_LENGTH * tabbed();
 }
 
+std::string ParagraphStyleNew::styleLabel() const {
+    switch (legacy) {
+        case MISSING:
+            return "MISSING";
+        case BASIC:
+            return "BASIC";
+        case PlainText:
+            return "PlainText";
+        case Title:
+            return "Title";
+        case Sub:
+            return "Sub";
+        case Bullet:
+            return "Bullet";
+        case BulletTab:
+            return "BulletTab";
+        case CheckBox:
+            return "CheckBox";
+        case CheckBoxChecked:
+            return "CheckBoxChecked";
+        case CheckBoxTab:
+            return "CheckBoxTab";
+        case CheckBoxTabChecked:
+            return "CheckBoxTabChecked";
+        case Numbered:
+            return "Numbered";
+        case NumberedTab:
+            return "NumberedTab";
+        default:
+            return "UNKNOWN";
+    }
+    return "UNKNOWN";
+}
+
 std::string Color::repr() const {
     return std::format("Color(r={}, g={}, b={}, a={})", red, green, blue, alpha);
 }
@@ -266,8 +300,22 @@ json ParagraphStyleNew::toJson() const {
     return {
         {"legacyStyle", legacy},
         {"baseStyle", baseStyle},
-        {"styleProperties", styleProperties}
+        {"styleProperties", styleProperties},
+        {"styleLabel", styleLabel()},
+        {"tabbed", tabbed()},
+        {"lineHeight", getLineHeight()},
+        {"tabOffset", getTabOffset()}
     };
+}
+
+FontType ParagraphStyleNew::getFont() const {
+    switch (legacy) {
+        case Title:
+            return Serif;
+        default:
+            return Sans;
+    }
+    return Sans;
 }
 
 template<>

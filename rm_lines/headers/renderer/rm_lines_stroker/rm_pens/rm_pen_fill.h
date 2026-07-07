@@ -88,4 +88,6 @@ public:
     void reset();
 
     void debugTool(float width = 7.0f);
+
+    void debugToolSetWidth(float width) const;
 };

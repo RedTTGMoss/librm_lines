@@ -231,6 +231,10 @@ public:
         line.endLine();
     }
 
+    void addText() {
+        // tree->initText();
+    }
+
     void save() {
         const std::string jsonFile = JSON_OUT + name + " - test write.json";
         const std::string rmFile = RM_OUT + name + " - test write.rm";
@@ -278,4 +282,8 @@ int main(const int argc, char *argv[]) {
     auto testDirections = File("Directions");
     testDirections.drawDirections();
     testDirections.save();
+
+    auto testText = File("Text");
+    testText.addText();
+    testText.save();
 }

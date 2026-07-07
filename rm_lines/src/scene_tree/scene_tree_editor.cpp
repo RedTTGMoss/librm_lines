@@ -69,7 +69,9 @@ void SceneTreeEditor::init() {
 }
 
 void SceneTreeEditor::initText() {
-    // TODO: Implement initializing text
+    setText({});
+    const auto rootText = getText();
+    text = new TextBuilder(rootText.get());
 }
 
 void SceneTreeEditor::initImageInfoBlock() {
@@ -217,4 +219,7 @@ uint32_t LineBuilder::calculateDirection(const Point &prev, const float x2, cons
     const float angle = std::atan2(dy, dx);
 
     return static_cast<uint32_t>(255.0 * angle / (PI * 2));
+}
+
+TextBuilder::TextBuilder(Text *text) : text(text) {
 }

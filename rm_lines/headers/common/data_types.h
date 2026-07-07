@@ -297,6 +297,11 @@ enum ParagraphStyle {
     NumberedTab = 11,
 };
 
+enum FontType {
+    Serif,
+    Sans
+};
+
 struct ParagraphStyleNew {
     uint8_t baseStyle = 2;
     ParagraphStyle legacy = BASIC;
@@ -315,7 +320,11 @@ struct ParagraphStyleNew {
 
     float getTabOffset() const;
 
+    std::string styleLabel() const;
+
     [[nodiscard]] json toJson() const;
+
+    FontType getFont() const;
 };
 
 // Templates for data types

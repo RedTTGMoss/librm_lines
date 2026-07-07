@@ -22,8 +22,31 @@ constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
     }
 };
 
+constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeights = {
+    {
+        {BASIC, 400},
+        {Title, 450},
+        {Sub, 500},
+    }
+};
+constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeightsBold = {
+    {
+        {BASIC, 700},
+        {Title, 700},
+        {Sub, 700},
+    }
+};
+
 constexpr float getStyleHeight(const ParagraphStyle style) {
     for (const auto &[key, value]: LineHeights) {
+        if (key == style)
+            return static_cast<float>(value);
+    }
+    return static_cast<float>(LineHeights[0].second);
+}
+
+constexpr float getStyleWeight(const ParagraphStyle style, const bool bold) {
+    for (const auto &[key, value]: (bold ? StyleWeightsBold : StyleWeights)) {
         if (key == style)
             return static_cast<float>(value);
     }
@@ -35,6 +58,11 @@ enum FormattingOptions {
     BOLD_OFF = 2,
     ITALIC_ON = 3,
     ITALIC_OFF = 4,
+};
+
+struct FontStyle {
+    bool italic;
+    float weight;
 };
 
 constexpr CrdtId ANCHOR_ID_START(0, 281474976710654);
