@@ -158,6 +158,13 @@ if (INCLUDE_FONTS)
         )
         message(STATUS "Using open source fonts (EB Garamond and Noto Sans) instead of reMarkable fonts.")
     endif ()
+    # We don't have the remarkable italic sans font, so we use the Noto Sans italic font instead
+    embed_resource(
+            "rm_lines/assets/fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf"
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/sans_italic.h"
+            sansItalicFontData
+    )
+
     target_compile_definitions(rm_lines
             PRIVATE RM_LINES_INCLUDE_FONTS
     )
