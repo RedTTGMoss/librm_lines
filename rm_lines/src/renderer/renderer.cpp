@@ -23,14 +23,16 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
                           ? Vector(paperSize.second, paperSize.first)
                           : Vector(paperSize.first, paperSize.second);
 
-    this->textRenderer = new TextRenderer(this);
-
     initSizeTracker(TEXT_LAYER);
 
     layers = layersFromSceneTree(sceneTree);
 
     prepareTextDocument();
     calculateAnchors();
+
+    if (sceneTree->hasText()) {
+        this->textRenderer = new TextRenderer(this);
+    }
 
     for (auto &layer: layers) {
         initSizeTracker(layer.groupId);
@@ -439,6 +441,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.lineTo(right, top);
             stroker.lineTo(right, bottom);
             stroker.lineTo(left, bottom);
+
             stroker.lineTo(left, top);
             stroker.lineTo(right, bottom);
             stroker.moveTo(right, top);
@@ -500,8 +503,9 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
         }
     }
-
-    this->textRenderer->renderText(stroker.raster.raster.fill.position, stroker.raster.raster.fill.scale);
+    if (sceneTree->hasText()) {
+        this->textRenderer->renderText(stroker.raster.raster.fill.position, scale);
+    }
 
     templateFunction(&stroker.raster.raster.fill, this);
 

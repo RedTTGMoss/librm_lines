@@ -5,10 +5,64 @@
 #include "serif.h"
 #include "serif_italic.h"
 
-TextRenderer::TextRenderer(Renderer *renderer) : renderer(renderer) {
+void TextRenderer::newParagraph(const Paragraph *next, const float scale) {
+    paragraph = next;
+    fontType = paragraph->style.value.getFont();
+    lineHeight = paragraph->style.value.getLineHeight();
+    rasterHeight = std::lround(lineHeight * scale);
+}
+
+void TextRenderer::newText(const FormattedText *next) {
+    formattedText = next;
+    weight = getStyleWeight(paragraph->style.value.legacy, formattedText->formatting);
+    font = selectFont(fontType, formattedText->formatting.italic);
+}
+
+void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous) {
+    logDebug(std::format("rasterHeight: {}", rasterHeight));
+    const float scale = stbtt_ScaleForPixelHeight(font, static_cast<float>(rasterHeight));
+    logDebug(std::format("scale: {}", scale));
+
+    float x = boundStart;
+    float y = posY;
+
+    for (const char &character: text) {
+        GlyphLayout glyph;
+        int advance, lsb, xEnd, yEnd, kernAdvance = 0;
+        if (previous)
+            kernAdvance = std::lround(stbtt_GetCodepointKernAdvance(font, previous, character) * scale);
+        previous = character;
+
+        stbtt_GetCodepointHMetrics(font, character, &advance, &lsb);
+        stbtt_GetCodepointBitmapBox(font, character, scale, scale, &glyph.xOffset, &glyph.yOffset, &xEnd,
+                                    &yEnd);
+
+        glyph.advance = std::lround(advance * scale) + kernAdvance;
+        glyph.codepoint = character;
+
+        const float end = x + glyph.advance;
+        glyph.width = xEnd - glyph.xOffset;
+        glyph.height = yEnd - glyph.yOffset;
+
+        if (end >= boundEnd) {
+            x = boundStart;
+            y += glyph.height;
+            previous = 0;
+            // TODO: Line space
+        }
+
+        glyph.x = x + glyph.xOffset;
+        glyph.y = y + glyph.yOffset;
+
+        x += glyph.advance;
+
+        glyphs.push_back(glyph);
+    }
 }
 
 stbtt_fontinfo *TextRenderer::selectFont(const FontType font, const bool italic) {
+    // logDebug("Selecting font: " + std::string(italic ? "Italic" : "Regular") + " " +
+    //          (font == Sans ? "Sans" : font == Serif ? "Serif" : "Unknown"));
     switch (font) {
         case Sans:
             return italic ? &g_sansItalicFont : &g_sansFont;
@@ -19,25 +73,43 @@ stbtt_fontinfo *TextRenderer::selectFont(const FontType font, const bool italic)
     }
 }
 
-void TextRenderer::renderText(const AdvancedMath::Vector *position, float scale) {
+TextRenderer::TextRenderer(Renderer *renderer) : renderer(renderer) {
+    textMargin = renderer->getTextMargin();
+    initializeFonts();
+}
+
+void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector scale) {
     if (renderer->textDocument.paragraphs.empty()) {
         return; // Early exit for no text
     }
-    float yOffset = position->y + TEXT_TOP_Y;
-    for (const auto &paragraph: renderer->textDocument.paragraphs) {
-        float xOffset = position->x;
-        const FontType font_type = paragraph.style.value.getFont();
-        const float line_height = paragraph.style.value.getLineHeight();
-        for (const auto &formattedText: paragraph.contents) {
-            float weight = getStyleWeight(paragraph.style.value.legacy, formattedText.formatting);
-            const bool italic = formattedText.formatting.italic;
-            stbtt_fontinfo *font = selectFont(font_type, italic);
-            logDebug(std::format("Rendering text: '{}' at position ({}, {}) with font {} and weight {}",
-                                 formattedText.text, xOffset, yOffset,
-                                 font_type == Sans ? "Sans" : "Serif", weight));
-            xOffset += 10 * formattedText.text.length(); // PLACEHOLDER!
+
+    boundStart = (position->x + textMargin) * scale.x;
+    boundEnd = (position->x + renderer->paperSize.first - textMargin) * scale.x;
+    posY = (position->y + renderer->textDocument.text->posY) * scale.y;
+
+    for (const auto &next: renderer->textDocument.paragraphs) {
+        newParagraph(&next, scale.y);
+
+        for (const auto &formattedText: paragraph->contents) {
+            newText(&formattedText);
+
+            std::vector<GlyphLayout> glyphs;
+            getGlyphs(formattedText.text, glyphs, 0);
+            renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
+            renderer->stroker.raster.raster.fill.debugTool(1.0f);
+            for (const auto &glyph: glyphs) {
+                // logDebug(std::format("Glyph: {} at ({}, {}) size {}x{} offset ({}, {}) advance {}",
+                //                      glyph.codepoint, glyph.x, glyph.y, glyph.width, glyph.height,
+                //                      glyph.xOffset, glyph.yOffset, glyph.advance));
+                renderer->stroker.moveTo(glyph.x, glyph.y);
+                renderer->stroker.lineTo(glyph.x + glyph.width, glyph.y);
+                renderer->stroker.lineTo(glyph.x + glyph.width, glyph.y + glyph.height);
+                renderer->stroker.lineTo(glyph.x, glyph.y + glyph.height);
+                renderer->stroker.lineTo(glyph.x, glyph.y);
+                renderer->stroker.finish();
+            }
         }
-        yOffset += line_height;
+        posY += lineHeight;
     }
 }
 

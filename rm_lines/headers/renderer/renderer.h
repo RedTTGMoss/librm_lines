@@ -93,6 +93,7 @@ public:
     }
 
     friend class TaggedBlockWriter;
+    friend class TextRenderer;
 
 private:
     SceneTree *sceneTree;

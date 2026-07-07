@@ -10,7 +10,7 @@ constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
     {
         {BASIC, 100},
         {PlainText, 71},
-        {Title, 150},
+        {Title, 85.33333333333333},
         {Sub, 70},
         {Bullet, 35},
         {BulletTab, 35},
