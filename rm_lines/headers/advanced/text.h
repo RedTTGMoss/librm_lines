@@ -8,12 +8,12 @@ struct Text;
 struct TextFormattingOptions;
 constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
     {
-        {BASIC, 100},
-        {PlainText, 71},
+        {BASIC, 42.666666666666664},
+        {PlainText, 42.666666666666664},
         {Title, 85.33333333333333},
-        {Sub, 70},
-        {Bullet, 35},
-        {BulletTab, 35},
+        {Sub, 48},
+        {Bullet, 42.666666666666664},
+        {BulletTab, 42.666666666666664},
         {CheckBox, 100},
         {CheckBoxChecked, 100},
         {CheckBoxTab, 100},
