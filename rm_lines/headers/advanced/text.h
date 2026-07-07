@@ -5,6 +5,7 @@
 #include "common/scene_items.h"
 
 struct Text;
+struct TextFormattingOptions;
 constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
     {
         {BASIC, 100},
@@ -25,15 +26,18 @@ constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
 constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeights = {
     {
         {BASIC, 400},
-        {Title, 450},
         {Sub, 500},
+    }
+};
+constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeightsItalic = {
+    {
+        {BASIC, 400},
     }
 };
 constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeightsBold = {
     {
         {BASIC, 700},
-        {Title, 700},
-        {Sub, 700},
+        {Sub, 800},
     }
 };
 
@@ -45,13 +49,7 @@ constexpr float getStyleHeight(const ParagraphStyle style) {
     return static_cast<float>(LineHeights[0].second);
 }
 
-constexpr float getStyleWeight(const ParagraphStyle style, const bool bold) {
-    for (const auto &[key, value]: (bold ? StyleWeightsBold : StyleWeights)) {
-        if (key == style)
-            return static_cast<float>(value);
-    }
-    return static_cast<float>(LineHeights[0].second);
-}
+float getStyleWeight(const ParagraphStyle style, const TextFormattingOptions formatting);
 
 enum FormattingOptions {
     BOLD_ON = 1,

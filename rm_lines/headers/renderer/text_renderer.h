@@ -19,6 +19,7 @@ public:
 private:
     Renderer *renderer;
     stbtt_fontinfo g_sansFont;
+    stbtt_fontinfo g_sansItalicFont;
     stbtt_fontinfo g_serifFont;
     stbtt_fontinfo g_serifItalicFont;
 

@@ -13,6 +13,23 @@ bool operator==(const std::string &str, const char rhs) {
     return str.size() == 1 && *str.begin() == rhs;
 }
 
+float getStyleWeight(const ParagraphStyle style, const TextFormattingOptions formatting) {
+    // The order of the weights is important, because of how reMarkable choose to handle the italic weights
+    // Bold (including BoldItalic) is first
+    // Italic is second
+    // Regular is last
+    for (const auto &[key, value]: formatting.bold
+                                       ? StyleWeightsBold
+                                       : formatting.italic
+                                             ? StyleWeightsItalic
+                                             : StyleWeights) {
+        if (key == style)
+            return static_cast<float>(value);
+    }
+    return static_cast<float>(StyleWeights[0].second);
+}
+
+
 json TextFormattingOptions::toJson() const {
     return {
         {"bold", bold},
