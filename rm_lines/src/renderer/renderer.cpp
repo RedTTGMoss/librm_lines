@@ -207,8 +207,13 @@ float Renderer::getTextMargin() const {
 float Renderer::getTextWidth() const {
     // The size of the text is based on the rM2
     // We need to scale it relative to the paperSize
+
     const float screenRelative = frameSize.x / BASE_PAPER_SIZE_X;
-    const float width = textDocument.text->width.value;
+    float width = textDocument.text->width.value;
+    if (width <= 0) {
+        return textDocument.text->posX * -2; // Margin * -2 to reverse the signs
+    }
+    logDebug(std::format("Text width: {} (screen relative: {})", width, screenRelative));
     return width * screenRelative;
 }
 

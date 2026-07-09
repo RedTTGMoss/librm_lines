@@ -21,10 +21,10 @@ void TextRenderer::newText(const FormattedText *next) {
 }
 
 void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous) {
-    logDebug(std::format("rasterHeight: {}", rasterHeight));
+    // logDebug(std::format("rasterHeight: {}", rasterHeight));
     const float scale = stbtt_ScaleForPixelHeight(font, static_cast<float>(rasterHeight - 1));
     // TODO: Fix overflow on text column bounds and text size
-    logDebug(std::format("scale: {}", scale));
+    // logDebug(std::format("scale: {}", scale));
 
     float x = boundStart;
     float y = posY;
@@ -39,7 +39,8 @@ void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &
         stbtt_GetCodepointHMetrics(font, character, &advance, &lsb);
         stbtt_GetCodepointBitmapBox(font, character, scale, scale, &glyph.xOffset, &glyph.yOffset, &xEnd,
                                     &yEnd);
-
+        if (kernAdvance)
+            logDebug(std::format("Kern advance: {}", kernAdvance));
         glyph.advance = std::lround(advance * scale) + kernAdvance;
         glyph.codepoint = character;
 
