@@ -5,11 +5,13 @@
 #include "serif.h"
 #include "serif_italic.h"
 
-void TextRenderer::newParagraph(const Paragraph *next, const float scale) {
+void TextRenderer::newParagraph(const Paragraph *next, const float scaleY) {
     paragraph = next;
     fontType = paragraph->style.value.getFont();
-    lineHeight = paragraph->style.value.getLineHeight();
-    rasterHeight = std::lround(lineHeight * scale);
+    lineHeight = paragraph->style.value.lineHeight();
+    styleHeight = paragraph->style.value.styleHeight();
+    rasterHeight = std::lround(lineHeight * scaleY);
+    posY += styleHeight * scaleY;
 }
 
 void TextRenderer::newText(const FormattedText *next) {
@@ -20,7 +22,8 @@ void TextRenderer::newText(const FormattedText *next) {
 
 void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous) {
     logDebug(std::format("rasterHeight: {}", rasterHeight));
-    const float scale = stbtt_ScaleForPixelHeight(font, static_cast<float>(rasterHeight));
+    const float scale = stbtt_ScaleForPixelHeight(font, static_cast<float>(rasterHeight - 1));
+    // TODO: Fix overflow on text column bounds and text size
     logDebug(std::format("scale: {}", scale));
 
     float x = boundStart;
@@ -85,18 +88,22 @@ void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector
 
     boundStart = (position->x + textMargin) * scale.x;
     boundEnd = (position->x + renderer->paperSize.first - textMargin) * scale.x;
-    posY = (position->y + renderer->textDocument.text->posY) * scale.y;
+    posY = (position->y + TEXT_TOP_Y) * scale.y;
 
+    renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
+    renderer->stroker.raster.raster.fill.debugTool(3.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale.y);
+        renderer->stroker.moveTo(0, posY);
+        renderer->stroker.lineTo(renderer->stroker.raster.x1, posY);
+        renderer->stroker.finish();
+
 
         for (const auto &formattedText: paragraph->contents) {
             newText(&formattedText);
 
             std::vector<GlyphLayout> glyphs;
             getGlyphs(formattedText.text, glyphs, 0);
-            renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
-            renderer->stroker.raster.raster.fill.debugTool(1.0f);
             for (const auto &glyph: glyphs) {
                 // logDebug(std::format("Glyph: {} at ({}, {}) size {}x{} offset ({}, {}) advance {}",
                 //                      glyph.codepoint, glyph.x, glyph.y, glyph.width, glyph.height,
@@ -109,7 +116,6 @@ void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector
                 renderer->stroker.finish();
             }
         }
-        posY += lineHeight;
     }
 }
 

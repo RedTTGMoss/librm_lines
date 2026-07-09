@@ -316,7 +316,9 @@ struct ParagraphStyleNew {
 
     int tabbed() const;
 
-    float getLineHeight() const;
+    float styleHeight() const;
+
+    float lineHeight() const;
 
     float getTabOffset() const;
 

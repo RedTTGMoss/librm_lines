@@ -30,7 +30,7 @@ public:
 
     void renderText(const AdvancedMath::Vector *position, Vector scale);
 
-    void newParagraph(const Paragraph *next, float scale);
+    void newParagraph(const Paragraph *next, float scaleY);
 
     void newText(const FormattedText *next);
 
@@ -51,6 +51,7 @@ private:
     stbtt_fontinfo *font;
     float weight;
     float lineHeight;
+    float styleHeight;
     int rasterHeight;
 
     // Temporary

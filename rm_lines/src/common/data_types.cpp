@@ -141,8 +141,12 @@ int ParagraphStyleNew::tabbed() const {
     return 0; // Not tabbed
 }
 
-float ParagraphStyleNew::getLineHeight() const {
+float ParagraphStyleNew::styleHeight() const {
     return getStyleHeight(legacy);
+}
+
+float ParagraphStyleNew::lineHeight() const {
+    return getLineHeight(legacy);
 }
 
 float ParagraphStyleNew::getTabOffset() const {
@@ -303,7 +307,8 @@ json ParagraphStyleNew::toJson() const {
         {"styleProperties", styleProperties},
         {"styleLabel", styleLabel()},
         {"tabbed", tabbed()},
-        {"lineHeight", getLineHeight()},
+        {"styleHeight", styleHeight()},
+        {"lineHeight", lineHeight()},
         {"tabOffset", getTabOffset()}
     };
 }

@@ -6,6 +6,23 @@
 
 struct Text;
 struct TextFormattingOptions;
+constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleHeights = {
+    {
+        {BASIC, 100},
+        {PlainText, 71},
+        {Title, 150},
+        {Sub, 70},
+        {Bullet, 71},
+        {BulletTab, 71},
+        {CheckBox, 71},
+        {CheckBoxChecked, 71},
+        {CheckBoxTab, 71},
+        {CheckBoxTabChecked, 71},
+        {Numbered, 71},
+        {NumberedTab, 71}
+    }
+};
+
 constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
     {
         {BASIC, 42.666666666666664},
@@ -14,12 +31,12 @@ constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
         {Sub, 48},
         {Bullet, 42.666666666666664},
         {BulletTab, 42.666666666666664},
-        {CheckBox, 100},
-        {CheckBoxChecked, 100},
-        {CheckBoxTab, 100},
-        {CheckBoxTabChecked, 100},
-        {Numbered, 100}, // TODO: Update line height for numbered
-        {NumberedTab, 100}
+        {CheckBox, 42.666666666666664},
+        {CheckBoxChecked, 42.666666666666664},
+        {CheckBoxTab, 42.666666666666664},
+        {CheckBoxTabChecked, 42.666666666666664},
+        {Numbered, 42.666666666666664},
+        {NumberedTab, 42.666666666666664}
     }
 };
 
@@ -42,6 +59,14 @@ constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeightsBold = {
 };
 
 constexpr float getStyleHeight(const ParagraphStyle style) {
+    for (const auto &[key, value]: StyleHeights) {
+        if (key == style)
+            return static_cast<float>(value);
+    }
+    return static_cast<float>(StyleHeights[0].second);
+}
+
+constexpr float getLineHeight(const ParagraphStyle style) {
     for (const auto &[key, value]: LineHeights) {
         if (key == style)
             return static_cast<float>(value);
