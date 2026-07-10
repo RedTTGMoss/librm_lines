@@ -1,12 +1,15 @@
 #include "renderer/text/text_renderer.h"
+
+#include "hb-ft.h"
+#include "advanced/text_scale.h"
 #include "renderer/renderer.h"
 
 void TextRenderer::newParagraph(const Paragraph *next, const float scaleY) {
     paragraph = next;
     fontType = paragraph->style.value.getFont();
-    lineHeight = paragraph->style.value.lineHeight();
+    fontSize = paragraph->style.value.fontSize();
     styleHeight = paragraph->style.value.styleHeight();
-    rasterHeight = lineHeight * scaleY;
+    scaledFontSize = fontSize * scaleY;
     posY += styleHeight * scaleY;
 }
 
@@ -14,54 +17,86 @@ void TextRenderer::newText(const FormattedText *next) {
     formattedText = next;
     weight = getStyleWeight(paragraph->style.value.legacy, formattedText->formatting);
     font = FontManager::instance().selectFont(fontType, formattedText->formatting.italic);
+    hbFont = hb_ft_font_create_referenced(font);
 }
 
-void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous) {
-    // logDebug(std::format("rasterHeight: {}", rasterHeight));
-    FT_Set_Pixel_Sizes(font, 0, rasterHeight);
-    // TODO: Fix overflow on text column bounds and text size
+void TextRenderer::getGlyphs(
+    const std::string &text,
+    std::vector<GlyphLayout> &glyphs
+) {
+    FT_Set_Pixel_Sizes(font, 0, scaledFontSize);
+
+    hb_buffer_t *buffer = hb_buffer_create();
+
+    hb_buffer_add_utf8(
+        buffer,
+        text.c_str(),
+        -1,
+        0,
+        -1
+    );
+
+    hb_buffer_guess_segment_properties(buffer);
+
+    hb_shape(
+        hbFont,
+        buffer,
+        nullptr,
+        0
+    );
+
+    unsigned int glyphCount;
+    hb_glyph_info_t *glyphInfo =
+            hb_buffer_get_glyph_infos(buffer, &glyphCount);
+
+    hb_glyph_position_t *glyphPos =
+            hb_buffer_get_glyph_positions(buffer, &glyphCount);
+
 
     float x = boundStart;
     float y = posY;
 
-    for (const char &character: text) {
+
+    for (unsigned int i = 0; i < glyphCount; i++) {
         GlyphLayout glyph{};
 
-        FT_UInt glyphIndex = FT_Get_Char_Index(font, character);
+        FT_UInt glyphIndex = glyphInfo[i].codepoint;
 
-        // Load metrics only
         if (FT_Load_Glyph(font, glyphIndex, FT_LOAD_DEFAULT))
             continue;
 
         FT_GlyphSlot slot = font->glyph;
 
-        glyph.codepoint = character;
-
-        glyph.advance = slot->advance.x >> 6;
+        glyph.codepoint = glyphIndex;
 
         glyph.width = slot->metrics.width >> 6;
         glyph.height = slot->metrics.height >> 6;
 
-        glyph.xOffset = slot->metrics.horiBearingX >> 6;
-        glyph.yOffset = -(slot->metrics.horiBearingY >> 6);
+        glyph.xOffset =
+                (glyphPos[i].x_offset >> 6) +
+                (slot->metrics.horiBearingX >> 6);
 
-        const float end = x + glyph.advance;
+        glyph.yOffset =
+                -(slot->metrics.horiBearingY >> 6);
 
-        if (end >= boundEnd) {
+        glyph.advance =
+                glyphPos[i].x_advance >> 6;
+
+
+        if (x + glyph.advance >= boundEnd) {
             x = boundStart;
-            y += rasterHeight; // use lineHeight later
-            previous = 0;
+            y += scaledFontSize;
         }
 
-        glyph.x = x + glyph.xOffset;
+        glyph.x = x + (glyphPos[i].x_offset >> 6);
         glyph.y = y + glyph.yOffset;
 
         x += glyph.advance;
 
         glyphs.push_back(glyph);
-
-        previous = character;
     }
+
+    hb_buffer_destroy(buffer);
 }
 
 TextRenderer::TextRenderer(Renderer *renderer) : renderer(renderer) {
@@ -89,7 +124,7 @@ void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector
             newText(&formattedText);
 
             std::vector<GlyphLayout> glyphs;
-            getGlyphs(formattedText.text, glyphs, 0);
+            getGlyphs(formattedText.text, glyphs);
             for (const auto &glyph: glyphs) {
                 // logDebug(std::format("Glyph: {} at ({}, {}) size {}x{} offset ({}, {}) advance {}",
                 //                      glyph.codepoint, glyph.x, glyph.y, glyph.width, glyph.height,

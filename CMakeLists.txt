@@ -135,6 +135,7 @@ add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
         rm_lines/src/renderer/text/font_manager.cpp
         rm_lines/src/renderer/text/text_renderer.cpp
         rm_lines/src/advanced/text_sequence.cpp
+        rm_lines/src/advanced/text_scales.cpp
         rm_lines/src/advanced/text.cpp
         ${STB}
         ${RENDERER_FILES}

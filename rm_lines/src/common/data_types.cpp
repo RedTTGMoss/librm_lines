@@ -5,6 +5,7 @@
 #include <common/crdt_sequence_item.h>
 
 #include "advanced/text.h"
+#include "advanced/text_scale.h"
 
 std::string formatTextItem(const TextItem &textItem) {
     if (textItem.value.has_value()) {
@@ -145,8 +146,8 @@ float ParagraphStyleNew::styleHeight() const {
     return getStyleHeight(legacy);
 }
 
-float ParagraphStyleNew::lineHeight() const {
-    return getLineHeight(legacy);
+float ParagraphStyleNew::fontSize() const {
+    return getFontSize(legacy);
 }
 
 float ParagraphStyleNew::getTabOffset() const {
@@ -308,7 +309,7 @@ json ParagraphStyleNew::toJson() const {
         {"styleLabel", styleLabel()},
         {"tabbed", tabbed()},
         {"styleHeight", styleHeight()},
-        {"lineHeight", lineHeight()},
+        {"fontSize", fontSize()},
         {"tabOffset", getTabOffset()}
     };
 }

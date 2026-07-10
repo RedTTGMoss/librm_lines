@@ -4,6 +4,7 @@
 #include "common/data_types.h"
 #include "../rm_lines_stroker/raster/clipped.h"
 #include "font_manager.h"
+#include "hb.h"
 
 class Renderer;
 
@@ -34,7 +35,7 @@ public:
 
     void newText(const FormattedText *next);
 
-    void getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous);
+    void getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs);
 
 private:
     float textMargin;
@@ -47,10 +48,11 @@ private:
 
     // Font data
     FT_Face font;
+    hb_font_t *hbFont;
     float weight;
-    float lineHeight;
+    float fontSize;
     float styleHeight;
-    float rasterHeight;
+    float scaledFontSize;
 
     // Temporary
     FontType fontType;
