@@ -9,6 +9,7 @@ void TextRenderer::newParagraph(const Paragraph *next, const float scaleY) {
     fontType = paragraph->style.value.getFont();
     fontSize = paragraph->style.value.fontSize();
     styleHeight = paragraph->style.value.styleHeight();
+    scaledStyleHeight = styleHeight * scaleY;
     scaledFontSize = fontSize * scaleY;
     posY += styleHeight * scaleY;
 }
@@ -17,21 +18,32 @@ void TextRenderer::newText(const FormattedText *next) {
     formattedText = next;
     weight = getStyleWeight(paragraph->style.value.legacy, formattedText->formatting);
     font = FontManager::instance().selectFont(fontType, formattedText->formatting.italic);
+    FT_Set_Char_Size(
+        font,
+        0,
+        F_TO_FT(scaledFontSize),
+        0,
+        0
+    );
+    if (hbFont)
+        hb_font_destroy(hbFont);
     hbFont = hb_ft_font_create_referenced(font);
+    hb_ft_font_set_load_flags(
+        hbFont,
+        FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP
+    );
 }
 
 void TextRenderer::getGlyphs(
     const std::string &text,
     std::vector<GlyphLayout> &glyphs
 ) {
-    FT_Set_Pixel_Sizes(font, 0, scaledFontSize);
-
     hb_buffer_t *buffer = hb_buffer_create();
 
     hb_buffer_add_utf8(
         buffer,
         text.c_str(),
-        -1,
+        text.length(),
         0,
         -1
     );
@@ -46,10 +58,10 @@ void TextRenderer::getGlyphs(
     );
 
     unsigned int glyphCount;
-    hb_glyph_info_t *glyphInfo =
+    const hb_glyph_info_t *glyphInfo =
             hb_buffer_get_glyph_infos(buffer, &glyphCount);
 
-    hb_glyph_position_t *glyphPos =
+    const hb_glyph_position_t *glyphPos =
             hb_buffer_get_glyph_positions(buffer, &glyphCount);
 
 
@@ -60,35 +72,33 @@ void TextRenderer::getGlyphs(
     for (unsigned int i = 0; i < glyphCount; i++) {
         GlyphLayout glyph{};
 
-        FT_UInt glyphIndex = glyphInfo[i].codepoint;
+        const FT_UInt glyphIndex = glyphInfo[i].codepoint;
 
-        if (FT_Load_Glyph(font, glyphIndex, FT_LOAD_DEFAULT))
+        if (FT_Load_Glyph(font, glyphIndex, FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP))
             continue;
 
         FT_GlyphSlot slot = font->glyph;
 
         glyph.codepoint = glyphIndex;
 
-        glyph.width = slot->metrics.width >> 6;
-        glyph.height = slot->metrics.height >> 6;
+        glyph.width = FT_TO_F(slot->metrics.width);
+        glyph.height = FT_TO_F(slot->metrics.height);
 
         glyph.xOffset =
-                (glyphPos[i].x_offset >> 6) +
-                (slot->metrics.horiBearingX >> 6);
+                FT_TO_F(glyphPos[i].x_offset) +
+                FT_TO_F(slot->metrics.horiBearingX);
 
-        glyph.yOffset =
-                -(slot->metrics.horiBearingY >> 6);
+        glyph.yOffset = -FT_TO_F(slot->metrics.horiBearingY);
 
-        glyph.advance =
-                glyphPos[i].x_advance >> 6;
+        glyph.advance = FT_TO_F(glyphPos[i].x_advance);
 
 
         if (x + glyph.advance >= boundEnd) {
             x = boundStart;
-            y += scaledFontSize;
+            y += scaledStyleHeight;
         }
 
-        glyph.x = x + (glyphPos[i].x_offset >> 6);
+        glyph.x = x + FT_TO_F(glyphPos[i].x_offset);
         glyph.y = y + glyph.yOffset;
 
         x += glyph.advance;
@@ -115,7 +125,7 @@ void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector
     posY = (position->y + TEXT_TOP_Y) * scale.y;
 
     renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
-    renderer->stroker.raster.raster.fill.debugTool(3.0f);
+    renderer->stroker.raster.raster.fill.debugTool(2.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale.y);
 

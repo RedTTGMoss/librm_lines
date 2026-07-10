@@ -5,6 +5,9 @@
 
 #include FT_FREETYPE_H
 
+#define FT_TO_F(x) (x / 64.0f)
+#define F_TO_FT(x) (x * 64.0f)
+
 class FontManager {
 public:
     static FontManager &instance();

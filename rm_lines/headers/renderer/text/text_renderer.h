@@ -17,8 +17,8 @@ struct GlyphLayout {
     float width;
     float height;
 
-    int xOffset;
-    int yOffset;
+    float xOffset;
+    float yOffset;
 
     float advance;
 };
@@ -48,11 +48,12 @@ private:
 
     // Font data
     FT_Face font;
-    hb_font_t *hbFont;
+    hb_font_t *hbFont = nullptr;
     float weight;
     float fontSize;
     float styleHeight;
     float scaledFontSize;
+    float scaledStyleHeight;
 
     // Temporary
     FontType fontType;
