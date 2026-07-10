@@ -47,7 +47,7 @@ private:
     float boundEnd;
 
     // Font data
-    FT_Face font;
+    FontInfo *font = nullptr;
     hb_font_t *hbFont = nullptr;
     float weight;
     float fontSize;

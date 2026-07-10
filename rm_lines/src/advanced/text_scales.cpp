@@ -3,8 +3,8 @@
 
 namespace {
     // Most values are the same, we can edit them here
-    constexpr int TITLE_LINE_HEIGHT = 68;
-    constexpr int SUB_LINE_HEIGHT = 47;
+    constexpr int TITLE_LINE_HEIGHT = 66;
+    constexpr int SUB_LINE_HEIGHT = 46;
     constexpr int BASIC_LINE_HEIGHT = 34;
 
     // The gap between paragraphs of different styles

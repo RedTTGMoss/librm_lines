@@ -19,20 +19,10 @@ void TextRenderer::newText(const FormattedText *next) {
     formattedText = next;
     weight = getStyleWeight(paragraph->style.value.legacy, formattedText->formatting);
     font = FontManager::instance().selectFont(fontType, formattedText->formatting.italic);
-    FT_Set_Char_Size(
-        font,
-        0,
-        F_TO_FT(scaledFontSize),
-        0,
-        0
-    );
-    if (hbFont)
-        hb_font_destroy(hbFont);
-    hbFont = hb_ft_font_create_referenced(font);
-    hb_ft_font_set_load_flags(
-        hbFont,
-        FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP
-    );
+    font->setWeight(weight);
+    font->setSize(scaledFontSize);
+
+    hbFont = font->getHb();
 }
 
 void TextRenderer::getGlyphs(
@@ -70,10 +60,10 @@ void TextRenderer::getGlyphs(
 
         const FT_UInt glyphIndex = glyphInfo[i].codepoint;
 
-        if (FT_Load_Glyph(font, glyphIndex, FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP))
+        if (FT_Load_Glyph(font->face, glyphIndex, FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP))
             continue;
 
-        FT_GlyphSlot slot = font->glyph;
+        FT_GlyphSlot slot = font->face->glyph;
 
         glyph.codepoint = glyphIndex;
 

@@ -151,7 +151,13 @@ if (INCLUDE_FONTS)
     set(REMARKABLE_SERIF_ITALIC "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/reMarkableSerifItalic.ttf")
     set(REMARKABLE_SANS "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/reMarkableSans.ttf")
 
+    set(COMP_SERIF "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/CompSerif.ttf")
+    set(COMP_SERIF_ITALIC "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/CompSerifItalic.ttf")
+    set(COMP_SANS "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/CompSans.ttf")
+    set(COMP_SANS_ITALIC "${CMAKE_CURRENT_SOURCE_DIR}/rm_lines/assets/fonts/CompSansItalic.ttf")
+
     set(HAS_REMARKABLE_FONTS TRUE)
+    set(HAS_COMP_FONTS TRUE)
 
     foreach (FONT
             "${REMARKABLE_SERIF}"
@@ -162,8 +168,40 @@ if (INCLUDE_FONTS)
             set(HAS_REMARKABLE_FONTS FALSE)
         endif ()
     endforeach ()
+    foreach (FONT
+            "${COMP_SERIF}"
+            "${COMP_SERIF_ITALIC}"
+            "${COMP_SANS}"
+            "${COMP_SANS_ITALIC}"
+    )
+        if (NOT EXISTS "${FONT}")
+            set(HAS_COMP_FONTS FALSE)
+        endif ()
+    endforeach ()
 
-    if (HAS_REMARKABLE_FONTS)
+    if (HAS_COMP_FONTS)
+        embed_resource(
+                "${COMP_SERIF}"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/serif.h"
+                serifFontData
+        )
+        embed_resource(
+                "${COMP_SERIF_ITALIC}"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/serif_italic.h"
+                serifItalicFontData
+        )
+        embed_resource(
+                "${COMP_SANS}"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/sans.h"
+                sansFontData
+        )
+        embed_resource(
+                "${COMP_SANS_ITALIC}"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/sans_italic.h"
+                sansItalicFontData
+        )
+        message(STATUS "Using compatible fonts (Serif/Sans) instead of reMarkable fonts.")
+    elseif (HAS_REMARKABLE_FONTS)
         embed_resource(
                 "${REMARKABLE_SERIF}"
                 "${CMAKE_CURRENT_BINARY_DIR}/generated/serif.h"
@@ -179,6 +217,11 @@ if (INCLUDE_FONTS)
                 "${CMAKE_CURRENT_BINARY_DIR}/generated/sans.h"
                 sansFontData
         )
+        embed_resource(
+                "rm_lines/assets/fonts/Karla-Italic-VariableFont_wght.ttf"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/sans_italic.h"
+                sansItalicFontData
+        )
         message(WARNING
                 "\n"
                 "============================================================\n"
@@ -192,28 +235,29 @@ if (INCLUDE_FONTS)
         )
     else ()
         embed_resource(
-                "rm_lines/assets/fonts/EBGaramond-Italic-VariableFont_wght.ttf"
+                "rm_lines/assets/fonts/LibreBaskerville-Italic-VariableFont_wght.ttf"
                 "${CMAKE_CURRENT_BINARY_DIR}/generated/serif_italic.h"
                 serifItalicFontData
         )
         embed_resource(
-                "rm_lines/assets/fonts/EBGaramond-VariableFont_wght.ttf"
+                "rm_lines/assets/fonts/LibreBaskerville-VariableFont_wght.ttf"
                 "${CMAKE_CURRENT_BINARY_DIR}/generated/serif.h"
                 serifFontData
         )
         embed_resource(
-                "rm_lines/assets/fonts/NotoSans-VariableFont_wdth,wght.ttf"
+                "rm_lines/assets/fonts/Karla-VariableFont_wght.ttf"
                 "${CMAKE_CURRENT_BINARY_DIR}/generated/sans.h"
                 sansFontData
+        )
+        embed_resource(
+                "rm_lines/assets/fonts/Karla-Italic-VariableFont_wght.ttf"
+                "${CMAKE_CURRENT_BINARY_DIR}/generated/sans_italic.h"
+                sansItalicFontData
         )
         message(STATUS "Using open source fonts (EB Garamond and Noto Sans) instead of reMarkable fonts.")
     endif ()
     # We don't have the remarkable italic sans font, so we use the Noto Sans italic font instead
-    embed_resource(
-            "rm_lines/assets/fonts/NotoSans-Italic-VariableFont_wdth,wght.ttf"
-            "${CMAKE_CURRENT_BINARY_DIR}/generated/sans_italic.h"
-            sansItalicFontData
-    )
+
 
     target_compile_definitions(rm_lines
             PRIVATE RM_LINES_INCLUDE_FONTS

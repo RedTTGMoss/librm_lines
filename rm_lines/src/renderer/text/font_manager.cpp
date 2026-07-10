@@ -11,58 +11,97 @@ FontManager &FontManager::instance() {
 
 FontManager::FontManager() {
     FT_Init_FreeType(&library);
+    m_sans = new FontInfo();
+    m_sansItalic = new FontInfo();
+    m_serif = new FontInfo();
+    m_serifItalic = new FontInfo();
 
-    FT_New_Memory_Face(
-        library,
+    initFont(
         sansFontData,
         sizeof(sansFontData),
-        0,
-        &m_sans
+        m_sans
     );
 
-    FT_New_Memory_Face(
-        library,
+    initFont(
         sansItalicFontData,
         sizeof(sansItalicFontData),
-        0,
-        &m_sansItalic
+        m_sansItalic
     );
 
-    FT_New_Memory_Face(
-        library,
+    initFont(
         serifFontData,
         sizeof(serifFontData),
-        0,
-        &m_serif
+        m_serif
     );
 
-    FT_New_Memory_Face(
-        library,
+    initFont(
         serifItalicFontData,
         sizeof(serifItalicFontData),
-        0,
-        &m_serifItalic
+        m_serifItalic
     );
 }
 
 FontManager::~FontManager() {
     if (m_sans)
-        FT_Done_Face(m_sans);
+        m_sans->cleanup();
 
     if (m_sansItalic)
-        FT_Done_Face(m_sansItalic);
+        m_sans->cleanup();
 
     if (m_serif)
-        FT_Done_Face(m_serif);
+        m_sans->cleanup();
 
     if (m_serifItalic)
-        FT_Done_Face(m_serifItalic);
+        m_sans->cleanup();
+
+    delete m_sans;
+    delete m_sansItalic;
+    delete m_serif;
+    delete m_serifItalic;
 
     if (library)
         FT_Done_FreeType(library);
 }
 
-FT_Face FontManager::selectFont(const FontType font, const bool italic) {
+void FontManager::initFont(const uint8_t *fontData, const size_t fontSize, FontInfo *info) {
+    FT_New_Memory_Face(
+        library,
+        fontData,
+        fontSize,
+        0,
+        &info->face
+    );
+
+    if (FT_Get_MM_Var(info->face, &info->mmVar) == 0) {
+        for (FT_UInt i = 0; i < info->mmVar->num_axis; ++i) {
+            switch (info->mmVar->axis[i].tag) {
+                case FT_MAKE_TAG('w', 'g', 'h', 't'):
+                    info->weightAxis = i;
+                    break;
+
+                case FT_MAKE_TAG('w', 'd', 't', 'h'):
+                    info->widthAxis = i;
+                    break;
+
+                case FT_MAKE_TAG('s', 'l', 'n', 't'):
+                    info->slantAxis = i;
+                    break;
+
+                case FT_MAKE_TAG('i', 't', 'a', 'l'):
+                    info->italicAxis = i;
+                    break;
+
+                case FT_MAKE_TAG('o', 'p', 's', 'z'):
+                    info->opticalSizeAxis = i;
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+}
+
+FontInfo *FontManager::selectFont(const FontType font, const bool italic) {
     switch (font) {
         case Sans:
             return italic ? m_sansItalic : m_sans;
