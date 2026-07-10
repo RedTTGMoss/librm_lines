@@ -39,6 +39,7 @@ class GC(pe.GameContext):
     def __init__(self):
         self.items = []
         self.loaded = {}
+        self.original_filenames = []
         self.filenames = []
         self._index = 0
         self._scale = 0.4
@@ -59,6 +60,7 @@ class GC(pe.GameContext):
         self.items.sort(key=lambda x: os.path.basename(x))
         for item in self.items:
             filename = os.path.basename(item)
+            self.original_filenames.append(filename[:-3])
             self.filenames.append(filename[:-3].replace('_', ' ') + f' [{len(self.items)}]')
         self.index = 42
         if os.path.exists('pos'):
@@ -109,6 +111,12 @@ class GC(pe.GameContext):
         return renderer
 
     def handle_event(self, e: pe.event.Event):
+        if pe.event.key_DOWN(pe.K_s):
+            tree_id, renderer_id = self.get_renderer()
+            scene_info = lib.getSceneInfo(tree_id)
+            paper_size = json.loads(scene_info.decode()).get('paper_size', (1404, 1872)) if scene_info else (1404, 1872)
+            frame = self.get_frame(*[a / 2 for a in paper_size], *paper_size, 1)
+            pe.pygame.image.save(frame, f"output/png/{self.original_filenames[self.index]}.png")
         if pe.event.key_DOWN(pe.K_RIGHT):
             self.index += 1
             if self.index >= len(self.items):

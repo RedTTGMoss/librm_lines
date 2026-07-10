@@ -10,7 +10,7 @@ void TextRenderer::newParagraph(const Paragraph *next, const float scaleY) {
     fontType = paragraph->style.value.getFont();
     lineHeight = paragraph->style.value.lineHeight();
     styleHeight = paragraph->style.value.styleHeight();
-    rasterHeight = std::lround(lineHeight * scaleY);
+    rasterHeight = lineHeight * scaleY;
     posY += styleHeight * scaleY;
 }
 
@@ -22,7 +22,7 @@ void TextRenderer::newText(const FormattedText *next) {
 
 void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous) {
     // logDebug(std::format("rasterHeight: {}", rasterHeight));
-    const float scale = stbtt_ScaleForPixelHeight(font, static_cast<float>(rasterHeight - 1));
+    const float scale = stbtt_ScaleForPixelHeight(font, rasterHeight);
     // TODO: Fix overflow on text column bounds and text size
     // logDebug(std::format("scale: {}", scale));
 
@@ -33,7 +33,7 @@ void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &
         GlyphLayout glyph;
         int advance, lsb, xEnd, yEnd, kernAdvance = 0;
         if (previous)
-            kernAdvance = std::lround(stbtt_GetCodepointKernAdvance(font, previous, character) * scale);
+            kernAdvance = stbtt_GetCodepointKernAdvance(font, previous, character) * scale;
         previous = character;
 
         stbtt_GetCodepointHMetrics(font, character, &advance, &lsb);
@@ -41,7 +41,7 @@ void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &
                                     &yEnd);
         if (kernAdvance)
             logDebug(std::format("Kern advance: {}", kernAdvance));
-        glyph.advance = std::lround(advance * scale) + kernAdvance;
+        glyph.advance = advance * scale + kernAdvance;
         glyph.codepoint = character;
 
         const float end = x + glyph.advance;
@@ -95,9 +95,6 @@ void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector
     renderer->stroker.raster.raster.fill.debugTool(3.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale.y);
-        renderer->stroker.moveTo(0, posY);
-        renderer->stroker.lineTo(renderer->stroker.raster.x1, posY);
-        renderer->stroker.finish();
 
 
         for (const auto &formattedText: paragraph->contents) {

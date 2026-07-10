@@ -11,7 +11,7 @@
 
 #include "image_ref.h"
 #include "text_renderer.h"
-#define TEXT_TOP_Y (180)
+#define TEXT_TOP_Y (150)
 
 class Renderer;
 using ImageBuffer = RMLinesRenderer::ImageBuffer;

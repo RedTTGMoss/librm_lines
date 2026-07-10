@@ -213,7 +213,6 @@ float Renderer::getTextWidth() const {
     if (width <= 0) {
         return textDocument.text->posX * -2; // Margin * -2 to reverse the signs
     }
-    logDebug(std::format("Text width: {} (screen relative: {})", width, screenRelative));
     return width * screenRelative;
 }
 
@@ -441,14 +440,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.raster.raster.fill.baseColor = Color(150, 0, 150, 200);
             stroker.raster.raster.fill.debugTool(5.0f);
 
-            // Draw a rect and cross of the frame
+            // Draw a rect and cross of the frame (just the paper size)
             stroker.moveTo(left, top);
             stroker.lineTo(right, top);
             stroker.lineTo(right, bottom);
             stroker.lineTo(left, bottom);
-
             stroker.lineTo(left, top);
             stroker.lineTo(right, bottom);
+
             stroker.moveTo(right, top);
             stroker.lineTo(left, bottom);
             stroker.finish();
@@ -459,12 +458,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             left = (position.x + sizeTracker->getLeft()) * scale.x;
             right = (position.x + sizeTracker->getRight()) * scale.x;
 
+            // Draw a rect and cross of the size tracker area
             stroker.moveTo(left, top);
             stroker.lineTo(right, top);
             stroker.lineTo(right, bottom);
             stroker.lineTo(left, bottom);
             stroker.lineTo(left, top);
             stroker.lineTo(right, bottom);
+
             stroker.moveTo(right, top);
             stroker.lineTo(left, bottom);
             stroker.finish();

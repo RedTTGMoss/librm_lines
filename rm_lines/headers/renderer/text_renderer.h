@@ -10,16 +10,16 @@ class Renderer;
 struct GlyphLayout {
     uint32_t codepoint;
 
-    int x;
-    int y;
+    float x;
+    float y;
 
-    int width;
-    int height;
+    float width;
+    float height;
 
     int xOffset;
     int yOffset;
 
-    int advance;
+    float advance;
 };
 
 class TextRenderer {
@@ -52,7 +52,7 @@ private:
     float weight;
     float lineHeight;
     float styleHeight;
-    int rasterHeight;
+    float rasterHeight;
 
     // Temporary
     FontType fontType;
