@@ -7,28 +7,74 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 include(FetchContent)
 
+#  nlohmann_json
 FetchContent_Declare(json URL https://github.com/nlohmann/json/releases/download/v3.12.0/json.tar.xz)
+
+#  cppcodec
 FetchContent_Declare(
         cppcodec
         GIT_REPOSITORY https://github.com/tplgy/cppcodec.git
         GIT_TAG master
 )
+
+# UTF8CPP
 FetchContent_Declare(
         utf8cpp
         GIT_REPOSITORY https://github.com/nemtrif/utfcpp.git
         GIT_TAG v4.0.6
 )
-set(SIMDUTF_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(SIMDUTF_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+
+# SIMDUTF
 FetchContent_Declare(
         simdutf
         GIT_REPOSITORY https://github.com/simdutf/simdutf.git
         GIT_TAG v8.2.0
 )
+set(SIMDUTF_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(SIMDUTF_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+set(SIMDUTF_TOOLS OFF CACHE BOOL "" FORCE)
+
+# FreeType
+FetchContent_Declare(
+        freetype
+        GIT_REPOSITORY https://github.com/freetype/freetype.git
+        GIT_TAG VER-2-14-3
+)
+
+set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
+
+# HarfBuzz
+FetchContent_Declare(
+        harfbuzz
+        GIT_REPOSITORY https://github.com/harfbuzz/harfbuzz.git
+        GIT_TAG 11.5.0
+)
+
+set(HB_BUILD_UTILS OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_SUBSET OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(HB_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+
 FetchContent_MakeAvailable(simdutf)
 FetchContent_MakeAvailable(utf8cpp)
 FetchContent_MakeAvailable(json)
 FetchContent_MakeAvailable(cppcodec)
+FetchContent_MakeAvailable(freetype)
+FetchContent_MakeAvailable(harfbuzz)
+
+set(RM_LINES_DEPENDENCIES
+        nlohmann_json::nlohmann_json
+        cppcodec
+        utf8cpp
+        simdutf
+        freetype
+        harfbuzz
+)
 
 # Check python3 for the script later
 find_package(Python3 COMPONENTS Interpreter REQUIRED)
@@ -93,7 +139,7 @@ add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
         ${RM_TEMPLATE_FILES}
 )
 
-target_link_libraries(rm_lines PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
+target_link_libraries(rm_lines PRIVATE ${RM_LINES_DEPENDENCIES})
 
 option(INCLUDE_FONTS "Embed built-in font resources" ON)
 if (INCLUDE_FONTS)
@@ -202,9 +248,8 @@ endif ()
 # Building for web with emscripten
 if (EMSCRIPTEN)
     add_executable(rm_lines_wasm rm_lines/src/wasm_entry.cpp)
-    target_link_libraries(rm_lines_wasm PRIVATE rm_lines)
+    target_link_libraries(rm_lines_wasm PRIVATE rm_lines ${RM_LINES_DEPENDENCIES})
     add_dependencies(rm_lines_wasm generate_exports)
-    target_link_libraries(rm_lines_wasm PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
 
     target_link_options(rm_lines_wasm PRIVATE
             "SHELL:-s MODULARIZE=1"
@@ -227,12 +272,10 @@ endif ()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 add_executable(test tests/test.cpp)
-target_link_libraries(test PRIVATE rm_lines)
-target_link_libraries(test PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
+target_link_libraries(test PRIVATE rm_lines ${RM_LINES_DEPENDENCIES})
 
 add_executable(test_writes tests/test_writes.cpp)
-target_link_libraries(test_writes PRIVATE rm_lines)
-target_link_libraries(test_writes PRIVATE nlohmann_json::nlohmann_json cppcodec utf8cpp simdutf)
+target_link_libraries(test_writes PRIVATE rm_lines ${RM_LINES_DEPENDENCIES})
 
 if (WIN32)
     target_link_libraries(test PRIVATE DbgHelp)
