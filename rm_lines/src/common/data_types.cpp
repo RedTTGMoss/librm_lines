@@ -317,6 +317,7 @@ json ParagraphStyleNew::toJson() const {
 FontType ParagraphStyleNew::getFont() const {
     switch (legacy) {
         case Title:
+        case Sub:
             return Serif;
         default:
             return Sans;

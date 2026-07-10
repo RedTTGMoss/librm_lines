@@ -31,7 +31,7 @@ public:
 
     void renderText(const AdvancedMath::Vector *position, Vector scale);
 
-    void newParagraph(const Paragraph *next, float scaleY);
+    void newParagraph(const Paragraph *next, Vector scale);
 
     void newText(const FormattedText *next);
 

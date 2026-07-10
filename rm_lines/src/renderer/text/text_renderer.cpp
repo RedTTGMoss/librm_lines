@@ -4,14 +4,15 @@
 #include "advanced/text_scale.h"
 #include "renderer/renderer.h"
 
-void TextRenderer::newParagraph(const Paragraph *next, const float scaleY) {
+void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     paragraph = next;
     fontType = paragraph->style.value.getFont();
     fontSize = paragraph->style.value.fontSize();
     styleHeight = paragraph->style.value.styleHeight();
-    scaledStyleHeight = styleHeight * scaleY;
-    scaledFontSize = fontSize * scaleY;
-    posY += styleHeight * scaleY;
+    scaledStyleHeight = styleHeight * scale.y;
+    scaledFontSize = fontSize * scale.y;
+    posX = boundStart;
+    posY += styleHeight * scale.y;
 }
 
 void TextRenderer::newText(const FormattedText *next) {
@@ -64,11 +65,6 @@ void TextRenderer::getGlyphs(
     const hb_glyph_position_t *glyphPos =
             hb_buffer_get_glyph_positions(buffer, &glyphCount);
 
-
-    float x = boundStart;
-    float y = posY;
-
-
     for (unsigned int i = 0; i < glyphCount; i++) {
         GlyphLayout glyph{};
 
@@ -93,15 +89,15 @@ void TextRenderer::getGlyphs(
         glyph.advance = FT_TO_F(glyphPos[i].x_advance);
 
 
-        if (x + glyph.advance >= boundEnd) {
-            x = boundStart;
-            y += scaledStyleHeight;
+        if (posX + glyph.advance >= boundEnd) {
+            posX = boundStart;
+            posY += scaledFontSize;
         }
 
-        glyph.x = x + FT_TO_F(glyphPos[i].x_offset);
-        glyph.y = y + glyph.yOffset;
+        glyph.x = posX + FT_TO_F(glyphPos[i].x_offset);
+        glyph.y = posY + glyph.yOffset;
 
-        x += glyph.advance;
+        posX += glyph.advance;
 
         glyphs.push_back(glyph);
     }
@@ -127,10 +123,14 @@ void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector
     renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
     renderer->stroker.raster.raster.fill.debugTool(2.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
-        newParagraph(&next, scale.y);
+        newParagraph(&next, scale);
+        logDebug(std::format("Rendering paragraph {} at ({}, {}) with font size {} and style height {}",
+                             next.startId.repr(), posX, posY, scaledFontSize, scaledStyleHeight));
 
 
         for (const auto &formattedText: paragraph->contents) {
+            logDebug(std::format("Rendering text: \"{}\" at ({}, {}) with font size {} and weight {}",
+                                 formattedText.text, posX, posY, scaledFontSize, weight));
             newText(&formattedText);
 
             std::vector<GlyphLayout> glyphs;

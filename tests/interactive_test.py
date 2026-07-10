@@ -116,7 +116,19 @@ class GC(pe.GameContext):
             scene_info = lib.getSceneInfo(tree_id)
             paper_size = json.loads(scene_info.decode()).get('paper_size', (1404, 1872)) if scene_info else (1404, 1872)
             frame = self.get_frame(*[a / 2 for a in paper_size], *paper_size, 1)
-            pe.pygame.image.save(frame, f"output/png/{self.original_filenames[self.index]}.png")
+            overlay_file = f"debug_overlays/{self.original_filenames[self.index]}.png"
+            save_output = f"output/png/{self.original_filenames[self.index]}.png"
+            if os.path.exists(overlay_file):
+                overlay_surface = pe.get_surface_file(overlay_file)
+                with overlay_surface:
+                    pe.fill.transparency(pe.colors.white, 100)
+                    pe.display.blit(frame)
+                    print("Using overlay!")
+                overlay_surface.save_to_file(save_output)
+                del overlay_surface
+            else:
+                pe.pygame.image.save(frame, save_output)
+            del frame
         if pe.event.key_DOWN(pe.K_RIGHT):
             self.index += 1
             if self.index >= len(self.items):
