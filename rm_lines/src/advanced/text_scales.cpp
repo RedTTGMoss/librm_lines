@@ -3,9 +3,9 @@
 
 namespace {
     // Most values are the same, we can edit them here
-    constexpr int TITLE_LINE_HEIGHT = 70;
-    constexpr int SUB_LINE_HEIGHT = 40;
-    constexpr int BASIC_LINE_HEIGHT = 35;
+    constexpr int TITLE_LINE_HEIGHT = 68;
+    constexpr int SUB_LINE_HEIGHT = 38;
+    constexpr int BASIC_LINE_HEIGHT = 34;
 
     // The gap between paragraphs of different styles
     constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleHeights = {

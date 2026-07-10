@@ -211,9 +211,9 @@ float Renderer::getTextWidth() const {
     const float screenRelative = frameSize.x / BASE_PAPER_SIZE_X;
     float width = textDocument.text->width.value;
     if (width <= 0) {
-        return textDocument.text->posX * -2; // Margin * -2 to reverse the signs
+        return textDocument.text->posX * -2 + TEXT_WIDTH_ALIGN; // Margin * -2 to reverse the signs
     }
-    return width * screenRelative;
+    return width * screenRelative + TEXT_WIDTH_ALIGN;
 }
 
 void Renderer::toMd(std::ostream &stream) const {

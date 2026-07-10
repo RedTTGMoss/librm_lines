@@ -12,6 +12,7 @@
 #include "image_ref.h"
 #include "text/text_renderer.h"
 #define TEXT_TOP_Y (150)
+#define TEXT_WIDTH_ALIGN (-8)
 
 class Renderer;
 using ImageBuffer = RMLinesRenderer::ImageBuffer;
