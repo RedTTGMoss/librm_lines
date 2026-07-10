@@ -2,8 +2,8 @@
 #include "advanced/math.h"
 #include "advanced/text.h"
 #include "common/data_types.h"
-#include "rm_lines_stroker/raster/clipped.h"
-#include "stb/stb_truetype.h"
+#include "../rm_lines_stroker/raster/clipped.h"
+#include "font_manager.h"
 
 class Renderer;
 
@@ -36,8 +36,6 @@ public:
 
     void getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous);
 
-    stbtt_fontinfo *selectFont(FontType font, bool italic);
-
 private:
     float textMargin;
 
@@ -48,7 +46,7 @@ private:
     float boundEnd;
 
     // Font data
-    stbtt_fontinfo *font;
+    FT_Face font;
     float weight;
     float lineHeight;
     float styleHeight;
@@ -61,10 +59,4 @@ private:
 
 
     Renderer *renderer;
-    stbtt_fontinfo g_sansFont;
-    stbtt_fontinfo g_sansItalicFont;
-    stbtt_fontinfo g_serifFont;
-    stbtt_fontinfo g_serifItalicFont;
-
-    bool initializeFonts();
 };

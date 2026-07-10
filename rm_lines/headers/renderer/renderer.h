@@ -10,7 +10,7 @@
 #include <unordered_map>
 
 #include "image_ref.h"
-#include "text_renderer.h"
+#include "text/text_renderer.h"
 #define TEXT_TOP_Y (150)
 
 class Renderer;

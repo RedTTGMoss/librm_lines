@@ -4,6 +4,7 @@ project(rm_lines)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 include(FetchContent)
 
@@ -41,6 +42,7 @@ FetchContent_Declare(
         GIT_TAG VER-2-14-3
 )
 
+set(FT_WITH_PIC ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
@@ -128,9 +130,10 @@ add_library(rm_lines ${RM_LINES_LIBRARY_TYPE} rm_lines/src/library.cpp
         rm_lines/src/common/crdt_sequence_item.cpp
         rm_lines/src/renderer/renderer.cpp
         rm_lines/src/renderer/image_renderer.cpp
-        rm_lines/src/renderer/text_renderer.cpp
         rm_lines/src/renderer/image_ref.cpp
         rm_lines/src/renderer/renderer_export.cpp
+        rm_lines/src/renderer/text/font_manager.cpp
+        rm_lines/src/renderer/text/text_renderer.cpp
         rm_lines/src/advanced/text_sequence.cpp
         rm_lines/src/advanced/text.cpp
         ${STB}

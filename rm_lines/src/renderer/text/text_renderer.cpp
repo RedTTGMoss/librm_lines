@@ -1,9 +1,5 @@
-#include "renderer/text_renderer.h"
+#include "renderer/text/text_renderer.h"
 #include "renderer/renderer.h"
-#include "sans.h"
-#include "sans_italic.h"
-#include "serif.h"
-#include "serif_italic.h"
 
 void TextRenderer::newParagraph(const Paragraph *next, const float scaleY) {
     paragraph = next;
@@ -17,42 +13,44 @@ void TextRenderer::newParagraph(const Paragraph *next, const float scaleY) {
 void TextRenderer::newText(const FormattedText *next) {
     formattedText = next;
     weight = getStyleWeight(paragraph->style.value.legacy, formattedText->formatting);
-    font = selectFont(fontType, formattedText->formatting.italic);
+    font = FontManager::instance().selectFont(fontType, formattedText->formatting.italic);
 }
 
 void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs, uint32_t previous) {
     // logDebug(std::format("rasterHeight: {}", rasterHeight));
-    const float scale = stbtt_ScaleForPixelHeight(font, rasterHeight);
+    FT_Set_Pixel_Sizes(font, 0, rasterHeight);
     // TODO: Fix overflow on text column bounds and text size
-    // logDebug(std::format("scale: {}", scale));
 
     float x = boundStart;
     float y = posY;
 
     for (const char &character: text) {
-        GlyphLayout glyph;
-        int advance, lsb, xEnd, yEnd, kernAdvance = 0;
-        if (previous)
-            kernAdvance = stbtt_GetCodepointKernAdvance(font, previous, character) * scale;
-        previous = character;
+        GlyphLayout glyph{};
 
-        stbtt_GetCodepointHMetrics(font, character, &advance, &lsb);
-        stbtt_GetCodepointBitmapBox(font, character, scale, scale, &glyph.xOffset, &glyph.yOffset, &xEnd,
-                                    &yEnd);
-        if (kernAdvance)
-            logDebug(std::format("Kern advance: {}", kernAdvance));
-        glyph.advance = advance * scale + kernAdvance;
+        FT_UInt glyphIndex = FT_Get_Char_Index(font, character);
+
+        // Load metrics only
+        if (FT_Load_Glyph(font, glyphIndex, FT_LOAD_DEFAULT))
+            continue;
+
+        FT_GlyphSlot slot = font->glyph;
+
         glyph.codepoint = character;
 
+        glyph.advance = slot->advance.x >> 6;
+
+        glyph.width = slot->metrics.width >> 6;
+        glyph.height = slot->metrics.height >> 6;
+
+        glyph.xOffset = slot->metrics.horiBearingX >> 6;
+        glyph.yOffset = -(slot->metrics.horiBearingY >> 6);
+
         const float end = x + glyph.advance;
-        glyph.width = xEnd - glyph.xOffset;
-        glyph.height = yEnd - glyph.yOffset;
 
         if (end >= boundEnd) {
             x = boundStart;
-            y += glyph.height;
+            y += rasterHeight; // use lineHeight later
             previous = 0;
-            // TODO: Line space
         }
 
         glyph.x = x + glyph.xOffset;
@@ -61,25 +59,15 @@ void TextRenderer::getGlyphs(const std::string &text, std::vector<GlyphLayout> &
         x += glyph.advance;
 
         glyphs.push_back(glyph);
-    }
-}
 
-stbtt_fontinfo *TextRenderer::selectFont(const FontType font, const bool italic) {
-    // logDebug("Selecting font: " + std::string(italic ? "Italic" : "Regular") + " " +
-    //          (font == Sans ? "Sans" : font == Serif ? "Serif" : "Unknown"));
-    switch (font) {
-        case Sans:
-            return italic ? &g_sansItalicFont : &g_sansFont;
-        case Serif:
-            return italic ? &g_serifItalicFont : &g_serifFont;
-        default:
-            return &g_sansFont;
+        previous = character;
     }
 }
 
 TextRenderer::TextRenderer(Renderer *renderer) : renderer(renderer) {
     textMargin = renderer->getTextMargin();
-    initializeFonts();
+    // Ensure font manager instance
+    FontManager::instance();
 }
 
 void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector scale) {
@@ -115,23 +103,4 @@ void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector
             }
         }
     }
-}
-
-bool TextRenderer::initializeFonts() {
-    return
-            stbtt_InitFont(&g_sansFont,
-                           sansFontData,
-                           stbtt_GetFontOffsetForIndex(sansFontData, 0)) &&
-
-            stbtt_InitFont(&g_sansItalicFont,
-                           sansItalicFontData,
-                           stbtt_GetFontOffsetForIndex(sansItalicFontData, 0)) &&
-
-            stbtt_InitFont(&g_serifFont,
-                           serifFontData,
-                           stbtt_GetFontOffsetForIndex(serifFontData, 0)) &&
-
-            stbtt_InitFont(&g_serifItalicFont,
-                           serifItalicFontData,
-                           stbtt_GetFontOffsetForIndex(serifItalicFontData, 0));
 }
