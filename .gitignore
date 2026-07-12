@@ -18,3 +18,4 @@ __pycache__/
 /tests/test_graph.py
 /rm_lines_wasm_sys/rm_lines_wasm.*
 /rm_lines/assets/fonts/reMarkable*
+/tools/utf_bomb.txt
