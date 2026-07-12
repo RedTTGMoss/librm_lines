@@ -582,6 +582,7 @@ bool TaggedBlockReader::readTextFormat(TextFormat *textFormat) {
         readByte(&textFormat->second.value.baseStyle);
         claimTag();
         readInt(3, &textFormat->second.value.styleProperties);
+        textFormat->second.value.isLegacy = false;
     } else {
         // Rewind this check.
         claimTag();

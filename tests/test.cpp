@@ -210,7 +210,10 @@ bool processFile(const std::string &filename, const std::string &path) {
             }
 
             // Export the original text items in json
-            rawTextFilePtr << "\n\n" << textCopy->items.toJson().dump(4);
+            rawTextFilePtr << "\nEXPANDED\n" << textCopy->items.toJson().dump(4);
+            textCopy->items.compactTextItems();
+            rawTextFilePtr << "\nCOMPACTED\n" << textCopy->items.toJson().dump(4);
+            textCopy->items.expandTextItems();
 
             // Export the text to python symbols for testing
             textExpandPythonFilePtr << "[";

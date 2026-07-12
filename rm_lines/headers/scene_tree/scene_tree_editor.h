@@ -43,6 +43,7 @@ public:
     CrdtId addImage(const std::string &uuid, const std::vector<AdvancedMath::Vector> &vertices);
 
     friend class LineBuilder;
+    friend class TextBuilder;
     TextBuilder *text;
 
 private:
@@ -158,9 +159,70 @@ private:
 
 class TextBuilder {
 public:
-    explicit TextBuilder(const std::shared_ptr<Text> &_text);
+    explicit TextBuilder(const std::shared_ptr<Text> &_text, SceneTreeEditor *editor);
+
+    void addText(const std::string &text);
+
+    void setParagraphStyle(ParagraphStyle style);
 
 private:
+    ParagraphStyleNew *getParagraphStyle(const CrdtId id) {
+        return &text->styles[styleMap[id]].second.value;
+    }
+
+    CrdtId addNewParagraphStyle(const ParagraphStyleNew style) {
+        CrdtId id = editor->ids++;
+        text->styles.push_back({
+            leftId,
+            LwwItem(id, style)
+        });
+        styleMap[id] = text->styles.size();
+        currentStyleNode = id;
+        return id;
+    }
+
+    void addNewLine() {
+        // Flush current styles
+        if (currentStyleNode == NULL_MARKER)
+            addNewParagraphStyle(currentStyle);
+        const CrdtId id = editor->ids++;
+        text->items.add(TextItem(id, leftId, rightId, 0, "\n"));
+        leftId = id;
+        updateLeft();
+        // Reset current styles
+        currentStyleNode = NULL_MARKER;
+    }
+
+    void addCharacter(const char character) {
+        // NOTE: The character is created first, before the style.
+        // This is how remarkable does it, although, I doubt it's significant
+        const CrdtId id = editor->ids++;
+        text->items.add(TextItem(id, leftId, rightId, 0, std::string(1, character)));
+        leftId = id;
+        updateLeft();
+
+        // Flush current styles
+        if (currentStyleNode == NULL_MARKER)
+            addNewParagraphStyle(currentStyle);
+    }
+
+    void updateLeft() const {
+        // Take the current text (leftId)
+        // Go back to its leftId (the previous text) and update the rightId
+        // Effectively pointing the previous character to the current (next) one
+        if (const CrdtId prevId = text->items[leftId].leftId; prevId != END_MARKER) {
+            text->items[prevId].rightId = leftId;
+        }
+    }
+
+    SceneTreeEditor *editor;
     std::shared_ptr<Text> text;
+    std::unordered_map<CrdtId, int> styleMap;
     TextDocument textDocument = TextDocument();
+
+    // Keeping track of state
+    ParagraphStyleNew currentStyle = ParagraphStyleNew(Title);
+    CrdtId currentStyleNode = NULL_MARKER;
+    CrdtId leftId = END_MARKER;
+    CrdtId rightId = END_MARKER;
 };

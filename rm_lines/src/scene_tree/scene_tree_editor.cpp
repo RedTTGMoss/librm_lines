@@ -2,6 +2,7 @@
 
 #include "advanced/text.h"
 #include "advanced/text_scale.h"
+#include "advanced/text_helpers.h"
 #include "scene_tree/scene_tree_export.h"
 
 CrdtId SceneTreeEditor::createLayer(const std::string &label) {
@@ -74,11 +75,13 @@ void SceneTreeEditor::initText() {
     if (!hasText()) {
         rootText = std::make_shared<Text>();
         rootText->items = TextSequence();
+        // Helpful marker for compacting later.
+        rootText->items.add(TextItem{END_MARKER, END_MARKER, END_MARKER, 0, ""});
         setRootTextWidth(ColumnMedium);
     }
     if (!text) {
         const auto rootText = getText();
-        text = new TextBuilder(rootText);
+        text = new TextBuilder(rootText, this);
     }
 }
 
@@ -239,6 +242,38 @@ uint32_t LineBuilder::calculateDirection(const Point &prev, const float x2, cons
     return static_cast<uint32_t>(255.0 * angle / (PI * 2));
 }
 
-TextBuilder::TextBuilder(const std::shared_ptr<Text> &_text) : text(_text) {
+TextBuilder::TextBuilder(const std::shared_ptr<Text> &_text, SceneTreeEditor *editor) : editor(editor), text(_text) {
     textDocument.fromText(text);
+    // By default, remarkable will make the initial style for you!
+    // So we must have it created before any text is added
+    // We can still update the style later, but the ID is determined here.
+    addNewParagraphStyle(currentStyle);
+}
+
+void TextBuilder::addText(const std::string &text) {
+    // First we need to split any multiline text into a list of lines
+    for (
+        // Iterate the lines
+        const auto lines = splitTextIntoLines(text);
+        auto line: lines
+    ) {
+        // Iterate the characters
+        for (const auto character: line) {
+            if (character == '\n') {
+                addNewLine();
+                // New lines characters are also added normally
+                // but we need to flush the styles before
+                // we go to the next paragraph/line
+            } else {
+                addCharacter(character);
+            }
+        }
+    }
+}
+
+void TextBuilder::setParagraphStyle(const ParagraphStyle style) {
+    currentStyle.setStyle(style);
+    if (currentStyleNode != NULL_MARKER) {
+        getParagraphStyle(currentStyleNode)->setStyle(style);
+    }
 }

@@ -13,6 +13,8 @@ struct TextSequence : CrdtSequence<TextItem> {
 
     bool operator==(char c) const;
 
+    bool isExpanded() const;
+
 private:
     bool expanded = false;
 };

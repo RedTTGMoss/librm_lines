@@ -233,6 +233,7 @@ public:
 
     void addText() {
         tree->initText();
+        tree->text->addText("Hello, world!\nApples");
     }
 
     void save() {

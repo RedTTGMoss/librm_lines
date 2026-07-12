@@ -306,11 +306,13 @@ json ParagraphStyleNew::toJson() const {
         {"legacyStyle", legacy},
         {"baseStyle", baseStyle},
         {"styleProperties", styleProperties},
-        {"styleLabel", styleLabel()},
+        {"isLegacy", isLegacy},
         {"tabbed", tabbed()},
-        {"styleHeight", styleHeight()},
-        {"fontSize", fontSize()},
-        {"tabOffset", getTabOffset()}
+        {"tabOffset", getTabOffset()},
+        {"_styleLabel", styleLabel()},
+
+        {"_styleHeight", styleHeight()},
+        {"_fontSize", fontSize()},
     };
 }
 
@@ -327,10 +329,7 @@ FontType ParagraphStyleNew::getFont() const {
 
 template<>
 json LwwItem<ParagraphStyleNew>::valueToJson() const {
-    return {
-        {"characterId", timestamp.toJson()},
-        {"style", value.toJson()},
-    };
+    return value.toJson();
 }
 
 template<>

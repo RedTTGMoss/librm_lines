@@ -308,3 +308,7 @@ std::vector<CrdtId> TextSequence::getSortedTextIds() const {
 
     return sortedIds;
 }
+
+bool TextSequence::isExpanded() const {
+    return expanded;
+}

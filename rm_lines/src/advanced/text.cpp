@@ -153,6 +153,9 @@ void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
 }
 
 void TextDocument::updateInplace(int *nextId) {
+    // DEP: The idea here was to make it auto-convert paragraphs into text
+    // But this idea would fundamentally break updating existing text
+    // Working with the raw text data is necessary
     if (!this->text) {
         throw std::invalid_argument("Text is null");
     }
