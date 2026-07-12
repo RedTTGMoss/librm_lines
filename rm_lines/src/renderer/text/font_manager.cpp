@@ -46,13 +46,13 @@ FontManager::~FontManager() {
         m_sans->cleanup();
 
     if (m_sansItalic)
-        m_sans->cleanup();
+        m_sansItalic->cleanup();
 
     if (m_serif)
-        m_sans->cleanup();
+        m_serif->cleanup();
 
     if (m_serifItalic)
-        m_sans->cleanup();
+        m_serifItalic->cleanup();
 
     delete m_sans;
     delete m_sansItalic;
