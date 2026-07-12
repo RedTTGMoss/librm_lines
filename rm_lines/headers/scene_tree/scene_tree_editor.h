@@ -206,12 +206,37 @@ private:
             addNewParagraphStyle(currentStyle);
     }
 
+    void addCharacters(const std::string &characters) {
+        // First strip the last line character if at the end
+        const bool hasNewline = !characters.empty() && characters.back() == '\n';
+
+        const CrdtId id = editor->ids; // First ID
+        if (characters.size() < 2) {
+            editor->ids++;
+        } else {
+            editor->ids += characters.size() - 1;
+        }
+        text->items.add(TextItem(id, leftId, rightId, 0, characters));
+        leftId = id;
+        updateLeft(id);
+
+        // Flush current styles
+        if (currentStyleNode == NULL_MARKER)
+            addNewParagraphStyle(currentStyle);
+        if (hasNewline)
+            currentStyleNode = NULL_MARKER; // Reset current styles if we have a newline
+    }
+
     void updateLeft() const {
-        // Take the current text (leftId)
+        updateLeft(leftId);
+    }
+
+    void updateLeft(const CrdtId currentId) const {
+        // Take the current text (currentId)
         // Go back to its leftId (the previous text) and update the rightId
         // Effectively pointing the previous character to the current (next) one
-        if (const CrdtId prevId = text->items[leftId].leftId; prevId != END_MARKER) {
-            text->items[prevId].rightId = leftId;
+        if (const CrdtId prevId = text->items[currentId].leftId; prevId != END_MARKER) {
+            text->items[prevId].rightId = currentId;
         }
     }
 

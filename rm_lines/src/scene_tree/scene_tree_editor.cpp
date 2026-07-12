@@ -257,17 +257,19 @@ void TextBuilder::addText(const std::string &text) {
         const auto lines = splitTextIntoLines(text);
         auto line: lines
     ) {
-        // Iterate the characters
-        for (const auto character: line) {
-            if (character == '\n') {
-                addNewLine();
-                // New lines characters are also added normally
-                // but we need to flush the styles before
-                // we go to the next paragraph/line
-            } else {
-                addCharacter(character);
-            }
-        }
+        addCharacters(std::string(line));
+
+        // OLD ADDS EACH CHARACTER INDIVIDUALLY
+        // for (const auto character: line) {
+        //     if (character == '\n') {
+        //         addNewLine();
+        //         // New lines characters are also added normally
+        //         // but we need to flush the styles before
+        //         // we go to the next paragraph/line
+        //     } else {
+        //         addCharacter(character);
+        //     }
+        // }
     }
 }
 
