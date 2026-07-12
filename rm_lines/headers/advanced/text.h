@@ -14,6 +14,12 @@ enum FormattingOptions {
     ITALIC_OFF = 4,
 };
 
+enum TextColumnWidth {
+    ColumnNarrow,
+    ColumnMedium,
+    ColumnWide
+};
+
 struct FontStyle {
     bool italic;
     float weight;
@@ -99,6 +105,8 @@ struct TextDocument {
     std::vector<Paragraph> paragraphs;
 
     void fromText(const std::shared_ptr<Text> &_text);
+
+    void updateInplace(int *nextId);
 
     Text toText() const;
 

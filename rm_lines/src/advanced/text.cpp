@@ -152,6 +152,13 @@ void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
     }
 }
 
+void TextDocument::updateInplace(int *nextId) {
+    if (!this->text) {
+        throw std::invalid_argument("Text is null");
+    }
+    text->items.expandTextItems();
+}
+
 Text TextDocument::toText() const {
     if (!this->text) {
         throw std::invalid_argument("Text is null");

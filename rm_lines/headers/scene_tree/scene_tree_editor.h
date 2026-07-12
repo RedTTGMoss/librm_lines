@@ -3,6 +3,7 @@
 
 #include "scene_tree.h"
 #include "scene_tree_export.h"
+#include "advanced/text.h"
 
 class LineBuilder;
 class TextBuilder;
@@ -34,6 +35,8 @@ public:
     std::string addImageInfo(const std::string &filename) {
         return addImageInfo(filename, generateUUID());
     }
+
+    void setRootTextWidth(TextColumnWidth width);
 
     CrdtId addImage(const std::string &uuid, std::vector<AdvancedMath::Rect> vertices);
 
@@ -155,8 +158,9 @@ private:
 
 class TextBuilder {
 public:
-    explicit TextBuilder(Text *text);
+    explicit TextBuilder(const std::shared_ptr<Text> &_text);
 
 private:
-    Text *text;
+    std::shared_ptr<Text> text;
+    TextDocument textDocument = TextDocument();
 };

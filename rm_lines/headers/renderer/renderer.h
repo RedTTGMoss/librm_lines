@@ -70,7 +70,7 @@ public:
     // Exports
     void toMd(std::ostream &stream) const;
 
-    void toRM(std::ostream &stream) const;
+    void toRM(std::ostream &stream);
 
     void toTxt(std::ostream &stream) const;
 

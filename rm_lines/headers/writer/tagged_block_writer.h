@@ -24,9 +24,9 @@ public:
     std::ostream &stream;
     size_t dataSize_;
     uint32_t currentOffset = 0;
-    const Renderer *renderer;
+    Renderer *renderer;
 
-    TaggedBlockWriter(std::ostream &stream, const Renderer *renderer) : stream(stream), renderer(renderer) {
+    TaggedBlockWriter(std::ostream &stream, Renderer *renderer) : stream(stream), renderer(renderer) {
     };
 
     ~TaggedBlockWriter();

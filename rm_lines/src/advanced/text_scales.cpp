@@ -2,6 +2,12 @@
 #include "advanced/text_scale.h"
 
 namespace {
+    // Related to the column width
+    constexpr float MEDIUM_WIDTH_PERCENT = 2.0f / 3.0f;
+    constexpr float WIDE_WIDTH_PERCENT = 32.0f / 39.0f;
+    constexpr float NARROW_WIDTH_PERCENT = 185.0f / 351.0f;
+    constexpr float TEXT_Y_PERCENT = 1.0f / 8.0f;
+
     // Most values are the same, we can edit them here
     constexpr int TITLE_LINE_HEIGHT = 66;
     constexpr int SUB_LINE_HEIGHT = 46;
@@ -94,4 +100,26 @@ float getStyleWeight(const ParagraphStyle style, const TextFormattingOptions for
             return static_cast<float>(value);
     }
     return static_cast<float>(StyleWeights[0].second);
+}
+
+float getWidthPercent(const TextColumnWidth columnWidth) {
+    switch (columnWidth) {
+        case ColumnMedium:
+            return MEDIUM_WIDTH_PERCENT;
+        case ColumnWide:
+            return WIDE_WIDTH_PERCENT;
+        case ColumnNarrow:
+            return NARROW_WIDTH_PERCENT;
+    }
+    return 0.0f;
+}
+
+TextAreaInfo getTextAreaInfo(const IntPair paperSize, const TextColumnWidth columnWidth) {
+    const float widthPercent = getWidthPercent(columnWidth);
+    const float width = paperSize.first * widthPercent;
+    return {
+        -(width / 2.0f),
+        paperSize.second * TEXT_Y_PERCENT,
+        width
+    };
 }

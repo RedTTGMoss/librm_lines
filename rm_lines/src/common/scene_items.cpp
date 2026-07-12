@@ -128,8 +128,9 @@ json Text::toJson() const {
     for (const auto &style: styles) {
         stylesJson.push_back(textFormatToJson(style));
     }
+    const auto itemsJson = items.toJson();
     return {
-        {"items", items.toJson()},
+        {"items", itemsJson.is_null() ? json::object() : itemsJson},
         {"styles", stylesJson},
         {"posX", posX},
         {"posY", posY},

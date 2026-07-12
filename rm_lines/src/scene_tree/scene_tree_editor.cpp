@@ -1,5 +1,7 @@
 #include "scene_tree/scene_tree_editor.h"
 
+#include "advanced/text.h"
+#include "advanced/text_scale.h"
 #include "scene_tree/scene_tree_export.h"
 
 CrdtId SceneTreeEditor::createLayer(const std::string &label) {
@@ -69,9 +71,15 @@ void SceneTreeEditor::init() {
 }
 
 void SceneTreeEditor::initText() {
-    setText({});
-    const auto rootText = getText();
-    text = new TextBuilder(rootText.get());
+    if (!hasText()) {
+        rootText = std::make_shared<Text>();
+        rootText->items = TextSequence();
+        setRootTextWidth(ColumnMedium);
+    }
+    if (!text) {
+        const auto rootText = getText();
+        text = new TextBuilder(rootText);
+    }
 }
 
 void SceneTreeEditor::initImageInfoBlock() {
@@ -89,6 +97,16 @@ std::string SceneTreeEditor::addImageInfo(std::string filename, const std::strin
     ImageRecordInfo info = {uuid, {ids++, filename}};
     imageInfo->images.push_back(info);
     return info.uuid;
+}
+
+void SceneTreeEditor::setRootTextWidth(TextColumnWidth width) {
+    if (!hasText()) {
+        throw std::runtime_error("Cannot set root text width: no root text exists");
+    }
+    const TextAreaInfo info = getTextAreaInfo(sceneInfo->paperSize.value(), width);
+    rootText->width = LwwItem(ids++, info.width);
+    rootText->posX = info.x;
+    rootText->posY = info.y;
 }
 
 CrdtId SceneTreeEditor::addImage(const std::string &uuid, std::vector<AdvancedMath::Rect> vertices) {
@@ -221,5 +239,6 @@ uint32_t LineBuilder::calculateDirection(const Point &prev, const float x2, cons
     return static_cast<uint32_t>(255.0 * angle / (PI * 2));
 }
 
-TextBuilder::TextBuilder(Text *text) : text(text) {
+TextBuilder::TextBuilder(const std::shared_ptr<Text> &_text) : text(_text) {
+    textDocument.fromText(text);
 }

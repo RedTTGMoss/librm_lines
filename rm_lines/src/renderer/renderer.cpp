@@ -213,6 +213,7 @@ float Renderer::getTextWidth() const {
     if (width <= 0) {
         return textDocument.text->posX * -2 + TEXT_WIDTH_ALIGN; // Margin * -2 to reverse the signs
     }
+    logDebug(std::format("Text width: {} (screen relative: {})", width, screenRelative));
     return width * screenRelative + TEXT_WIDTH_ALIGN;
 }
 
@@ -304,7 +305,7 @@ void Renderer::toMd(std::ostream &stream) const {
     }
 }
 
-void Renderer::toRM(std::ostream &stream) const {
+void Renderer::toRM(std::ostream &stream) {
     auto writer = TaggedBlockWriter(stream, this);
     if (!writer.buildRM()) {
         logError("Failed to build RM file!");

@@ -34,6 +34,11 @@ bool TaggedBlockWriter::buildRM() {
 
     // Write root text
     if (renderer->sceneTree->hasText()) {
+        if (!renderer->textDocument.text) {
+            // The text document might not have been initialized
+            // The tree might have initialized a new text root after the renderer was created
+            renderer->prepareTextDocument();
+        }
         if (!writeRootText(renderer->textDocument.toText())) return false;
     }
 

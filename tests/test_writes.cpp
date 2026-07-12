@@ -232,7 +232,7 @@ public:
     }
 
     void addText() {
-        // tree->initText();
+        tree->initText();
     }
 
     void save() {

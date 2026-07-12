@@ -178,7 +178,7 @@ struct CrdtSequence {
     }
 
     [[nodiscard]] json toJson() const {
-        json j;
+        json j = json::object();
         // Iterate over the map and convert each item to JSON
 
         for (const auto &[key, value]: sequence) {
