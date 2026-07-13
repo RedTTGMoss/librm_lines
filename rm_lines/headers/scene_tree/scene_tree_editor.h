@@ -44,7 +44,7 @@ public:
 
     friend class LineBuilder;
     friend class TextBuilder;
-    TextBuilder *text;
+    std::unique_ptr<TextBuilder> text;
 
 private:
     CrdtId currentLayer = ROOT_TEXT_NODE;

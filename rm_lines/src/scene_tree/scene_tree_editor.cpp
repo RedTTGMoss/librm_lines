@@ -81,7 +81,7 @@ void SceneTreeEditor::initText() {
     }
     if (!text) {
         const auto rootText = getText();
-        text = new TextBuilder(rootText, this);
+        text = std::make_unique<TextBuilder>(rootText, this);
     }
 }
 
