@@ -233,7 +233,9 @@ public:
 
     void addText() {
         tree->initText();
-        tree->text->addText("Hello, world!\nApples");
+        tree->text->addText("Test\n");
+        tree->text->setParagraphStyle(Sub);
+        tree->text->addText("Test\n");
     }
 
     void save() {
