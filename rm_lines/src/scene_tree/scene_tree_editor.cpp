@@ -75,8 +75,8 @@ void SceneTreeEditor::initText() {
     if (!hasText()) {
         rootText = std::make_shared<Text>();
         rootText->items = TextSequence();
-        // Helpful marker for compacting later.
-        rootText->items.add(TextItem{END_MARKER, END_MARKER, END_MARKER, 0, ""});
+        // // Helpful marker for compacting later.
+        // rootText->items.add(TextItem{END_MARKER, END_MARKER, END_MARKER, 0, ""});
         setRootTextWidth(ColumnMedium);
     }
     if (!text) {
@@ -243,7 +243,8 @@ uint32_t LineBuilder::calculateDirection(const Point &prev, const float x2, cons
 }
 
 TextBuilder::TextBuilder(const std::shared_ptr<Text> &_text, SceneTreeEditor *editor) : editor(editor), text(_text) {
-    textDocument.fromText(text);
+    // We're working with compacted items here, if expanded, make sure to compact it!
+    text->items.compactTextItems();
     // By default, remarkable will make the initial style for you!
     // So we must have it created before any text is added
     // We can still update the style later, but the ID is determined here.

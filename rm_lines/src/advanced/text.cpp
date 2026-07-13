@@ -82,6 +82,7 @@ json Paragraph::toJson() const {
 void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
     text = _text;
     text->items.expandTextItems();
+    text->prepStyleMap();
     paragraphs.clear();
     const auto characterIDs = text->items.getSortedIds();
 

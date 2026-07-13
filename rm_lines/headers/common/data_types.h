@@ -314,6 +314,8 @@ enum ParagraphStyle {
     CheckBoxTabChecked = 9,
     Numbered = 10,
     NumberedTab = 11,
+
+    PARAGRAPH_STYLES_COUNT
 };
 
 enum FontType {

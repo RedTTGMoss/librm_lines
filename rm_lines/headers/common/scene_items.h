@@ -100,6 +100,8 @@ struct Text {
     LwwItem<float> width;
 
     json toJson() const;
+
+    void prepStyleMap();
 };
 
 struct GlyphRange {

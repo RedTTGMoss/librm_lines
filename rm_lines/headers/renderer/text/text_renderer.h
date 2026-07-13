@@ -25,11 +25,15 @@ struct GlyphLayout {
 
 class TextRenderer {
 public:
-    explicit TextRenderer(Renderer *renderer);
+    TextRenderer();
+
+    TextRenderer(Renderer *renderer);
+
+    void setRenderer(Renderer *newRenderer);
 
     ~TextRenderer() = default;
 
-    void renderText(const AdvancedMath::Vector *position, Vector scale);
+    void renderText(const Vector *position, Vector scale);
 
     void newParagraph(const Paragraph *next, Vector scale);
 
@@ -37,29 +41,34 @@ public:
 
     void getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs);
 
+    void getAllPageGlyphs(std::vector<GlyphLayout> &glyphs);
+
 private:
-    float textMargin;
+    float textMargin = 0;
 
     // Positioning
-    float posX;
-    float posY;
-    float boundStart;
-    float boundEnd;
+    float posX = 0;
+    float posY = 0;
+    float boundStart = 0;
+    float boundEnd = 0;
 
     // Font data
     FontInfo *font = nullptr;
     hb_font_t *hbFont = nullptr;
-    float weight;
-    float fontSize;
-    float styleHeight;
-    float scaledFontSize;
-    float scaledStyleHeight;
+    float weight = 0;
+    float fontSize = 0;
+    float styleHeight = 0;
+    float scaledFontSize = 0;
+    float scaledStyleHeight = 0;
 
     // Temporary
-    FontType fontType;
-    const Paragraph *paragraph;
-    const FormattedText *formattedText;
+    FontType fontType = Serif;
+    const Paragraph *paragraph = nullptr;
+    const FormattedText *currentFormattedText = nullptr;
+
+    // Helpers
+    void prepareBounds(const Vector *position, Vector scale);
 
 
-    Renderer *renderer;
+    Renderer *renderer = nullptr;
 };

@@ -138,6 +138,13 @@ json Text::toJson() const {
     };
 }
 
+void Text::prepStyleMap() {
+    styleMap.clear();
+    for (const auto &[id, val]: styles) {
+        styleMap[id] = val;
+    }
+}
+
 bool Point::read(TaggedBlockReader *reader, uint8_t version) {
     if (!reader->readFloat(&x)) return false;
     if (!reader->readFloat(&y)) return false;

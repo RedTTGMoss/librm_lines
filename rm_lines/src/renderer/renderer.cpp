@@ -213,7 +213,6 @@ float Renderer::getTextWidth() const {
     if (width <= 0) {
         return textDocument.text->posX * -2 + TEXT_WIDTH_ALIGN; // Margin * -2 to reverse the signs
     }
-    logDebug(std::format("Text width: {} (screen relative: {})", width, screenRelative));
     return width * screenRelative + TEXT_WIDTH_ALIGN;
 }
 

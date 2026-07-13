@@ -176,7 +176,7 @@ private:
             leftId,
             LwwItem(id, style)
         });
-        styleMap[id] = text->styles.size();
+        styleMap[id] = text->styles.size() - 1;
         currentStyleNode = id;
         return id;
     }
@@ -211,11 +211,7 @@ private:
         const bool hasNewline = !characters.empty() && characters.back() == '\n';
 
         const CrdtId id = editor->ids; // First ID
-        if (characters.size() < 2) {
-            editor->ids++;
-        } else {
-            editor->ids += characters.size() - 1;
-        }
+        editor->ids += characters.size();
         text->items.add(TextItem(id, leftId, rightId, 0, characters));
         leftId = id;
         updateLeft(id);
@@ -243,7 +239,6 @@ private:
     SceneTreeEditor *editor;
     std::shared_ptr<Text> text;
     std::unordered_map<CrdtId, int> styleMap;
-    TextDocument textDocument = TextDocument();
 
     // Keeping track of state
     ParagraphStyleNew currentStyle = ParagraphStyleNew(Title);

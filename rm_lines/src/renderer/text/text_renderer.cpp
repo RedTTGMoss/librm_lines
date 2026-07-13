@@ -16,9 +16,9 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
 }
 
 void TextRenderer::newText(const FormattedText *next) {
-    formattedText = next;
-    weight = getStyleWeight(paragraph->style.value.legacy, formattedText->formatting);
-    font = FontManager::instance().selectFont(fontType, formattedText->formatting.italic);
+    currentFormattedText = next;
+    weight = getStyleWeight(paragraph->style.value.legacy, currentFormattedText->formatting);
+    font = FontManager::instance().selectFont(fontType, currentFormattedText->formatting.italic);
     font->setWeight(weight);
     font->setSize(scaledFontSize);
 
@@ -95,32 +95,57 @@ void TextRenderer::getGlyphs(
     hb_buffer_destroy(buffer);
 }
 
-TextRenderer::TextRenderer(Renderer *renderer) : renderer(renderer) {
-    textMargin = renderer->getTextMargin();
+void TextRenderer::getAllPageGlyphs(std::vector<GlyphLayout> &glyphs) {
+    static const Vector position{0, 0};
+    static const Vector scale{1, 1};
+    prepareBounds(&position, scale);
+    for (const auto &next: renderer->textDocument.paragraphs) {
+        newParagraph(&next, scale);
+        for (const auto &formattedText: paragraph->contents) {
+            newText(&formattedText);
+            getGlyphs(formattedText.text, glyphs);
+        }
+    }
+}
+
+void TextRenderer::prepareBounds(const Vector *position, const Vector scale) {
+    // Currently we only adjust here for the column and Y
+    // In the future it might be a good idea to limit the frame bounds too
+    boundStart = (position->x + textMargin) * scale.x;
+    boundEnd = (position->x + renderer->paperSize.first - textMargin) * scale.x;
+    posY = (position->y + TEXT_TOP_Y) * scale.y;
+}
+
+TextRenderer::TextRenderer() : TextRenderer(nullptr) {
+}
+
+TextRenderer::TextRenderer(Renderer *renderer) {
+    setRenderer(renderer);
     // Ensure font manager instance
     FontManager::instance();
 }
 
-void TextRenderer::renderText(const AdvancedMath::Vector *position, const Vector scale) {
-    if (renderer->textDocument.paragraphs.empty()) {
+void TextRenderer::setRenderer(Renderer *newRenderer) {
+    this->renderer = newRenderer;
+    if (!renderer)
+        return;
+    textMargin = renderer->getTextMargin();
+}
+
+void TextRenderer::renderText(const Vector *position, const Vector scale) {
+    if (!renderer || renderer->textDocument.paragraphs.empty()) {
         return; // Early exit for no text
     }
 
-    boundStart = (position->x + textMargin) * scale.x;
-    boundEnd = (position->x + renderer->paperSize.first - textMargin) * scale.x;
-    posY = (position->y + TEXT_TOP_Y) * scale.y;
+    prepareBounds(position, scale);
 
     renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
     renderer->stroker.raster.raster.fill.debugTool(2.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale);
-        logDebug(std::format("Rendering paragraph {} at ({}, {}) with font size {} and style height {}",
-                             next.startId.repr(), posX, posY, scaledFontSize, scaledStyleHeight));
 
 
         for (const auto &formattedText: paragraph->contents) {
-            logDebug(std::format("Rendering text: \"{}\" at ({}, {}) with font size {} and weight {}",
-                                 formattedText.text, posX, posY, scaledFontSize, weight));
             newText(&formattedText);
 
             std::vector<GlyphLayout> glyphs;

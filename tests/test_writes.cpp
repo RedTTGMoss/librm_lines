@@ -12,6 +12,7 @@
 #include "scene_tree/scene_tree_export.h"
 namespace fs = std::filesystem;
 
+#define TESTS_OUT "./files/"
 #define RM_OUT "./output/rm/"
 #define JSON_OUT "./output/json/"
 #define COLOR_RESET  "\033[0m"
@@ -155,6 +156,12 @@ public:
         line.endLine();
     }
 
+    LineBuilder startBasicLine() const {
+        return tree->startLine()
+                .setPen(FINELINER_2)
+                .setRGBA(0, 0, 255, 255);
+    }
+
     void drawLines() {
         drawLine(BALLPOINT_1, 0.01, 100, 16, 100, 10);
         drawLine(BALLPOINT_2, 0.03, 100, 16, 100, 10);
@@ -238,9 +245,27 @@ public:
         tree->text->addText("Test\n");
     }
 
+    void addText(const ParagraphStyle styleA, const ParagraphStyle styleB) {
+        tree->initText();
+        tree->text->setParagraphStyle(styleA);
+        tree->text->addText("Test\n");
+        tree->text->setParagraphStyle(styleB);
+        tree->text->addText("Test\n");
+    }
+
+
+    void addText(const ParagraphStyle styleA, const ParagraphStyle styleB, std::string strA, std::string strB) {
+        tree->initText();
+        tree->text->setParagraphStyle(styleA);
+        tree->text->addText(strA + '\n');
+        tree->text->setParagraphStyle(styleB);
+        tree->text->addText(strB + '\n');
+    }
+
     void save() {
         const std::string jsonFile = JSON_OUT + name + " - test write.json";
         const std::string rmFile = RM_OUT + name + " - test write.rm";
+        const std::string rmFile2 = TESTS_OUT + name + ".rm";
         std::ofstream rmFilePtr(rmFile.c_str());
         const json j = tree->toJson();
         const auto jsonString = j.dump();
@@ -286,7 +311,55 @@ int main(const int argc, char *argv[]) {
     testDirections.drawDirections();
     testDirections.save();
 
-    auto testText = File("Text");
-    testText.addText();
-    testText.save();
+    // Test all paragraph style combinations
+    constexpr int stylesCount = PARAGRAPH_STYLES_COUNT - 2;
+    std::vector<ParagraphStyle> styles;
+    styles.reserve(stylesCount);
+    for (int i = 1; i <= stylesCount; i++) {
+        styles.push_back(static_cast<ParagraphStyle>(i));
+    }
+    const auto textRenderer = new TextRenderer();
+    for (const auto styleA: styles) {
+        for (const auto styleB: styles) {
+            auto testText = File("Text");
+            std::string _styleA = ParagraphStyleNew(styleA).styleLabel();
+            std::string _styleB = ParagraphStyleNew(styleB).styleLabel();
+            testText.addText(styleA, styleB, _styleA, _styleB);
+            // Update the name
+            testText.name = std::format("Text styles {}-{}", _styleA, _styleB);
+
+            // Prepare the renderer
+            testText.renderer->prepareTextDocument();
+            testText.renderer->calculateAnchors();
+            const auto width = testText.tree->sceneInfo->paperSize->first;
+            const float halfWidth = width / 2;
+            // Draw a line for every local anchor
+            uint32_t lastAnchor = -1;
+            for (const auto anchor: testText.renderer->anchors | std::views::values) {
+                if (anchor == lastAnchor)
+                    continue;
+                lastAnchor = anchor;
+                testText
+                        .startBasicLine()
+                        .addPoint(-halfWidth, anchor)
+                        .addPoint(halfWidth, anchor)
+                        .endLine();
+            }
+            textRenderer->setRenderer(testText.renderer);
+            std::vector<GlyphLayout> glyphs;
+            textRenderer->getAllPageGlyphs(glyphs);
+            for (const auto glyph: glyphs) {
+                testText.startBasicLine()
+                        .addPoint(glyph.x - halfWidth, glyph.y)
+                        .addPoint(glyph.x + glyph.width - halfWidth, glyph.y)
+                        .addPoint(glyph.x + glyph.width - halfWidth, glyph.y + glyph.height)
+                        .addPoint(glyph.x - halfWidth, glyph.y + glyph.height)
+                        .addPoint(glyph.x - halfWidth, glyph.y)
+                        .endLine();
+            }
+
+            testText.save();
+        }
+    }
+    return 0;
 }
