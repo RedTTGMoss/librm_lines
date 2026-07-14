@@ -12,7 +12,7 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     scaledStyleHeight = styleHeight * scale.y;
     scaledFontSize = fontSize * scale.y;
     posX = boundStart;
-    posY += styleHeight * scale.y;
+    posY += scaledStyleHeight;
 }
 
 void TextRenderer::newText(const FormattedText *next) {
@@ -142,11 +142,16 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
     renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
     renderer->stroker.raster.raster.fill.debugTool(2.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
+        const float prevPosY = posY;
         newParagraph(&next, scale);
+        logDebug(std::format("Paragraph {} style: {} starts with Y {} (added: {})",
+                             paragraph->startId.repr(), paragraph->style.value.styleLabel(), prevPosY,
+                             posY - prevPosY));
 
 
         for (const auto &formattedText: paragraph->contents) {
             newText(&formattedText);
+            logDebug(std::format("- Text: {}", formattedText.text));
 
             std::vector<GlyphLayout> glyphs;
             getGlyphs(formattedText.text, glyphs);

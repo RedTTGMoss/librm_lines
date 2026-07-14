@@ -366,6 +366,20 @@ int main(const int argc, char *argv[]) {
             if (!processFile(filename.substr(0, filename.length() - 3), file))
                 std::cerr << "Failed to process file " << filename << std::endl;
         }
+        // Iterate over the directory entries for rm
+        for (const fs::path dirPath = RM_OUT; const auto &entry: fs::directory_iterator(dirPath)) {
+            std::string filename = entry.path().filename().string();
+            if (fileFilter.has_value() && filename != fileFilter.value()) {
+                continue;
+            }
+            std::string file = entry.path().string();
+            if (!file.ends_with(".rm")) {
+                std::cerr << "File " << file << " is not a LINES file" << std::endl;
+                return -1;
+            }
+            if (!processFile(filename.substr(0, filename.length() - 3), file))
+                std::cerr << "Failed to process file " << filename << std::endl;
+        }
     } catch (const fs::filesystem_error &e) {
         std::cerr << "Filesystem error: " << e.what() << std::endl;
     }

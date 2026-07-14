@@ -19,3 +19,4 @@ __pycache__/
 /rm_lines_wasm_sys/rm_lines_wasm.*
 /rm_lines/assets/fonts/reMarkable*
 /tools/utf_bomb.txt
+/tests/debug_overlays/Text styles*

@@ -173,7 +173,7 @@ private:
     CrdtId addNewParagraphStyle(const ParagraphStyleNew style) {
         CrdtId id = editor->ids++;
         text->styles.push_back({
-            leftId,
+            endLastParagraph,
             LwwItem(id, style)
         });
         styleMap[id] = text->styles.size() - 1;
@@ -181,59 +181,37 @@ private:
         return id;
     }
 
-    void addNewLine() {
-        // Flush current styles
-        if (currentStyleNode == NULL_MARKER)
-            addNewParagraphStyle(currentStyle);
-        const CrdtId id = editor->ids++;
-        text->items.add(TextItem(id, leftId, rightId, 0, "\n"));
-        leftId = id;
-        updateLeft();
-        // Reset current styles
-        currentStyleNode = NULL_MARKER;
-    }
-
-    void addCharacter(const char character) {
-        // NOTE: The character is created first, before the style.
-        // This is how remarkable does it, although, I doubt it's significant
-        const CrdtId id = editor->ids++;
-        text->items.add(TextItem(id, leftId, rightId, 0, std::string(1, character)));
-        leftId = id;
-        updateLeft();
-
-        // Flush current styles
-        if (currentStyleNode == NULL_MARKER)
-            addNewParagraphStyle(currentStyle);
-    }
-
     void addCharacters(const std::string &characters) {
         // First strip the last line character if at the end
         const bool hasNewline = !characters.empty() && characters.back() == '\n';
 
-        const CrdtId id = editor->ids; // First ID
-        editor->ids += characters.size();
-        text->items.add(TextItem(id, leftId, rightId, 0, characters));
-        leftId = id;
-        updateLeft(id);
+        const CrdtId id = editor->ids++; // First ID
+        editor->ids += characters.size() - 1;
+        const CrdtId idEnd = editor->ids;
+        text->items.add(TextItem(id, leftId, END_MARKER, 0, characters));
+        leftId = editor->ids - 1; // Last ID
+        updateRight(id);
+        rightId = id;
 
         // Flush current styles
         if (currentStyleNode == NULL_MARKER)
             addNewParagraphStyle(currentStyle);
-        if (hasNewline)
+        if (hasNewline) {
             currentStyleNode = NULL_MARKER; // Reset current styles if we have a newline
-    }
-
-    void updateLeft() const {
-        updateLeft(leftId);
-    }
-
-    void updateLeft(const CrdtId currentId) const {
-        // Take the current text (currentId)
-        // Go back to its leftId (the previous text) and update the rightId
-        // Effectively pointing the previous character to the current (next) one
-        if (const CrdtId prevId = text->items[currentId].leftId; prevId != END_MARKER) {
-            text->items[prevId].rightId = currentId;
+            endLastParagraph = idEnd; // Update the last paragraph end ID
+            rightIdIsEnd = true; // End the paragraph with 0:0
+        } else {
+            rightIdIsEnd = false; // Not the end of the paragraph
         }
+    }
+
+    void updateRight() const {
+        updateRight(leftId);
+    }
+
+    void updateRight(const CrdtId currentId) const {
+        if (!rightIdIsEnd && rightId != END_MARKER)
+            text->items[rightId].rightId = currentId;
     }
 
     SceneTreeEditor *editor;
@@ -245,4 +223,6 @@ private:
     CrdtId currentStyleNode = NULL_MARKER;
     CrdtId leftId = END_MARKER;
     CrdtId rightId = END_MARKER;
+    CrdtId endLastParagraph = END_MARKER;
+    bool rightIdIsEnd = false;
 };
