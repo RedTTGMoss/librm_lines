@@ -1,5 +1,7 @@
 #include "advanced/text.h"
 #include "advanced/text_scale.h"
+constexpr float TEXT_TOP_Y = 140;
+constexpr float TEXT_WIDTH_ALIGN = -8;
 
 namespace {
     // Related to the column width
@@ -18,7 +20,7 @@ namespace {
         {
             {BASIC, 100},
             {PlainText, 120},
-            {Title, 150},
+            {Title, 160},
             {Sub, 88},
             {Bullet, 71},
             {BulletTab, 71},

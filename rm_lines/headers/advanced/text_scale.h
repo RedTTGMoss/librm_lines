@@ -1,6 +1,9 @@
 #pragma once
 #include "common/data_types.h"
 
+extern const float TEXT_TOP_Y;
+extern const float TEXT_WIDTH_ALIGN;
+
 struct TextAreaInfo {
     // Old style text area using coordinates
     float x;

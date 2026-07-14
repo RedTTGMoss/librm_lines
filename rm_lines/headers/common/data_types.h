@@ -301,7 +301,11 @@ public:
 };
 
 enum ParagraphStyle {
+    // MAGIC VALUE
     MISSING = -1,
+    TextTop = -2, // Used for the style height from the TOP to the next line
+
+    // FILE VALUES
     BASIC = 0,
     PlainText = 1,
     Title = 2,
@@ -315,6 +319,7 @@ enum ParagraphStyle {
     Numbered = 10,
     NumberedTab = 11,
 
+    // COUNT
     PARAGRAPH_STYLES_COUNT
 };
 

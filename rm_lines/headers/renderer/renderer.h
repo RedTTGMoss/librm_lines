@@ -7,12 +7,11 @@
 #include <scene_tree/scene_tree.h>
 #include "advanced/layers.h"
 #include "advanced/text.h"
+#include "advanced/text_scale.h"
 #include <unordered_map>
 
 #include "image_ref.h"
 #include "text/text_renderer.h"
-#define TEXT_TOP_Y (150)
-#define TEXT_WIDTH_ALIGN (-8)
 
 class Renderer;
 using ImageBuffer = RMLinesRenderer::ImageBuffer;
