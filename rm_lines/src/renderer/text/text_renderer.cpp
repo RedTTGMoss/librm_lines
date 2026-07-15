@@ -58,14 +58,14 @@ void TextRenderer::getGlyphs(
     for (unsigned int i = 0; i < glyphCount; i++) {
         GlyphLayout glyph{};
 
-        const FT_UInt glyphIndex = glyphInfo[i].codepoint;
+        glyph.glyphIndex = glyphInfo[i].codepoint;
 
-        if (FT_Load_Glyph(font->face, glyphIndex, FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP))
+        if (FT_Load_Glyph(font->face, glyph.glyphIndex, FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP))
             continue;
 
-        FT_GlyphSlot slot = font->face->glyph;
+        const FT_GlyphSlot slot = font->face->glyph;
 
-        glyph.codepoint = glyphIndex;
+        glyph.codepoint = glyph.glyphIndex;
 
         glyph.width = FT_TO_F(slot->metrics.width);
         glyph.height = FT_TO_F(slot->metrics.height);
@@ -165,6 +165,45 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
                 renderer->stroker.lineTo(glyph.x, glyph.y + glyph.height);
                 renderer->stroker.lineTo(glyph.x, glyph.y);
                 renderer->stroker.finish();
+
+                renderGlyph(glyph, position, scale);
+            }
+        }
+    }
+}
+
+void TextRenderer::renderGlyph(const GlyphLayout &glyph, const Vector *position, Vector scale) {
+    FT_Load_Glyph(
+        font->face,
+        glyph.glyphIndex,
+        FT_LOAD_DEFAULT
+    );
+
+    FT_Render_Glyph(
+        font->face->glyph,
+        FT_RENDER_MODE_NORMAL
+    );
+
+    drawBitmap(glyph.x, glyph.y, font->face->glyph->bitmap);
+}
+
+void TextRenderer::drawBitmap(float x, float y, const FT_Bitmap &bitmap) {
+    const auto buf = &renderer->stroker.raster.raster.fill.buffer;
+    if (x >= buf->width || y >= buf->height || x + bitmap.width < 0 || y + bitmap.rows < 0)
+        return;
+
+    for (unsigned int row = 0; row < bitmap.rows; ++row) {
+        for (unsigned int col = 0; col < bitmap.width; ++col) {
+            unsigned char pixelValue = bitmap.buffer[row * bitmap.pitch + col];
+            if (pixelValue > 0) {
+                Color color(150, 0, 0, pixelValue);
+                const uint32_t bufX = std::floor(x + col);
+                const uint32_t bufY = std::floor(y + row);
+
+                if (bufX >= buf->width || bufY >= buf->height)
+                    continue;
+
+                buf->scanline(bufY)[bufX] = color.toRGBA();
             }
         }
     }

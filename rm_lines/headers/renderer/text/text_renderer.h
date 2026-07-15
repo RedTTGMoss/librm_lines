@@ -10,6 +10,7 @@ class Renderer;
 
 struct GlyphLayout {
     uint32_t codepoint;
+    FT_UInt glyphIndex;
 
     float x;
     float y;
@@ -69,6 +70,10 @@ private:
     // Helpers
     void prepareBounds(const Vector *position, Vector scale);
 
+    // Rendering
+    void renderGlyph(const GlyphLayout &glyph, const Vector *position, Vector scale);
+
+    void drawBitmap(float x, float y, const FT_Bitmap &bitmap);
 
     Renderer *renderer = nullptr;
 };

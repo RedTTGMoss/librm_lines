@@ -184,7 +184,7 @@ class GC(pe.GameContext):
     def buffer_size(self):
         return self.buffer[0] * self.buffer[1]
 
-    def get_frame(self, x, y, w, h, scale):
+    def get_frame(self, x, y, w, h, scale, antialias: bool = False):
         # x, y = (
         #     x - (w * scale) * 0.5,
         #     y - (h * scale) * 0.5,
@@ -208,7 +208,7 @@ class GC(pe.GameContext):
             *rect.topleft,  # Position
             *rect.size,  # Frame size
             w, h,  # Buffer size
-            False
+            antialias
         )
         raw_frame = bytes(self.buffer[2])
         frame = pe.pygame.image.frombuffer(raw_frame, (w, h), 'RGBA')
