@@ -6,13 +6,21 @@
 
 void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     paragraph = next;
+
     fontType = paragraph->style.value.getFont();
     fontSize = paragraph->style.value.fontSize();
+
     styleHeight = paragraph->style.value.styleHeight(prevStyle);
+    styleMargin = paragraph->style.value.styleMargin();
+
     scaledStyleHeight = styleHeight * scale.y;
+    scaledStyleMargin = styleMargin * scale.x;
     scaledFontSize = fontSize * scale.y;
-    posX = boundStart;
+
+    startPosX = boundStart + scaledStyleMargin;
+    posX = startPosX;
     posY += scaledStyleHeight;
+
     prevStyle = next->style.value.getStyle();
 }
 
@@ -81,7 +89,7 @@ void TextRenderer::getGlyphs(
 
 
         if (posX + glyph.advance >= boundEnd) {
-            posX = boundStart;
+            posX = startPosX;
             posY += scaledFontSize;
         }
 

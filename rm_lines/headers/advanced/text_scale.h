@@ -1,6 +1,12 @@
 #pragma once
 #include "common/data_types.h"
 
+typedef float StyleScaleValue;
+typedef const std::pair<const ParagraphStyle, StyleScaleValue> StyleScaleEntry;
+typedef std::array<StyleScaleEntry, PARAGRAPH_STYLES_COUNT> StyleScaleList;
+typedef const std::pair<const ParagraphStyle, const StyleScaleList *> StyleNestedScaleEntry;
+typedef std::array<StyleNestedScaleEntry, PARAGRAPH_STYLES_COUNT> NestedStyleScaleList;
+
 extern const float TEXT_TOP_Y;
 extern const float TEXT_WIDTH_ALIGN;
 extern const float TAB_LENGTH;
@@ -13,14 +19,16 @@ struct TextAreaInfo {
     float width;
 };
 
-float getStyleHeight(ParagraphStyle style);
+StyleScaleValue getStyleHeight(ParagraphStyle style);
 
-float getStyleHeight(ParagraphStyle prevStyle, ParagraphStyle style);
+StyleScaleValue getStyleHeight(ParagraphStyle prevStyle, ParagraphStyle style);
 
-float getFontSize(ParagraphStyle style);
+StyleScaleValue getStyleMargin(ParagraphStyle style);
 
-float getStyleWeight(ParagraphStyle style, TextFormattingOptions formatting);
+StyleScaleValue getFontSize(ParagraphStyle style);
 
-float getWidthPercent(TextColumnWidth columnWidth);
+StyleScaleValue getStyleWeight(ParagraphStyle style, TextFormattingOptions formatting);
+
+StyleScaleValue getWidthPercent(TextColumnWidth columnWidth);
 
 TextAreaInfo getTextAreaInfo(TextColumnWidth columnWidth);

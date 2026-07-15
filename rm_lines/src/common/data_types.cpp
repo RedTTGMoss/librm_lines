@@ -146,6 +146,10 @@ float ParagraphStyleNew::styleHeight(const ParagraphStyle against) const {
     return getStyleHeight(against, getStyle());
 }
 
+float ParagraphStyleNew::styleMargin() const {
+    return getStyleMargin(getStyle());
+}
+
 float ParagraphStyleNew::fontSize() const {
     return getFontSize(getStyle());
 }

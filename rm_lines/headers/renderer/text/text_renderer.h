@@ -49,6 +49,7 @@ private:
 
     // Positioning
     float posX = 0;
+    float startPosX = 0;
     float posY = 0;
     float boundStart = 0;
     float boundEnd = 0;
@@ -60,8 +61,10 @@ private:
     float weight = 0;
     float fontSize = 0;
     float styleHeight = 0;
+    float styleMargin = 0;
     float scaledFontSize = 0;
     float scaledStyleHeight = 0;
+    float scaledStyleMargin = 0;
 
     // Temporary
     FontType fontType = Serif;

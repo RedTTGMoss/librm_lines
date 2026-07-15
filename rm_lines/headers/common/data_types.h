@@ -304,6 +304,7 @@ enum ParagraphStyle {
     // MAGIC VALUE
     MISSING = -1,
     TextTop = -2, // Used for the style height from the TOP to the next line
+    END_STYLE_LIST = -473435454553,
 
     // FILE VALUES
     BASIC = 0,
@@ -350,6 +351,8 @@ struct ParagraphStyleNew {
     int tabbed() const;
 
     float styleHeight(ParagraphStyle against = TextTop) const;
+
+    float styleMargin() const;
 
     float fontSize() const;
 

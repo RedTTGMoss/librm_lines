@@ -1,8 +1,28 @@
 #include "advanced/text.h"
 #include "advanced/text_scale.h"
+
+/*
+ *  This file handles all the raw values that are closely matched to fit the
+ *  math and look behind the size of text, and the resulting anchors.
+ *  The following data in this file has been sampled from a mix of:
+ *  - on device data
+ *  - PDF exports
+ *  - side-by-side overlay comparisons and adjustments
+ *  A lot of the data here is GUESS WORK.
+ *  If you have any real data of the values used by remarkable, I'd love if you make a PR <3
+ *  Until then, the goal in this file is to closely match the shapes, sizes and looks of
+ *  the text rendered, when using the REMARKABLE FONTS, which will not be redistributed here,
+ *  so if you find the look of text inconsistent, then consider switching which font is getting used
+ *  and if using this for personal use, a download tool for the fonts is available and the build system
+ *  will use it automatically. reMarkable fonts are licensed and copyrighted, use them at your own discretion
+ */
+
 constexpr float TEXT_TOP_Y = 140;
 constexpr float TEXT_WIDTH_ALIGN = -10;
 constexpr float TAB_LENGTH = 10.0; // TODO: Update the tab length to be more proper
+
+constexpr StyleScaleEntry EndOfStyleList = {END_STYLE_LIST, 0};
+constexpr StyleNestedScaleEntry EndOfNestedStyleList = {END_STYLE_LIST, nullptr};
 
 namespace {
     // Related to the column width
@@ -12,85 +32,157 @@ namespace {
     constexpr float TEXT_Y_PERCENT = 1.0f / 8.0f;
 
     // Most values are the same, we can edit them here
-    constexpr int TITLE_LINE_HEIGHT = 65;
-    constexpr int SUB_LINE_HEIGHT = 37;
-    constexpr int BASIC_LINE_HEIGHT = 34;
+    constexpr StyleScaleValue TITLE_LINE_HEIGHT = 65;
+    constexpr StyleScaleValue SUB_LINE_HEIGHT = 37;
+    constexpr StyleScaleValue BASIC_LINE_HEIGHT = 30;
 
-    // The gap between paragraphs of different styles
-    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleHeights = {
+    // The gap between the top and the first paragraph style
+    constexpr StyleScaleList StyleTopMargins = {
         {
             {BASIC, 100},
             {PlainText, 120},
             {Title, 158},
-            {Sub, 89},
+            {Sub, 132},
             {Bullet, 71},
-            {BulletTab, 71},
-            {CheckBox, 71},
-            {CheckBoxChecked, 71},
-            {CheckBoxTab, 71},
-            {CheckBoxTabChecked, 71},
-            {Numbered, 71},
-            {NumberedTab, 71}
+            EndOfStyleList
         }
     };
 
+
+    // Any extra gap between the bound start and the text
+    constexpr StyleScaleList StyleLeftMargins = {
+        {
+            {BASIC, 0},
+            {PlainText, 2},
+            EndOfStyleList
+        }
+    };
+
+
     // The font size
-    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> FontSizes = {
+    constexpr StyleScaleList FontSizes = {
         {
             {BASIC, BASIC_LINE_HEIGHT},
             {PlainText, BASIC_LINE_HEIGHT},
             {Title, TITLE_LINE_HEIGHT},
             {Sub, SUB_LINE_HEIGHT},
+            EndOfStyleList
         }
     };
 
-    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleWeights = {
+    constexpr StyleScaleList StyleWeights = {
         {
             {BASIC, 400},
             {Sub, 500},
+            {PlainText, 500},
+            EndOfStyleList
         }
     };
 
-    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleWeightsItalic = {
+    constexpr StyleScaleList StyleWeightsItalic = {
         {
             {BASIC, 400},
+            EndOfStyleList
         }
     };
 
-    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleWeightsBold = {
+    constexpr StyleScaleList StyleWeightsBold = {
         {
             {BASIC, 700},
             {Sub, 800},
+            EndOfStyleList
+        }
+    };
+
+    constexpr StyleScaleList Rel_BASIC = {
+        {
+            // Shared heights from top style
+            {BASIC, 100},
+            EndOfStyleList
+        }
+    };
+
+    constexpr StyleScaleList Rel_Title = {
+        {
+            {BASIC, 164},
+            {Sub, 157},
+            EndOfStyleList
+        }
+    };
+
+    constexpr StyleScaleList Rel_Sub = {
+        {
+            {Sub, 83},
+            {Title, 89},
+            EndOfStyleList
+        }
+    };
+
+    constexpr StyleScaleList Rel_PlainText = {
+        {
+            {Title, 70},
+            EndOfStyleList
+        }
+    };
+
+    constexpr NestedStyleScaleList StyleHeightsRelative = {
+        {
+            // This is the bottom style
+            {BASIC, &Rel_BASIC},
+            {Title, &Rel_Title},
+            {Sub, &Rel_Sub},
+            {PlainText, &Rel_PlainText},
+            {Bullet, &Rel_PlainText},
+            {BulletTab, &Rel_PlainText},
+            {Numbered, &Rel_PlainText},
+            {NumberedTab, &Rel_PlainText},
+            {CheckBox, &Rel_PlainText},
+            {CheckBoxTab, &Rel_PlainText},
+            {CheckBoxChecked, &Rel_PlainText},
+            {CheckBoxTabChecked, &Rel_PlainText},
+            // EndOfNestedStyleList
         }
     };
 }
 
 // Helper function to get a match from an array, or get a default
-template<typename Container, typename Key>
-float findStyleValue(const Container &list, const Key &key) {
+StyleScaleValue findStyleValue(const StyleScaleList &list, const ParagraphStyle &key) {
     for (const auto &[k, value]: list) {
         if (k == key)
-            return static_cast<float>(value);
+            return value;
+        if (k == END_STYLE_LIST)
+            break; // A quick exit for short style list definitions
     }
-    return static_cast<float>(list.front().second);
+    return list.front().second;
 }
 
-float getStyleHeight(const ParagraphStyle style) {
-    return findStyleValue(StyleHeights, style);
+StyleScaleValue findNestedStyleValue(const NestedStyleScaleList &list, const ParagraphStyle &keyA,
+                                     const ParagraphStyle &keyB) {
+    for (const auto &[k, value]: list) {
+        if (k == keyA)
+            return findStyleValue(*value, keyB);
+        if (k == END_STYLE_LIST)
+            break; // A quick exit for short style list definitions
+    }
+    return findStyleValue(*list.front().second, keyB);
 }
 
-float getStyleHeight(const ParagraphStyle prevStyle, const ParagraphStyle style) {
+StyleScaleValue getStyleHeight(const ParagraphStyle style) {
+    return findStyleValue(StyleTopMargins, style);
+}
+
+StyleScaleValue getStyleHeight(const ParagraphStyle prevStyle, const ParagraphStyle style) {
     if (prevStyle == TextTop) // Old default assumption
         return getStyleHeight(style);
-    return 50.0f; // TODO: Temporary
+    return findNestedStyleValue(StyleHeightsRelative, style, prevStyle);
 }
 
-float getFontSize(const ParagraphStyle style) {
-    for (const auto &[key, value]: FontSizes) {
-        if (key == style)
-            return static_cast<float>(value);
-    }
-    return static_cast<float>(FontSizes[0].second);
+StyleScaleValue getStyleMargin(const ParagraphStyle style) {
+    return findStyleValue(StyleLeftMargins, style);
+}
+
+StyleScaleValue getFontSize(const ParagraphStyle style) {
+    return findStyleValue(FontSizes, style);
 }
 
 float getStyleWeight(const ParagraphStyle style, const TextFormattingOptions formatting) {
