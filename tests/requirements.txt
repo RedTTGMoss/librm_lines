@@ -1,0 +1,14 @@
+certifi==2026.6.17
+charset-normalizer==3.4.9
+colorama==0.4.6
+deprecation==2.1.0
+frozendict==2.4.7
+idna==3.18
+numpy==2.5.1
+packaging==26.2
+pillow==12.3.0
+pygame-ce==2.5.7
+pygameextra==2.0.86
+pyperclip==1.11.0
+requests==2.34.2
+urllib3==2.7.0
