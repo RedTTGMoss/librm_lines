@@ -346,17 +346,17 @@ int main(const int argc, char *argv[]) {
                         .endLine();
             }
             textRenderer->setRenderer(testText.renderer);
-            std::vector<GlyphLayout> glyphs;
-            textRenderer->getAllPageGlyphs(glyphs);
-            for (const auto glyph: glyphs) {
-                testText.startBasicLine()
-                        .addPoint(glyph.x - halfWidth, glyph.y)
-                        .addPoint(glyph.x + glyph.width - halfWidth, glyph.y)
-                        .addPoint(glyph.x + glyph.width - halfWidth, glyph.y + glyph.height)
-                        .addPoint(glyph.x - halfWidth, glyph.y + glyph.height)
-                        .addPoint(glyph.x - halfWidth, glyph.y)
-                        .endLine();
-            }
+            // std::vector<GlyphLayout> glyphs;
+            // textRenderer->getAllPageGlyphs(glyphs);
+            // for (const auto glyph: glyphs) {
+            //     testText.startBasicLine()
+            //             .addPoint(glyph.x - halfWidth, glyph.y)
+            //             .addPoint(glyph.x + glyph.width - halfWidth, glyph.y)
+            //             .addPoint(glyph.x + glyph.width - halfWidth, glyph.y + glyph.height)
+            //             .addPoint(glyph.x - halfWidth, glyph.y + glyph.height)
+            //             .addPoint(glyph.x - halfWidth, glyph.y)
+            //             .endLine();
+            // }
 
             testText.save();
         }
