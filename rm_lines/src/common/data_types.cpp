@@ -142,21 +142,23 @@ int ParagraphStyleNew::tabbed() const {
     return 0; // Not tabbed
 }
 
-float ParagraphStyleNew::styleHeight() const {
-    return getStyleHeight(legacy);
+float ParagraphStyleNew::styleHeight(const ParagraphStyle against) const {
+    return getStyleHeight(against, getStyle());
 }
 
 float ParagraphStyleNew::fontSize() const {
-    return getFontSize(legacy);
+    return getFontSize(getStyle());
 }
 
 float ParagraphStyleNew::getTabOffset() const {
-    constexpr float TAB_LENGTH = 10.0; // TODO: create a practical or dynamic tab length
+    // TODO: Might include to include additional tab offset for some styles
+    // These styles might account for check marks since they use a graphic
+    // The dotted and numbered styles can be integrated with special glyph adding code
     return TAB_LENGTH * tabbed();
 }
 
 std::string ParagraphStyleNew::styleLabel() const {
-    switch (legacy) {
+    switch (getStyle()) {
         case MISSING:
             return "MISSING";
         case BASIC:
@@ -317,13 +319,20 @@ json ParagraphStyleNew::toJson() const {
 }
 
 FontType ParagraphStyleNew::getFont() const {
-    switch (legacy) {
+    switch (getStyle()) {
         case Title:
             return Serif;
         default:
             return Sans;
     }
     return Sans;
+}
+
+ParagraphStyle ParagraphStyleNew::getStyle() const {
+    // TODO: Support Header style sub style (which uses serif)
+    // T (T) T t . . .
+    // ^ Style marker on tablet ^
+    return legacy;
 }
 
 template<>

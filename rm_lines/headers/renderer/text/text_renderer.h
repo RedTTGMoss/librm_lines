@@ -52,6 +52,7 @@ private:
     float posY = 0;
     float boundStart = 0;
     float boundEnd = 0;
+    ParagraphStyle prevStyle = TextTop;
 
     // Font data
     FontInfo *font = nullptr;

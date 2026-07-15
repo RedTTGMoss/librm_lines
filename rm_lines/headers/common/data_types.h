@@ -349,7 +349,7 @@ struct ParagraphStyleNew {
 
     int tabbed() const;
 
-    float styleHeight() const;
+    float styleHeight(ParagraphStyle against = TextTop) const;
 
     float fontSize() const;
 
@@ -360,6 +360,10 @@ struct ParagraphStyleNew {
     [[nodiscard]] json toJson() const;
 
     FontType getFont() const;
+
+    // Aggregates OLD + New paragraph styles into one enum result
+    // Please use this instead of legacy, or you will get the wrong values.
+    ParagraphStyle getStyle() const;
 };
 
 // Templates for data types

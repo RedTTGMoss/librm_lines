@@ -3,6 +3,7 @@
 
 extern const float TEXT_TOP_Y;
 extern const float TEXT_WIDTH_ALIGN;
+extern const float TAB_LENGTH;
 
 struct TextAreaInfo {
     // Old style text area using coordinates
@@ -13,6 +14,8 @@ struct TextAreaInfo {
 };
 
 float getStyleHeight(ParagraphStyle style);
+
+float getStyleHeight(ParagraphStyle prevStyle, ParagraphStyle style);
 
 float getFontSize(ParagraphStyle style);
 

@@ -87,9 +87,11 @@ void Renderer::calculateAnchors() {
     int posY = 0;
 
     // Calculate the anchors
+    ParagraphStyle prevStyle = TextTop;
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
-        const auto styleHeight = paragraph.style.value.styleHeight();
+        const auto styleHeight = paragraph.style.value.styleHeight(prevStyle);
+        prevStyle = paragraph.style.value.getStyle();
         yOffset += styleHeight;
 
         posY = yOffset;

@@ -1,7 +1,8 @@
 #include "advanced/text.h"
 #include "advanced/text_scale.h"
 constexpr float TEXT_TOP_Y = 140;
-constexpr float TEXT_WIDTH_ALIGN = -8;
+constexpr float TEXT_WIDTH_ALIGN = -10;
+constexpr float TAB_LENGTH = 10.0; // TODO: Update the tab length to be more proper
 
 namespace {
     // Related to the column width
@@ -11,17 +12,17 @@ namespace {
     constexpr float TEXT_Y_PERCENT = 1.0f / 8.0f;
 
     // Most values are the same, we can edit them here
-    constexpr int TITLE_LINE_HEIGHT = 66;
-    constexpr int SUB_LINE_HEIGHT = 38;
+    constexpr int TITLE_LINE_HEIGHT = 65;
+    constexpr int SUB_LINE_HEIGHT = 37;
     constexpr int BASIC_LINE_HEIGHT = 34;
 
     // The gap between paragraphs of different styles
-    constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleHeights = {
+    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleHeights = {
         {
             {BASIC, 100},
             {PlainText, 120},
-            {Title, 160},
-            {Sub, 88},
+            {Title, 158},
+            {Sub, 89},
             {Bullet, 71},
             {BulletTab, 71},
             {CheckBox, 71},
@@ -34,37 +35,29 @@ namespace {
     };
 
     // The font size
-    constexpr std::array<std::pair<ParagraphStyle, int>, 12> FontSizes = {
+    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> FontSizes = {
         {
             {BASIC, BASIC_LINE_HEIGHT},
             {PlainText, BASIC_LINE_HEIGHT},
             {Title, TITLE_LINE_HEIGHT},
             {Sub, SUB_LINE_HEIGHT},
-            {Bullet, BASIC_LINE_HEIGHT},
-            {BulletTab, BASIC_LINE_HEIGHT},
-            {CheckBox, BASIC_LINE_HEIGHT},
-            {CheckBoxChecked, BASIC_LINE_HEIGHT},
-            {CheckBoxTab, BASIC_LINE_HEIGHT},
-            {CheckBoxTabChecked, BASIC_LINE_HEIGHT},
-            {Numbered, BASIC_LINE_HEIGHT},
-            {NumberedTab, BASIC_LINE_HEIGHT}
         }
     };
 
-    constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeights = {
+    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleWeights = {
         {
             {BASIC, 400},
             {Sub, 500},
         }
     };
 
-    constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeightsItalic = {
+    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleWeightsItalic = {
         {
             {BASIC, 400},
         }
     };
 
-    constexpr std::array<std::pair<ParagraphStyle, int>, 12> StyleWeightsBold = {
+    constexpr std::array<std::pair<ParagraphStyle, int>, PARAGRAPH_STYLES_COUNT> StyleWeightsBold = {
         {
             {BASIC, 700},
             {Sub, 800},
@@ -72,12 +65,24 @@ namespace {
     };
 }
 
-float getStyleHeight(const ParagraphStyle style) {
-    for (const auto &[key, value]: StyleHeights) {
-        if (key == style)
+// Helper function to get a match from an array, or get a default
+template<typename Container, typename Key>
+float findStyleValue(const Container &list, const Key &key) {
+    for (const auto &[k, value]: list) {
+        if (k == key)
             return static_cast<float>(value);
     }
-    return static_cast<float>(StyleHeights[0].second);
+    return static_cast<float>(list.front().second);
+}
+
+float getStyleHeight(const ParagraphStyle style) {
+    return findStyleValue(StyleHeights, style);
+}
+
+float getStyleHeight(const ParagraphStyle prevStyle, const ParagraphStyle style) {
+    if (prevStyle == TextTop) // Old default assumption
+        return getStyleHeight(style);
+    return 50.0f; // TODO: Temporary
 }
 
 float getFontSize(const ParagraphStyle style) {
@@ -93,15 +98,13 @@ float getStyleWeight(const ParagraphStyle style, const TextFormattingOptions for
     // Bold (including BoldItalic) is first
     // Italic is second
     // Regular is last
-    for (const auto &[key, value]: formatting.bold
-                                       ? StyleWeightsBold
-                                       : formatting.italic
-                                             ? StyleWeightsItalic
-                                             : StyleWeights) {
-        if (key == style)
-            return static_cast<float>(value);
-    }
-    return static_cast<float>(StyleWeights[0].second);
+    return findStyleValue(
+        formatting.bold
+            ? StyleWeightsBold
+            : formatting.italic
+                  ? StyleWeightsItalic
+                  : StyleWeights, style
+    );
 }
 
 float getWidthPercent(const TextColumnWidth columnWidth) {

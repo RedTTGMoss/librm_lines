@@ -8,11 +8,12 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     paragraph = next;
     fontType = paragraph->style.value.getFont();
     fontSize = paragraph->style.value.fontSize();
-    styleHeight = paragraph->style.value.styleHeight();
+    styleHeight = paragraph->style.value.styleHeight(prevStyle);
     scaledStyleHeight = styleHeight * scale.y;
     scaledFontSize = fontSize * scale.y;
     posX = boundStart;
     posY += scaledStyleHeight;
+    prevStyle = next->style.value.getStyle();
 }
 
 void TextRenderer::newText(const FormattedText *next) {
@@ -114,6 +115,7 @@ void TextRenderer::prepareBounds(const Vector *position, const Vector scale) {
     boundStart = (position->x + textMargin) * scale.x;
     boundEnd = (position->x + renderer->paperSize.first - textMargin) * scale.x;
     posY = (position->y + TEXT_TOP_Y) * scale.y;
+    prevStyle = TextTop;
 }
 
 TextRenderer::TextRenderer() : TextRenderer(nullptr) {
@@ -142,16 +144,11 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
     renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
     renderer->stroker.raster.raster.fill.debugTool(2.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
-        const float prevPosY = posY;
         newParagraph(&next, scale);
-        logDebug(std::format("Paragraph {} style: {} starts with Y {} (added: {})",
-                             paragraph->startId.repr(), paragraph->style.value.styleLabel(), prevPosY,
-                             posY - prevPosY));
 
 
         for (const auto &formattedText: paragraph->contents) {
             newText(&formattedText);
-            logDebug(std::format("- Text: {}", formattedText.text));
 
             std::vector<GlyphLayout> glyphs;
             getGlyphs(formattedText.text, glyphs);
@@ -159,12 +156,12 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
                 // logDebug(std::format("Glyph: {} at ({}, {}) size {}x{} offset ({}, {}) advance {}",
                 //                      glyph.codepoint, glyph.x, glyph.y, glyph.width, glyph.height,
                 //                      glyph.xOffset, glyph.yOffset, glyph.advance));
-                renderer->stroker.moveTo(glyph.x, glyph.y);
-                renderer->stroker.lineTo(glyph.x + glyph.width, glyph.y);
-                renderer->stroker.lineTo(glyph.x + glyph.width, glyph.y + glyph.height);
-                renderer->stroker.lineTo(glyph.x, glyph.y + glyph.height);
-                renderer->stroker.lineTo(glyph.x, glyph.y);
-                renderer->stroker.finish();
+                // renderer->stroker.moveTo(glyph.x, glyph.y);
+                // renderer->stroker.lineTo(glyph.x + glyph.width, glyph.y);
+                // renderer->stroker.lineTo(glyph.x + glyph.width, glyph.y + glyph.height);
+                // renderer->stroker.lineTo(glyph.x, glyph.y + glyph.height);
+                // renderer->stroker.lineTo(glyph.x, glyph.y);
+                // renderer->stroker.finish();
 
                 renderGlyph(glyph, position, scale);
             }
@@ -194,7 +191,8 @@ void TextRenderer::drawBitmap(float x, float y, const FT_Bitmap &bitmap) {
 
     for (unsigned int row = 0; row < bitmap.rows; ++row) {
         for (unsigned int col = 0; col < bitmap.width; ++col) {
-            unsigned char pixelValue = bitmap.buffer[row * bitmap.pitch + col];
+            uint8_t pixelValue = bitmap.buffer[row * bitmap.pitch + col];
+            pixelValue /= 2;
             if (pixelValue > 0) {
                 Color color(150, 0, 0, pixelValue);
                 const uint32_t bufX = std::floor(x + col);
