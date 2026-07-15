@@ -23,4 +23,4 @@ float getStyleWeight(ParagraphStyle style, TextFormattingOptions formatting);
 
 float getWidthPercent(TextColumnWidth columnWidth);
 
-TextAreaInfo getTextAreaInfo(IntPair paperSize, TextColumnWidth columnWidth);
+TextAreaInfo getTextAreaInfo(TextColumnWidth columnWidth);

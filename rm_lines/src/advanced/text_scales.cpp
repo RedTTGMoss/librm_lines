@@ -119,12 +119,14 @@ float getWidthPercent(const TextColumnWidth columnWidth) {
     return 0.0f;
 }
 
-TextAreaInfo getTextAreaInfo(const IntPair paperSize, const TextColumnWidth columnWidth) {
+TextAreaInfo getTextAreaInfo(const TextColumnWidth columnWidth) {
+    // Apparently for compatibility, remarkable keeps all this math based on
+    // The remarkable 2, and it should all be converted to per paperSize, once getting handled by respective device
     const float widthPercent = getWidthPercent(columnWidth);
-    const float width = paperSize.first * widthPercent;
+    const float width = BASE_PAPER_SIZE_X * widthPercent;
     return {
         -(width / 2.0f),
-        paperSize.second * TEXT_Y_PERCENT,
+        BASE_PAPER_SIZE_Y * TEXT_Y_PERCENT,
         width
     };
 }

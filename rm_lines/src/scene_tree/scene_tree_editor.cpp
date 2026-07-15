@@ -102,11 +102,11 @@ std::string SceneTreeEditor::addImageInfo(std::string filename, const std::strin
     return info.uuid;
 }
 
-void SceneTreeEditor::setRootTextWidth(TextColumnWidth width) {
+void SceneTreeEditor::setRootTextWidth(const TextColumnWidth width) {
     if (!hasText()) {
         throw std::runtime_error("Cannot set root text width: no root text exists");
     }
-    const TextAreaInfo info = getTextAreaInfo(sceneInfo->paperSize.value(), width);
+    const TextAreaInfo info = getTextAreaInfo(width);
     rootText->width = LwwItem(ids++, info.width);
     rootText->posX = info.x;
     rootText->posY = info.y;
