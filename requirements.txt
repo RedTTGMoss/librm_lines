@@ -12,3 +12,4 @@ pygameextra==2.0.86
 pyperclip==1.11.0
 requests==2.34.2
 urllib3==2.7.0
+pymupdf==1.28.0
