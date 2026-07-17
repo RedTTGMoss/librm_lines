@@ -61,6 +61,11 @@ jobs:
           python-version: '3.13'
           cache: 'pip'
 
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
       - name: Configure CMake
         run: >
           emcmake cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
