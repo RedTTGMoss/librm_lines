@@ -14,8 +14,6 @@
 
 struct FontInfo {
     FT_Face face{};
-    FontType type;
-    bool italic;
     float size = 0;
     hb_font_t *hbFont = nullptr;
 
@@ -27,12 +25,13 @@ struct FontInfo {
     FT_UInt italicAxis = UINT_MAX;
     FT_UInt opticalSizeAxis = UINT_MAX;
 
-    void setWeight(const float weight) const {
-        if (mmVar && weightAxis != UINT_MAX) {
-            FT_Fixed normalizedWeight = F_TO_FT_FIXED(weight);
-            FT_Set_Var_Design_Coordinates(face, 1, &normalizedWeight);
-        }
-    }
+    // Deprecated
+    // void setWeight(const float weight) const {
+    //     if (mmVar && weightAxis != UINT_MAX) {
+    //         FT_Fixed normalizedWeight = F_TO_FT_FIXED(weight);
+    //         FT_Set_Var_Design_Coordinates(face, 1, &normalizedWeight);
+    //     }
+    // }
 
     void setSize(const float size) {
         FT_Set_Char_Size(
@@ -70,11 +69,49 @@ struct FontInfo {
     }
 };
 
+struct FontFamily {
+    std::vector<FontInfo> fonts;
+    std::unordered_map<uint16_t, uint8_t> weights;
+
+    FontFamily() {
+        fonts.reserve(2);
+        weights.reserve(2);
+    }
+
+    ~FontFamily() {
+        cleanup();
+    }
+
+    void addFont(FontInfo &&font, const uint16_t weight) {
+        const uint8_t index = static_cast<uint8_t>(fonts.size());
+        fonts.push_back(std::move(font));
+        weights[weight] = index;
+    }
+
+    FontInfo *getWeight(uint16_t weight) {
+        // If weight is not valid, throw runtime
+
+        if (!weights.contains(weight))
+            throw std::runtime_error(std::format("Font weight {} not found", weight));
+        return &fonts[weights[weight]];
+    }
+
+    void cleanup() {
+        for (const auto &font: fonts) {
+            font.cleanup();
+        }
+        fonts.clear();
+        weights.clear();
+    }
+};
+
 class FontManager {
 public:
     static FontManager &instance();
 
-    FontInfo *selectFont(FontType font, bool italic);
+    FontFamily *selectFamily(FontType font, bool italic);
+
+    FontInfo *selectFont(FontType font, bool italic, uint16_t weight);
 
 private:
     FontManager();
@@ -83,14 +120,14 @@ private:
 
     FontManager(const FontManager &) = delete;
 
-    void initFont(const uint8_t *fontData, size_t fontSize, FontInfo *info);
+    FontInfo initFont(const uint8_t *fontData, size_t fontSize) const;
 
     FontManager &operator=(const FontManager &) = delete;
 
     FT_Library library{};
 
-    FontInfo *m_sans{};
-    FontInfo *m_sansItalic{};
-    FontInfo *m_serif{};
-    FontInfo *m_serifItalic{};
+    FontFamily m_sans{};
+    FontFamily m_sansItalic{};
+    FontFamily m_serif{};
+    FontFamily m_serifItalic{};
 };

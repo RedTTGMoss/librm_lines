@@ -27,8 +27,7 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
 void TextRenderer::newText(const FormattedText *next) {
     currentFormattedText = next;
     weight = getStyleWeight(paragraph->style.value.legacy, currentFormattedText->formatting);
-    font = FontManager::instance().selectFont(fontType, currentFormattedText->formatting.italic);
-    font->setWeight(weight);
+    font = FontManager::instance().selectFont(fontType, currentFormattedText->formatting.italic, weight);
     font->setSize(scaledFontSize);
 
     hbFont = font->getHb();

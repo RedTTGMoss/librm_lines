@@ -17,8 +17,8 @@
  *  will use it automatically. reMarkable fonts are licensed and copyrighted, use them at your own discretion
  */
 
-constexpr float TEXT_TOP_Y = 140;
-constexpr float TEXT_WIDTH_ALIGN = -10;
+constexpr float TEXT_TOP_Y = 139;
+constexpr float TEXT_WIDTH_ALIGN = 0; // Depracated in use of margins
 constexpr float TAB_LENGTH = 10.0; // TODO: Update the tab length to be more proper
 
 constexpr StyleScaleEntry EndOfStyleList = {END_STYLE_LIST, 0};
@@ -32,16 +32,16 @@ namespace {
     constexpr float TEXT_Y_PERCENT = 1.0f / 8.0f;
 
     // Most values are the same, we can edit them here
-    constexpr StyleScaleValue TITLE_LINE_HEIGHT = 65;
-    constexpr StyleScaleValue SUB_LINE_HEIGHT = 37;
-    constexpr StyleScaleValue BASIC_LINE_HEIGHT = 30;
+    constexpr StyleScaleValue TITLE_LINE_HEIGHT = 64.14;
+    constexpr StyleScaleValue SUB_LINE_HEIGHT = 36.08;
+    constexpr StyleScaleValue BASIC_LINE_HEIGHT = 32.07;
 
     // The gap between the top and the first paragraph style
     constexpr StyleScaleList StyleTopMargins = {
         {
             {BASIC, 100},
             {PlainText, 120},
-            {Title, 158},
+            {Title, 157.86},
             {Sub, 132},
             {Bullet, 71},
             EndOfStyleList
@@ -52,8 +52,7 @@ namespace {
     // Any extra gap between the bound start and the text
     constexpr StyleScaleList StyleLeftMargins = {
         {
-            {BASIC, 0},
-            {PlainText, 2},
+            {BASIC, 4.52},
             EndOfStyleList
         }
     };
@@ -74,7 +73,6 @@ namespace {
         {
             {BASIC, 400},
             {Sub, 500},
-            {PlainText, 500},
             EndOfStyleList
         }
     };
@@ -113,7 +111,7 @@ namespace {
     constexpr StyleScaleList Rel_Sub = {
         {
             {Sub, 83},
-            {Title, 89},
+            {Title, 90.29},
             EndOfStyleList
         }
     };
@@ -121,6 +119,8 @@ namespace {
     constexpr StyleScaleList Rel_PlainText = {
         {
             {Title, 70},
+            {Sub, 63.44},
+            {PlainText, 69.70},
             EndOfStyleList
         }
     };
