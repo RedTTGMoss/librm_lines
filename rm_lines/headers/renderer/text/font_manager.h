@@ -60,13 +60,6 @@ struct FontInfo {
         }
         return hbFont;
     }
-
-    void cleanup() const {
-        if (hbFont)
-            hb_font_destroy(hbFont);
-        if (face)
-            FT_Done_Face(face);
-    }
 };
 
 struct FontFamily {
@@ -97,9 +90,6 @@ struct FontFamily {
     }
 
     void cleanup() {
-        for (const auto &font: fonts) {
-            font.cleanup();
-        }
         fonts.clear();
         weights.clear();
     }
