@@ -11,6 +11,7 @@ on:
       - '.github/workflows/build-web.yml'
       - 'tests/**'
       - 'rm_lines/**'
+      - 'requirements.txt'
   pull_request:
     branches: [ "main", "experimental" ]
 

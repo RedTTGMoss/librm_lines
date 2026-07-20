@@ -12,6 +12,7 @@ on:
       - 'tests/**'
       - 'rm_lines/**'
       - 'rm_lines_sys/**'
+      - 'requirements.txt'
   pull_request:
     branches: [ "main", "experimental" ]
 
