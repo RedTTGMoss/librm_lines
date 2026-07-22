@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+import json
+import os
+from pathlib import Path
 
 import fitz
 import sys
@@ -12,6 +15,8 @@ MEDIUM_WIDTH_START = 234
 TEXT_TOP = 140
 DEFAULT_DPI = 227.5
 print(f"Default DPI: {DEFAULT_DPI}")
+
+script_dir = Path(__file__).parent
 
 
 def parse_font_style(font_name):
@@ -96,7 +101,8 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     last_y = TEXT_TOP
-    for item in extract_fonts(args.pdf, args.dpi):
+    output = extract_fonts(args.pdf, args.dpi)
+    for item in output:
         print(
             f"Page {item['page']:2} "
             f"{Fore.RED}X={item['text_x_px']:8.2f}   "
@@ -111,3 +117,18 @@ if __name__ == "__main__":
             f"{Fore.RESET}| {item['text']!r}"
         )
         last_y = item['baseline_y']
+    os.makedirs(script_dir / "text_info", exist_ok=True)
+    pages = []
+    for item in output:
+        if len(pages) < item['page']:
+            pages.append([])
+        # Strip extra data
+        item.pop('page')
+        item.pop('family')
+        item.pop('italic')
+        item.pop('size_pt')
+        item.pop('x')
+        item.pop('y')
+        pages[-1].append(item)
+    with open(script_dir / "text_info" / f"{Path(args.pdf).stem}.json", 'w') as f:
+        json.dump(pages, f, indent=2)

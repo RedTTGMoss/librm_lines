@@ -20,3 +20,4 @@ __pycache__/
 /rm_lines/assets/fonts/reMarkable*
 /tools/utf_bomb.txt
 /tests/debug_overlays/Text styles*
+/tools/text_info/

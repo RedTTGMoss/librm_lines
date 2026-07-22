@@ -18,7 +18,7 @@
  */
 
 constexpr float TEXT_TOP_Y = 139;
-constexpr float TEXT_WIDTH_ALIGN = 0; // Depracated in use of margins
+constexpr float TEXT_WIDTH_ALIGN = 0; // Deprecated in use of margins
 constexpr float TAB_LENGTH = 10.0; // TODO: Update the tab length to be more proper
 
 constexpr StyleScaleEntry EndOfStyleList = {END_STYLE_LIST, 0};
