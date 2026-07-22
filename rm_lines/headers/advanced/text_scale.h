@@ -1,7 +1,7 @@
 #pragma once
 #include "common/data_types.h"
 
-typedef float StyleScaleValue;
+typedef double StyleScaleValue;
 typedef const std::pair<const ParagraphStyle, StyleScaleValue> StyleScaleEntry;
 typedef std::array<StyleScaleEntry, PARAGRAPH_STYLES_COUNT> StyleScaleList;
 typedef const std::pair<const ParagraphStyle, const StyleScaleList *> StyleNestedScaleEntry;

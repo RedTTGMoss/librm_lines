@@ -230,7 +230,7 @@ StyleScaleValue getFontSize(const ParagraphStyle style) {
     return findStyleValue(FontSizes, style);
 }
 
-float getStyleWeight(const ParagraphStyle style, const TextFormattingOptions formatting) {
+StyleScaleValue getStyleWeight(const ParagraphStyle style, const TextFormattingOptions formatting) {
     // The order of the weights is important, because of how reMarkable choose to handle the italic weights
     // Bold (including BoldItalic) is first
     // Italic is second
@@ -244,7 +244,7 @@ float getStyleWeight(const ParagraphStyle style, const TextFormattingOptions for
     );
 }
 
-float getWidthPercent(const TextColumnWidth columnWidth) {
+StyleScaleValue getWidthPercent(const TextColumnWidth columnWidth) {
     switch (columnWidth) {
         case ColumnMedium:
             return MEDIUM_WIDTH_PERCENT;
