@@ -7,9 +7,9 @@ typedef std::array<StyleScaleEntry, PARAGRAPH_STYLES_COUNT> StyleScaleList;
 typedef const std::pair<const ParagraphStyle, const StyleScaleList *> StyleNestedScaleEntry;
 typedef std::array<StyleNestedScaleEntry, PARAGRAPH_STYLES_COUNT> NestedStyleScaleList;
 
-extern const float TEXT_TOP_Y;
-extern const float TEXT_WIDTH_ALIGN;
-extern const float TAB_LENGTH;
+extern const StyleScaleValue TEXT_TOP_Y;
+extern const StyleScaleValue TEXT_WIDTH_ALIGN;
+extern const StyleScaleValue TAB_LENGTH;
 
 struct TextAreaInfo {
     // Old style text area using coordinates

@@ -7,7 +7,7 @@ import os
 
 script_dir = Path(__file__).parent
 
-TEXT_TOP = 140
+TEXT_TOP = 142
 MEDIUM_WIDTH_START = 234
 styles = natsorted(
     [

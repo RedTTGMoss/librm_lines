@@ -17,9 +17,9 @@
  *  will use it automatically. reMarkable fonts are licensed and copyrighted, use them at your own discretion
  */
 
-constexpr float TEXT_TOP_Y = 139;
-constexpr float TEXT_WIDTH_ALIGN = 0; // Deprecated in use of margins
-constexpr float TAB_LENGTH = 48.105729420979856;
+constexpr StyleScaleValue TEXT_TOP_Y = 140;
+constexpr StyleScaleValue TEXT_WIDTH_ALIGN = 0; // Deprecated in use of margins
+constexpr StyleScaleValue TAB_LENGTH = 48.105729420979856;
 
 constexpr StyleScaleEntry EndOfStyleList = {END_STYLE_LIST, 0};
 constexpr StyleNestedScaleEntry EndOfNestedStyleList = {END_STYLE_LIST, nullptr};
@@ -35,17 +35,6 @@ namespace {
     constexpr StyleScaleValue TITLE_LINE_HEIGHT = 64.14;
     constexpr StyleScaleValue SUB_LINE_HEIGHT = 36.08;
     constexpr StyleScaleValue BASIC_LINE_HEIGHT = 32.07;
-
-    // Any extra gap between the bound start and the text
-    constexpr StyleScaleList StyleLeftMargins = {
-        {
-            {BASIC, 52.62994702657062},
-            {PlainText, 4.52421760559082},
-            {Sub, 4.52421760559082},
-            {Title, 4.52421760559082},
-            EndOfStyleList
-        }
-    };
 
 
     // The font size
@@ -81,6 +70,11 @@ namespace {
             EndOfStyleList
         }
     };
+
+    /*
+     * ALL BELOW
+     * IS GENERATED
+     */
 
     constexpr StyleScaleList Bullet_Rel = {
         {
@@ -148,9 +142,9 @@ namespace {
     };
     constexpr StyleScaleList TextTop_Rel = {
         {
-            {BASIC, 128.18315929836695},
-            {Sub, 131.8944443596734},
-            {Title, 157.85774628321332},
+            {BASIC, 126.18315929836695},
+            {Sub, 129.8944443596734},
+            {Title, 155.85774628321332},
             EndOfStyleList
         }
     };
@@ -170,6 +164,21 @@ namespace {
             EndOfStyleList
         }
     };
+    constexpr StyleScaleList StyleLeftMargins = {
+        {
+            {BASIC, 52.62994702657062},
+            {PlainText, 4.52421760559082},
+            {Sub, 4.52421760559082},
+            {Title, 4.52421760559082},
+            EndOfStyleList
+        }
+    };
+
+
+    /*
+     * ALL ABOVE
+     * IS GENERATED
+     */
 
     constexpr NestedStyleScaleList StyleHeightsRelative = {
         {

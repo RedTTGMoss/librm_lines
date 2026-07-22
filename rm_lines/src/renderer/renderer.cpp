@@ -91,19 +91,22 @@ void Renderer::calculateAnchors() {
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
         const auto styleHeight = paragraph.style.value.styleHeight(prevStyle);
+        const auto styleSize = paragraph.style.value.fontSize();
         prevStyle = paragraph.style.value.getStyle();
         yOffset += styleHeight;
 
+        // Save the anchor for this paragraph
+        anchors[paragraph.startId] = posY; // The start ID is the `\n` which counts to the last posY
+
         posY = yOffset;
 
-        // Save the anchor for this paragraph
-        anchors[paragraph.startId] = posY;
         anchors[ANCHOR_ID_END] = std::max<float>(anchors[ANCHOR_ID_END], posY);
         // logDebug(std::format("Anchor for paragraph {}: {} (height added: {})", paragraph.startId.repr(), posY,
         //                      styleHeight));
         for (const auto &formattedText: paragraph.contents) {
             for (const auto &characterId: formattedText.characterIDs) {
                 anchors[characterId] = posY;
+                // logDebug(std::format("- Anchor for character {}", characterId.repr()));
             }
         }
         // ReSharper disable once CppNoDiscardExpression
@@ -120,6 +123,9 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
             logError(std::format("need anchor id {}", group->anchorId.value().value.repr()));
             throw std::runtime_error("fix this file first");
         }
+        // logDebug(std::format("Anchor for group {}: {}: {} (originX: {})", groupId.repr(),
+        //                      group->anchorId.value().value.repr(), anchors[group->anchorId.value().value],
+        //                      group->anchorOriginX.value().value));
         offsetY = anchors[group->anchorId.value().value];
     }
     for (const auto &node: nodes) {
