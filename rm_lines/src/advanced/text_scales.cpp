@@ -19,7 +19,7 @@
 
 constexpr float TEXT_TOP_Y = 139;
 constexpr float TEXT_WIDTH_ALIGN = 0; // Deprecated in use of margins
-constexpr float TAB_LENGTH = 10.0; // TODO: Update the tab length to be more proper
+constexpr float TAB_LENGTH = 48.105729420979856;
 
 constexpr StyleScaleEntry EndOfStyleList = {END_STYLE_LIST, 0};
 constexpr StyleNestedScaleEntry EndOfNestedStyleList = {END_STYLE_LIST, nullptr};
@@ -36,23 +36,13 @@ namespace {
     constexpr StyleScaleValue SUB_LINE_HEIGHT = 36.08;
     constexpr StyleScaleValue BASIC_LINE_HEIGHT = 32.07;
 
-    // The gap between the top and the first paragraph style
-    constexpr StyleScaleList StyleTopMargins = {
-        {
-            {BASIC, 100},
-            {PlainText, 120},
-            {Title, 157.86},
-            {Sub, 132},
-            {Bullet, 71},
-            EndOfStyleList
-        }
-    };
-
-
     // Any extra gap between the bound start and the text
     constexpr StyleScaleList StyleLeftMargins = {
         {
-            {BASIC, 4.52},
+            {BASIC, 52.62994702657062},
+            {PlainText, 4.52421760559082},
+            {Sub, 4.52421760559082},
+            {Title, 4.52421760559082},
             EndOfStyleList
         }
     };
@@ -92,54 +82,110 @@ namespace {
         }
     };
 
-    constexpr StyleScaleList Rel_BASIC = {
+    constexpr StyleScaleList Bullet_Rel = {
         {
-            // Shared heights from top style
-            {BASIC, 100},
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
             EndOfStyleList
         }
     };
-
-    constexpr StyleScaleList Rel_Title = {
+    constexpr StyleScaleList BulletTab_Rel = {
         {
-            {BASIC, 164},
-            {Sub, 157},
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
             EndOfStyleList
         }
     };
-
-    constexpr StyleScaleList Rel_Sub = {
+    constexpr StyleScaleList CheckBox_Rel = {
         {
-            {Sub, 83},
-            {Title, 90.29},
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
             EndOfStyleList
         }
     };
-
-    constexpr StyleScaleList Rel_PlainText = {
+    constexpr StyleScaleList CheckBoxChecked_Rel = {
         {
-            {Title, 70},
-            {Sub, 63.44},
-            {PlainText, 69.70},
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
+            EndOfStyleList
+        }
+    };
+    constexpr StyleScaleList CheckBoxTab_Rel = {
+        {
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
+            EndOfStyleList
+        }
+    };
+    constexpr StyleScaleList CheckBoxTabChecked_Rel = {
+        {
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
+            EndOfStyleList
+        }
+    };
+    constexpr StyleScaleList Numbered_Rel = {
+        {
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
+            EndOfStyleList
+        }
+    };
+    constexpr StyleScaleList PlainText_Rel = {
+        {
+            {BASIC, 69.70004134707983},
+            {Sub, 89.44656954871289},
+            {Title, 163.515625},
+            EndOfStyleList
+        }
+    };
+    constexpr StyleScaleList TextTop_Rel = {
+        {
+            {BASIC, 128.18315929836695},
+            {Sub, 131.8944443596734},
+            {Title, 157.85774628321332},
+            EndOfStyleList
+        }
+    };
+    constexpr StyleScaleList Sub_Rel = {
+        {
+            {BASIC, 63.43628353542749},
+            {Sub, 83.18281173706055},
+            {Title, 157.2518189748128},
+            EndOfStyleList
+        }
+    };
+    constexpr StyleScaleList Title_Rel = {
+        {
+            {BASIC, 70.54565853542749},
+            {Sub, 90.29218673706055},
+            {Title, 164.36121808158026},
             EndOfStyleList
         }
     };
 
     constexpr NestedStyleScaleList StyleHeightsRelative = {
         {
-            // This is the bottom style
-            {BASIC, &Rel_BASIC},
-            {Title, &Rel_Title},
-            {Sub, &Rel_Sub},
-            {PlainText, &Rel_PlainText},
-            {Bullet, &Rel_PlainText},
-            {BulletTab, &Rel_PlainText},
-            {Numbered, &Rel_PlainText},
-            {NumberedTab, &Rel_PlainText},
-            {CheckBox, &Rel_PlainText},
-            {CheckBoxTab, &Rel_PlainText},
-            {CheckBoxChecked, &Rel_PlainText},
-            {CheckBoxTabChecked, &Rel_PlainText},
+            // This is the TOP style
+            {TextTop, &TextTop_Rel},
+            {Title, &Title_Rel},
+            {Sub, &Sub_Rel},
+            {PlainText, &PlainText_Rel},
+            {Bullet, &Bullet_Rel},
+            {BulletTab, &BulletTab_Rel},
+            {Numbered, &Numbered_Rel},
+            {NumberedTab, &Numbered_Rel},
+            {CheckBox, &CheckBox_Rel},
+            {CheckBoxTab, &CheckBoxTab_Rel},
+            {CheckBoxChecked, &CheckBoxChecked_Rel},
+            {CheckBoxTabChecked, &CheckBoxTabChecked_Rel},
             // EndOfNestedStyleList
         }
     };
@@ -167,14 +213,13 @@ StyleScaleValue findNestedStyleValue(const NestedStyleScaleList &list, const Par
     return findStyleValue(*list.front().second, keyB);
 }
 
+// THIS FUNCTION IS OLD, DO NOT USE IT.
 StyleScaleValue getStyleHeight(const ParagraphStyle style) {
-    return findStyleValue(StyleTopMargins, style);
+    return findNestedStyleValue(StyleHeightsRelative, TextTop, style);
 }
 
 StyleScaleValue getStyleHeight(const ParagraphStyle prevStyle, const ParagraphStyle style) {
-    if (prevStyle == TextTop) // Old default assumption
-        return getStyleHeight(style);
-    return findNestedStyleValue(StyleHeightsRelative, style, prevStyle);
+    return findNestedStyleValue(StyleHeightsRelative, prevStyle, style);
 }
 
 StyleScaleValue getStyleMargin(const ParagraphStyle style) {
