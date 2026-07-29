@@ -5,13 +5,6 @@ name: CMake on multiple platforms and publish to PYPI
 on:
   push:
     tags: [ "*" ]
-    branches-ignore: [ "main" ]
-    paths:
-      - 'CMakeLists.txt'
-      - '.github/workflows/build.yml'
-      - 'tests/**'
-      - 'rm_lines/**'
-      - 'rm_lines_sys/**'
   pull_request:
     branches: [ "main", "experimental" ]
 
@@ -35,6 +28,7 @@ jobs:
             target: 'x86_64-unknown-linux-gnu'
             cpp_compiler: 'g++'
             c_compiler: 'gcc'
+            python_version: '3.9'
             python_arch: 'x64'
             build_type: 'Release'
             run_tests: true
@@ -43,6 +37,7 @@ jobs:
             runner: 'windows-latest'
             target: 'x86_64-pc-windows-msvc'
             cmake_platform: 'x64'
+            python_version: '3.9'
             python_arch: 'x64'
             build_type: 'Release'
             run_tests: true
@@ -51,6 +46,7 @@ jobs:
             runner: 'windows-11-arm'
             target: 'aarch64-pc-windows-msvc'
             cmake_platform: 'ARM64'
+            python_version: '3.12'
             python_arch: 'arm64'
             build_type: 'Release'
             run_tests: true
@@ -60,6 +56,7 @@ jobs:
             target: 'x86_64-apple-darwin'
             cpp_compiler: 'clang++'
             c_compiler: 'clang'
+            python_version: '3.9'
             python_arch: 'x64'
             build_type: 'Release'
             run_tests: true
@@ -109,7 +106,7 @@ jobs:
       - name: Set up python
         uses: actions/setup-python@v6
         with:
-          python-version: '3.9'
+          python-version: ${{ matrix.python_version }}
           architecture: ${{ matrix.python_arch }}
           cache: 'pip'
 
