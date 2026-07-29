@@ -9,6 +9,15 @@
     "version": "0.0.0+replaced-by-ci",
     "description": "",
     "main": "index.js",
+    "os": [
+        "linux",
+        "darwin",
+        "win32"
+    ],
+    "cpu": [
+        "x64",
+        "arm64"
+    ],
     "scripts": {
     },
     "repository": {
@@ -18,5 +27,5 @@
     "keywords": [],
     "author": "",
     "license": "ISC",
-    "type": "commonjs"
+    "type": "module"
 }

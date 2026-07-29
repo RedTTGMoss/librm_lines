@@ -21,31 +21,45 @@ concurrency:
 
 jobs:
   build-sys:
-    name: ${{ matrix.os }} ${{ matrix.target }}
-    runs-on: ${{ matrix.os }}-latest
+    name: ${{ matrix.runner }} ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
     
     strategy:
       fail-fast: true
       matrix:
-        os: [ 'ubuntu', 'windows', 'macos' ]
         include:
           - os: 'ubuntu'
+            runner: 'ubuntu-latest'
             target: 'x86_64-unknown-linux-gnu'
             cpp_compiler: 'g++'
             c_compiler: 'gcc'
             build_type: 'Release'
+            run_tests: true
+            build_wheel: true
           - os: 'windows'
-            target: 'x86_64-pc-windows-gnu'
-            cpp_compiler: 'x86_64-w64-mingw32-g++'
-            c_compiler: 'x86_64-w64-mingw32-gcc'
+            runner: 'windows-latest'
+            target: 'x86_64-pc-windows-msvc'
+            cmake_platform: 'x64'
             build_type: 'Release'
+            run_tests: true
+            build_wheel: true
+          - os: 'windows'
+            runner: 'windows-11-arm'
+            target: 'aarch64-pc-windows-msvc'
+            cmake_platform: 'ARM64'
+            build_type: 'Release'
+            run_tests: true
+            build_wheel: true
           - os: 'macos'
+            runner: 'macos-latest'
             target: 'x86_64-apple-darwin'
             cpp_compiler: 'clang++'
             c_compiler: 'clang'
             build_type: 'Release'
+            run_tests: true
+            build_wheel: true
     steps:
       - uses: actions/checkout@v6
 
@@ -63,11 +77,20 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ steps.strings.outputs.build-output-dir }}
-          key: ${{ runner.os }}-cmake-${{ matrix.cpp_compiler }}-${{ matrix.c_compiler }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-${{ hashFiles('**/CMakeLists.txt') }}
           restore-keys: |
-            ${{ runner.os }}-cmake-${{ matrix.cpp_compiler }}-${{ matrix.c_compiler }}-
+            ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-
 
-      - name: Configure CMake
+      - name: Configure CMake (Windows)
+        if: runner.os == 'Windows'
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -A ${{ matrix.cmake_platform }}
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -S ${{ github.workspace }}
+
+      - name: Configure CMake (Unix)
+        if: runner.os != 'Windows'
         run: >
           cmake -B ${{ steps.strings.outputs.build-output-dir }}
           -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
@@ -112,12 +135,14 @@ jobs:
           sed -i -e "s|0.0.0+replaced-by-ci|${version}|g" rm_lines_sys/pyproject.toml
 
       - name: Run test & copy shared library to sys
+        if: matrix.run_tests
         shell: bash
         run: |
           cd tests
           python test.py
 
       - name: Build with poetry
+        if: matrix.build_wheel
         shell: bash
         run: |
           cd rm_lines_sys
@@ -127,7 +152,9 @@ jobs:
         shell: bash
         run: |
           mkdir -p artifact
-          mv rm_lines_sys/dist/*.whl artifact/
+          if [[ "${{ matrix.build_wheel }}" == "true" ]]; then
+            mv rm_lines_sys/dist/*.whl artifact/
+          fi
           
           case "${{ matrix.os }}" in
             ubuntu*)
@@ -142,6 +169,7 @@ jobs:
           esac
 
       - name: Rename wheel to be Python-agnostic
+        if: matrix.build_wheel
         shell: bash
         run: |
           file=$(ls artifact/*.whl)
@@ -151,7 +179,7 @@ jobs:
       - name: Upload Artifacts
         uses: actions/upload-artifact@v6
         with:
-          name: ${{ runner.os }}-${{ matrix.target }}
+          name: ${{ matrix.runner }}-${{ matrix.target }}
           path: |
             artifact/*.whl
             artifact/librm_lines.so
@@ -160,7 +188,7 @@ jobs:
           retention-days: 5
 
       - uses: rickstaa/action-create-tag@v1
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.runner == 'ubuntu-latest'
         with:
           tag: latest-draft
           force_push_tag: true

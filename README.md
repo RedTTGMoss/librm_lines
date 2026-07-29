@@ -34,8 +34,18 @@ The project contains a cmake file with everything preconfigured.
 ### **To build the shared library file for your operating system**
 
 ```bash
-cmake build --target rm_lines
+cmake -B build -S .
+cmake --build build --target rm_lines
 ```
+
+On Windows ARM64 (Visual Studio generator), configure the ARM64 target explicitly:
+
+```powershell
+cmake -B build -S . -A ARM64
+cmake --build build --config Release --target rm_lines
+```
+
+The release workflow also builds a Windows ARM64 wheel using a native Windows ARM runner.
 
 ### **To build the library for wasm / web**
 
@@ -57,7 +67,7 @@ Then open [http://127.0.0.1:8000/tests/](http://127.0.0.1:8000/tests/)
 ### You can also build the test executable
 
 ```bash
-cmake build --target test
+cmake --build build --target test
 ```
 
 ## Testing
