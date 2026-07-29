@@ -56,7 +56,7 @@ jobs:
             run_tests: true
             build_wheel: true
           - os: 'macos'
-            runner: 'macos-latest'
+            runner: 'macos-13'
             target: 'x86_64-apple-darwin'
             cpp_compiler: 'clang++'
             c_compiler: 'clang'
