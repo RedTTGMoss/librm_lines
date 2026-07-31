@@ -113,9 +113,17 @@ class GC(pe.GameContext):
     def handle_event(self, e: pe.event.Event):
         if pe.event.key_DOWN(pe.K_s):
             tree_id, renderer_id = self.get_renderer()
-            scene_info = lib.getSceneInfo(tree_id)
-            paper_size = json.loads(scene_info.decode()).get('paper_size', (1404, 1872)) if scene_info else (1404, 1872)
-            frame = self.get_frame(*[a / 2 for a in paper_size], *paper_size, 1)
+            layers = lib.getLayers(renderer_id)
+            layer_0 = json.loads(layers.decode())[0]['groupId']
+            size_tracker_raw = lib.getSizeTracker(renderer_id, layer_0.encode())
+            size_tracker = json.loads(size_tracker_raw.decode())
+            x, y = size_tracker.get('l'), size_tracker.get('t')
+            w = int(size_tracker.get('r') - size_tracker.get('l'))
+            h = int(size_tracker.get('b') - size_tracker.get('t'))
+            x += w / 2
+            y += h / 2
+
+            frame = self.get_frame(x, y, w, h, 1)
             overlay_file = f"debug_overlays/{self.original_filenames[self.index]}.png"
             save_output = f"output/png/{self.original_filenames[self.index]}.png"
             if os.path.exists(overlay_file):
