@@ -144,7 +144,11 @@ void rMPenFill::newPoint() {
                                             static_cast<float>(point->speed) / 4 / 50)) * 2.0f * 2.3f;
             stroker->width = segmentWidth / K * scale;
         }
+        case CALLIGRAPHY:
+            stroker->width = point->width / K * scale * 1.28;
+            break;
         default:
+            stroker->width = point->width / K * scale;
             break;
     }
     segmentCounter++;
