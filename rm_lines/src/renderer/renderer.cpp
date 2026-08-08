@@ -382,25 +382,6 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.finish();
         }
         for (const auto &image: layer.images) {
-            stroker.raster.raster.fill.baseColor = Color(255, 0, 255, 255);
-            stroker.raster.raster.fill.debugTool(3.0f);
-            double startX, startY;
-            for (int i = 0; i < image.image.vertices.size(); i += 4) {
-                auto x = position.x + image.image.vertices[i] + image.offsetX + this->frameSize.x / 2;
-                auto y = position.y + image.image.vertices[i + 1] + image.offsetY;
-                x *= scale.x;
-                y *= scale.y;
-                if (i == 0) {
-                    startX = x;
-                    startY = y;
-                    stroker.moveTo(x, y);
-                } else {
-                    stroker.lineTo(x, y);
-                }
-            }
-            stroker.lineTo(startX, startY);
-            stroker.finish();
-
             const auto textureIt = imageRefMap.find(image.image.imageRef.value);
             if (textureIt == imageRefMap.end() || !textureIt->second || !textureIt->second->data) {
                 logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
@@ -493,6 +474,8 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.finish();
 
             bool alternate = true;
+
+            // Draw lines for every anchor, in alternating colors
             for (auto &[anchorId, anchor]: anchors) {
                 stroker.raster.raster.fill.debugToolSetWidth(5.0f);
                 if (anchorId == ANCHOR_ID_START || anchorId == ANCHOR_ID_END) {
@@ -513,6 +496,28 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
                     stroker.moveTo(0, (position.y + anchor) * scale.y);
                     stroker.lineTo(buf->width, (position.y + anchor) * scale.y);
                 }
+                stroker.finish();
+            }
+
+            // Draw debug rects of the image vertices
+            for (const auto &image: layer.images) {
+                stroker.raster.raster.fill.baseColor = Color(255, 0, 255, 255);
+                stroker.raster.raster.fill.debugTool(3.0f);
+                double startX, startY;
+                for (int i = 0; i < image.image.vertices.size(); i += 4) {
+                    auto x = position.x + image.image.vertices[i] + image.offsetX + this->frameSize.x / 2;
+                    auto y = position.y + image.image.vertices[i + 1] + image.offsetY;
+                    x *= scale.x;
+                    y *= scale.y;
+                    if (i == 0) {
+                        startX = x;
+                        startY = y;
+                        stroker.moveTo(x, y);
+                    } else {
+                        stroker.lineTo(x, y);
+                    }
+                }
+                stroker.lineTo(startX, startY);
                 stroker.finish();
             }
         }
