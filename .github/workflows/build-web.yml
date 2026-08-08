@@ -5,8 +5,6 @@ name: CMake for Emscripten web and publish to NPM
 on:
   push:
     tags: [ "*" ]
-    # Ignore the tag created by the workflow itself to prevent recursive runs
-    tags-ignore: [ "latest-draft" ]
     branches-ignore: [ "main" ]
     paths:
       - 'CMakeLists.txt'
@@ -29,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Skip the `latest-draft` tag to prevent recursive runs
+    if: github.ref_name != 'latest-draft'
     env:
       EM_VERSION: 5.0.1
       EM_CACHE_FOLDER: 'emsdk-cache'
