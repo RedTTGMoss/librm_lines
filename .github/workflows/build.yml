@@ -5,6 +5,8 @@ name: CMake on multiple platforms and publish to PYPI
 on:
   push:
     tags: [ "*" ]
+    # Ignore the tag created by the workflow itself to prevent recursive runs
+    tags-ignore: [ "latest-draft" ]
     branches-ignore: [ "main" ]
     paths:
       - 'CMakeLists.txt'
