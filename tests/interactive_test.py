@@ -52,6 +52,7 @@ class GC(pe.GameContext):
         self.template_index = 0
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
+        self.debug_mode = True
 
         for folder in (files_draw_folder, files_folder, files_color_folder, rm_output_folder):
             for filename in os.listdir(folder):
@@ -137,6 +138,10 @@ class GC(pe.GameContext):
             else:
                 pe.pygame.image.save(frame, save_output)
             del frame
+        if pe.event.key_DOWN(pe.K_d):
+            self.debug_mode = not self.debug_mode
+            lib.setDebugMode(self.debug_mode)
+            self.frame = None
         if pe.event.key_DOWN(pe.K_RIGHT):
             self.index += 1
             if self.index >= len(self.items):
