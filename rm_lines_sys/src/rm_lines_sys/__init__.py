@@ -199,7 +199,7 @@ def load_lib() -> Optional[ctypes.CDLL]:
     _lib.setDebugMode.argtypes = [ctypes.c_bool]
 
     # Function getDebugMode() -> bool
-    _lib.setDebugMode.restype = ctypes.c_bool
+    _lib.getDebugMode.restype = ctypes.c_bool
 
     return _lib
 

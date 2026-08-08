@@ -15,6 +15,7 @@ on:
       - 'rm_lines/**'
       - 'rm_lines_sys/**'
       - 'requirements.txt'
+      - 'tools/**'
   pull_request:
     branches: [ "main", "experimental" ]
 
@@ -119,6 +120,11 @@ jobs:
         run: |
           cd tests
           python test.py
+
+      - name: Check sys bindings match exports
+        shell: bash
+        run: |
+          python tools/check_sys_exports.py
 
       - name: Build with poetry
         shell: bash

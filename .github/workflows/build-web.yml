@@ -13,7 +13,9 @@ on:
       - '.github/workflows/build-web.yml'
       - 'tests/**'
       - 'rm_lines/**'
+      - 'rm_lines_sys/**'
       - 'requirements.txt'
+      - 'tools/**'
   pull_request:
     branches: [ "main", "experimental" ]
 
@@ -68,6 +70,10 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Check sys bindings match exports
+        run: |
+          python tools/check_sys_exports.py
 
       - name: Configure CMake
         run: >
