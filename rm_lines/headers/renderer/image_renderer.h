@@ -19,5 +19,10 @@ namespace RendererImage {
                      const LayerInfo::ImageInfo &imageInfo, const AdvancedMath::Vector &position,
                      const AdvancedMath::Vector &frameSize,
                      const AdvancedMath::Vector &scale);
+
+    void renderImageError(RMLinesRenderer::ImageBuffer &buffer,
+                          const LayerInfo::ImageInfo &imageInfo, const AdvancedMath::Vector &position,
+                          const AdvancedMath::Vector &frameSize,
+                          const AdvancedMath::Vector &scale);
 }
 

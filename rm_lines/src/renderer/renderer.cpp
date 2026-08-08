@@ -381,10 +381,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
             stroker.finish();
         }
-        for (const auto &image: layer.images) {
+        for (auto &image: layer.images) {
             const auto textureIt = imageRefMap.find(image.image.imageRef.value);
             if (textureIt == imageRefMap.end() || !textureIt->second || !textureIt->second->data) {
-                logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
+                if (!image.warning) {
+                    logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
+                    image.warning = true;
+                }
+                RendererImage::renderImageError(*buf, image, position, this->frameSize, scale);
                 continue;
             }
 

@@ -16,5 +16,7 @@ namespace LayerInfo {
         CrdtId itemId;
         float offsetX;
         float offsetY;
+        // Used for warnings of texture not loaded
+        mutable bool warning;
     };
 }

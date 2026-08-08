@@ -133,7 +133,10 @@ void rasterizeTexturedTriangle(RMLinesRenderer::ImageBuffer &buffer, const Image
             const float b2 = w2 * invArea;
             const float u = b0 * v0.u + b1 * v1.u + b2 * v2.u;
             const float v = b0 * v0.v + b1 * v1.v + b2 * v2.v;
-            const uint32_t texel = sampleTextureNearest(texture, u, v);
+            uint32_t texel = 0xFFFF40A0;
+            if (!texture.isBlank) {
+                texel = sampleTextureNearest(texture, u, v);
+            }
             if ((texel >> 24) == 0) {
                 continue;
             }
@@ -172,6 +175,37 @@ namespace RendererImage {
             }
 
             rasterizeTexturedTriangle(buffer, texture, vertices[i0], vertices[i1], vertices[i2]);
+        }
+    }
+
+    void renderImageError(RMLinesRenderer::ImageBuffer &buffer,
+                          const LayerInfo::ImageInfo &imageInfo, const AdvancedMath::Vector &position,
+                          const AdvancedMath::Vector &frameSize,
+                          const AdvancedMath::Vector &scale) {
+        if (imageInfo.image.vertices.size() < 16) {
+            return;
+        }
+
+        constexpr size_t vertexCount = 4;
+        ImageVertex vertices[vertexCount]{};
+        for (size_t i = 0; i < vertexCount; ++i) {
+            const size_t base = i * 4;
+            vertices[i].x = (position.x + imageInfo.image.vertices[base] + imageInfo.offsetX + frameSize.x / 2.0f) *
+                            scale.x;
+            vertices[i].y = (position.y + imageInfo.image.vertices[base + 1] + imageInfo.offsetY) * scale.y;
+            vertices[i].u = imageInfo.image.vertices[base + 2];
+            vertices[i].v = imageInfo.image.vertices[base + 3];
+        }
+
+        for (size_t i = 0; i + 2 < imageInfo.image.indices.size(); i += 3) {
+            const auto i0 = imageInfo.image.indices[i];
+            const auto i1 = imageInfo.image.indices[i + 1];
+            const auto i2 = imageInfo.image.indices[i + 2];
+            if (i0 >= vertexCount || i1 >= vertexCount || i2 >= vertexCount) {
+                continue;
+            }
+
+            rasterizeTexturedTriangle(buffer, ImageRef::blank(), vertices[i0], vertices[i1], vertices[i2]);
         }
     }
 }
