@@ -148,8 +148,8 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
 
     prepareBounds(position, scale);
 
-    renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
-    renderer->stroker.raster.raster.fill.debugTool(2.0f);
+    // renderer->stroker.raster.raster.fill.baseColor = Color(192, 52, 235, 255);
+    // renderer->stroker.raster.raster.fill.debugTool(2.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale);
 
@@ -199,9 +199,9 @@ void TextRenderer::drawBitmap(float x, float y, const FT_Bitmap &bitmap) {
     for (unsigned int row = 0; row < bitmap.rows; ++row) {
         for (unsigned int col = 0; col < bitmap.width; ++col) {
             uint8_t pixelValue = bitmap.buffer[row * bitmap.pitch + col];
-            pixelValue /= 2;
+            // pixelValue /= 2;
             if (pixelValue > 0) {
-                Color color(150, 0, 0, pixelValue);
+                Color color(0, 0, 0, pixelValue);
                 const uint32_t bufX = std::floor(x + col);
                 const uint32_t bufY = std::floor(y + row);
 
