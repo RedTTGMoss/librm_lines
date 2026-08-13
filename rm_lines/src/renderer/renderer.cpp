@@ -77,7 +77,7 @@ void Renderer::calculateAnchors() {
     // Map special anchors
     anchors[ANCHOR_ID_START] = TEXT_TOP_Y; // You expect this to be 0 but actually the text area starts a bit lower
     anchors[ANCHOR_ID_END] = TEXT_TOP_Y;
-    logDebug(std::format("Anchor text start: {} end: {}", TEXT_TOP_Y, paperSize.second));
+    // logDebug(std::format("Anchor text start: {} end: {}", TEXT_TOP_Y, paperSize.second));
 
     // Check for the root text
     if (!sceneTree->hasText()) return;
@@ -91,7 +91,6 @@ void Renderer::calculateAnchors() {
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
         const auto styleHeight = paragraph.style.value.styleHeight(prevStyle);
-        const auto styleSize = paragraph.style.value.fontSize();
         prevStyle = paragraph.style.value.getStyle();
         yOffset += styleHeight;
 
