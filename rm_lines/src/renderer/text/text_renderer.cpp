@@ -217,14 +217,20 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
 }
 
 void TextRenderer::renderGlyphHighlights(const Vector *position, Vector scale, const GlyphRange &glyphRange) {
+    // Get the highlighter color
+    if (glyphRange.color == ARGB) {
+        renderer->stroker.raster.raster.fill.baseColor = glyphRange.argbColor;
+        renderer->stroker.raster.raster.fill.baseColor.alpha = 64; // Fix it to 25%
+    } else
+        renderer->stroker.raster.raster.fill.baseColor = getHighlighterColorFromPalette(glyphRange.color);
+
+    // Draw the rects
     for (const auto &rect: glyphRange.rects) {
         // Align to the middle of the page
         const auto startX = (position->x + rect.x + renderer->frameSize.halfX()) * scale.x;
         const auto startY = (position->y + rect.y) * scale.y;
         const auto width = rect.w * scale.x;
         const auto height = rect.h * scale.y;
-
-        renderer->stroker.raster.raster.fill.baseColor = glyphRange.argbColor;
 
         for (float y = startY; y < startY + height; ++y) {
             for (float x = startX; x < startX + width; ++x) {
@@ -244,9 +250,9 @@ void TextRenderer::renderGlyphHighlights(const Vector *position, Vector scale, c
                     {0, 0}
                 );
             }
+            // Increment line counter to avoid drawing over the same pixels
+            renderer->stroker.raster.raster.fill.lineCounter++;
         }
-        // Increment line counter to avoid drawing over the same pixels
-        renderer->stroker.raster.raster.fill.lineCounter++;
     }
 }
 
