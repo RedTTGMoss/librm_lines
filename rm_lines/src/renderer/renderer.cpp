@@ -354,9 +354,9 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     stroker.raster.x1 = static_cast<float>(buf->width);
     stroker.raster.y1 = static_cast<float>(buf->height);
 
-    for (const auto &layer: layers) {
+    for (const auto &layer: filtered_layers()) {
         // For each layer, each line, each point
-        for (const auto &line: layer.lines) {
+        for (const auto &line: filtered_lines(layer)) {
             bool first = true;
             stroker.raster.raster.fill.line = &line.line;
             stroker.raster.raster.fill.newLine();
@@ -381,18 +381,20 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
             stroker.finish();
         }
-        for (auto &image: layer.images) {
-            const auto textureIt = imageRefMap.find(image.image.imageRef.value);
-            if (textureIt == imageRefMap.end() || !textureIt->second || !textureIt->second->data) {
-                if (!image.warning) {
-                    logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
-                    image.warning = true;
+        if (config.enableImages) {
+            for (auto &image: layer.images) {
+                const auto textureIt = imageRefMap.find(image.image.imageRef.value);
+                if (textureIt == imageRefMap.end() || !textureIt->second || !textureIt->second->data) {
+                    if (!image.warning) {
+                        logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
+                        image.warning = true;
+                    }
+                    RendererImage::renderImageError(*buf, image, position, this->frameSize, scale);
+                    continue;
                 }
-                RendererImage::renderImageError(*buf, image, position, this->frameSize, scale);
-                continue;
-            }
 
-            RendererImage::renderImage(*buf, *textureIt->second, image, position, this->frameSize, scale);
+                RendererImage::renderImage(*buf, *textureIt->second, image, position, this->frameSize, scale);
+            }
         }
         if (getDebugMode()) {
             const DocumentSizeTracker *sizeTracker = getSizeTracker(layer.groupId);
@@ -526,7 +528,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
         }
     }
-    if (sceneTree->hasText()) {
+    if (config.enableText && sceneTree->hasText()) {
         this->textRenderer->renderText(stroker.raster.raster.fill.position, scale);
     }
 

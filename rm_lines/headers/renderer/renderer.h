@@ -26,12 +26,29 @@ static constexpr CrdtId TEXT_LAYER{7, 1};
 
 typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 
+struct RendererConfig {
+    uint8_t configVersion = 1;
+    int8_t penWhitelist[10] = {};
+    int8_t penBlacklist[10] = {};
+    bool useWhitelist = false;
+    CrdtId disabledLayers[10] = {};
+    bool enableText = true;
+    bool enableImages = true;
+
+    RendererConfig() {
+        std::ranges::fill(penWhitelist, -1);
+        std::ranges::fill(penBlacklist, -1);
+        std::ranges::fill(disabledLayers, END_MARKER);
+    }
+};
+
 class Renderer {
 public:
     TextDocument textDocument = TextDocument();
     std::unordered_map<CrdtId, uint32_t> anchors;
     std::vector<Layer> layers;
     IntPair paperSize;
+    RendererConfig config;
     bool landscape;
     PageType pageType;
     TemplateOperationFunction *templateFunction = nullptr;
@@ -102,4 +119,29 @@ private:
     std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         VaryingGeneratorLengthWidth> stroker;
+
+    auto filtered_layers() const {
+        return std::views::filter(layers, [this](const Layer &layer) -> bool {
+            return std::ranges::find(
+                       config.disabledLayers,
+                       layer.groupId
+                   ) == std::ranges::end(config.disabledLayers);
+        });
+    }
+
+    auto filtered_lines(const Layer &layer) const {
+        return std::views::filter(layer.lines, [this](const LayerInfo::LineInfo &line) -> bool {
+            if (config.useWhitelist) {
+                return std::ranges::find(
+                           config.penWhitelist,
+                           static_cast<int>(line.line.tool)
+                       ) != std::ranges::end(config.penWhitelist);
+            }
+
+            return std::ranges::find(
+                       config.penBlacklist,
+                       static_cast<int>(line.line.tool)
+                   ) == std::ranges::end(config.penBlacklist);
+        });
+    }
 };

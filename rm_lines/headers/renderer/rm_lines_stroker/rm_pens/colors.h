@@ -67,6 +67,25 @@ inline Color blendDarken(const Color base, const Color blend) {
     };
 }
 
+inline Color blendMultiply(const Color base, const Color blend, const float blend_amount) {
+    if (IS_LIKELY(base.alpha == 0)) {
+        return blend;
+    }
+    const Color mul = base * blend;
+
+    // Interpolate between the base and the multiplied color based on blend_amount.
+    Color final = base * (1.0f - blend_amount) + mul * blend_amount;
+    // Compute output alpha using standard alpha compositing.
+    float ba = base.alpha / 255.0f;
+    float la = blend.alpha / 255.0f;
+
+    final.alpha = static_cast<uint8_t>(
+        (la + ba * (1.0f - la)) * 255.0f
+    );
+
+    return final;
+}
+
 inline Color blendShader(const Color base, const Color blend) {
     if (IS_LIKELY(base.alpha == 0)) {
         // Single stroke on transparent background: slightly darker than just base color
