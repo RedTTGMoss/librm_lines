@@ -8,7 +8,8 @@ void HighlighterPen(rMPenFill *fill, const int x, const int y, const int length,
         if (lineDst[i] != fill->lineCounter) {
             // Save guard drawing to the same spot during a single line draw
             // TODO: Improve highlighter blending
-            dst[i] = blendMultiply(Color::fromRGBA(&dst[i]), fill->baseColor, 0.25f).toRGBA();
+            dst[i] = blendDarken(Color::fromRGBA(&dst[i]), fill->baseColor).toRGBA();
+            // dst[i] = fill->baseColor.toRGBA();
             lineDst[i] = fill->lineCounter;
         }
 

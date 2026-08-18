@@ -41,6 +41,9 @@ void rMPenFill::newLine() {
             stroker->capStyle = RMLinesRenderer::FlatCap;
             stroker->joinStyle = RMLinesRenderer::BevelJoin;
             stroker->width = 30 * scale;
+            if (!line->argbColor.has_value()) {
+                baseColor = getHighlighterColorFromPalette(line->color);
+            }
             break;
         case MARKER_1:
         case MARKER_2:
