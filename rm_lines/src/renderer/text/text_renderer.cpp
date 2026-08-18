@@ -205,13 +205,15 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
             }
         }
     }
-    for (const auto &[charId, rect]: tempTextRects) {
-        renderer->stroker.moveTo(rect.x, rect.y);
-        renderer->stroker.lineTo(rect.x + rect.width, rect.y);
-        renderer->stroker.lineTo(rect.x + rect.width, rect.y + rect.height);
-        renderer->stroker.lineTo(rect.x, rect.y + rect.height);
-        renderer->stroker.lineTo(rect.x, rect.y);
-    }
+
+    // Debug text rects
+    // for (const auto &[charId, rect]: tempTextRects) {
+    //     renderer->stroker.moveTo(rect.x, rect.y);
+    //     renderer->stroker.lineTo(rect.x + rect.width, rect.y);
+    //     renderer->stroker.lineTo(rect.x + rect.width, rect.y + rect.height);
+    //     renderer->stroker.lineTo(rect.x, rect.y + rect.height);
+    //     renderer->stroker.lineTo(rect.x, rect.y);
+    // }
 }
 
 void TextRenderer::renderGlyphHighlights(const Vector *position, Vector scale, const GlyphRange &glyphRange) {
