@@ -550,6 +550,15 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     }
     if (config.enableText && sceneTree->hasText()) {
         this->textRenderer->renderText(stroker.raster.raster.fill.position, scale);
+        if (config.enableGlyphHighlights) {
+            for (const auto &layer: filtered_layers()) {
+                if (layer.glyphRanges.empty()) continue;
+                for (const auto &glyphRange: layer.glyphRanges) {
+                    this->textRenderer->renderGlyphHighlights(stroker.raster.raster.fill.position, scale,
+                                                              glyphRange.glyphRange);
+                }
+            }
+        }
     }
 
     templateFunction(&stroker.raster.raster.fill, this);

@@ -34,6 +34,7 @@ struct RendererConfig {
     CrdtId disabledLayers[10] = {};
     bool enableText = true;
     bool enableImages = true;
+    bool enableGlyphHighlights = true;
 
     RendererConfig() {
         std::ranges::fill(penWhitelist, -1);

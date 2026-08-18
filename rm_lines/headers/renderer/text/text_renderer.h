@@ -24,6 +24,16 @@ struct GlyphLayout {
     float advance;
 };
 
+struct TextRect {
+    float x;
+    float y;
+    float width;
+    float height;
+    float fontSize;
+    float fontSizeScaled;
+    float baseLine;
+};
+
 class TextRenderer {
 public:
     TextRenderer();
@@ -36,11 +46,14 @@ public:
 
     void renderText(const Vector *position, Vector scale);
 
+    void renderGlyphHighlights(const Vector *position, Vector scale, const GlyphRange &glyphRange);
+
     void newParagraph(const Paragraph *next, Vector scale);
 
     void newText(const FormattedText *next);
 
-    void getGlyphs(const std::string &text, std::vector<GlyphLayout> &glyphs);
+    void getGlyphs(const FormattedText &text, std::vector<GlyphLayout> &glyphs,
+                   std::unordered_map<CrdtId, TextRect> &textRects);
 
     void getAllPageGlyphs(std::vector<GlyphLayout> &glyphs);
 
@@ -70,6 +83,8 @@ private:
     FontType fontType = Serif;
     const Paragraph *paragraph = nullptr;
     const FormattedText *currentFormattedText = nullptr;
+
+    std::unordered_map<CrdtId, TextRect> tempTextRects;
 
     // Helpers
     void prepareBounds(const Vector *position, Vector scale);
