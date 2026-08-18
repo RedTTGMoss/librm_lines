@@ -17,6 +17,8 @@ EXPORT const char *getAnchors(const char *rendererId);
 
 EXPORT const char *getLayers(const char *rendererId);
 
+EXPORT const char *getLayerFull(const char *rendererId, const char *stringLayerId);
+
 EXPORT bool textToMdFile(const char *rendererId, const char *outputFile);
 
 EXPORT const char *textToMd(const char *rendererId);

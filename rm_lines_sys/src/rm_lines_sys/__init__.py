@@ -45,6 +45,9 @@ class LibAnnotations(ctypes.Structure):
     def getLayers(self, renderer_id: bytes) -> bytes:
         pass
 
+    def getLayerFull(self, renderer_id: bytes, layer_id: bytes) -> bytes:
+        pass
+
     def textToMdFile(self, renderer_id: bytes, md_file: bytes) -> bool:
         pass
 
@@ -156,6 +159,10 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function getLayers(str) -> str
     _lib.getLayers.argtypes = [ctypes.c_char_p]
     _lib.getLayers.restype = ctypes.c_char_p
+
+    # Function getLayerFull(str, str) -> str
+    _lib.getLayerFull.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+    _lib.getLayerFull.restype = ctypes.c_char_p
 
     # Function textToMdFile(str, str) -> bool
     _lib.textToMdFile.argtypes = [ctypes.c_char_p, ctypes.c_char_p]

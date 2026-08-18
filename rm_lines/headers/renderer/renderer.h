@@ -79,6 +79,8 @@ public:
 
     json getLayers() const;
 
+    json getLayerFull(CrdtId layerId) const;
+
     float getTextMargin() const;
 
     float getTextWidth() const;

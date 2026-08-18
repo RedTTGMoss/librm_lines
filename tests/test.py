@@ -13,6 +13,7 @@ for folder in folders:
         svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
         png_output_path = os.path.join(png_output_folder, file.replace('.rm', '.png'))
         json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
+        layers_output_path = os.path.join(layers_output_folder, file.replace('.rm', '.json'))
         md_output_path = os.path.join(md_output_folder, file.replace('.rm', '.md'))
         txt_output_path = os.path.join(txt_output_folder, file.replace('.rm', '.txt'))
         html_output_path = os.path.join(html_output_folder, file.replace('.rm', '.html'))
@@ -66,10 +67,16 @@ for folder in folders:
             str_layers = raw_layers.decode()
             print(f"Layers: {str_layers}")
             layers = json.loads(raw_layers.decode()) if str_layers else []
+            layers_full = []
             for layer in layers:
                 raw_size_tracker = lib.getSizeTracker(renderer_id, layer['groupId'].encode())
                 if raw_size_tracker:
                     print(f"Size tracker for layer {layer['groupId']}: {raw_size_tracker.decode()}")
+
+                raw_full = lib.getLayerFull(renderer_id, layer['groupId'].encode())
+                layers_full.append(json.loads(raw_full.decode()) if raw_full else {})
+            with open(layers_output_path, 'w', encoding='utf-8') as f:
+                json.dump(layers_full, f, ensure_ascii=False, indent=4)
 
         begin = time.time()
         success = lib.textToMdFile(renderer_id, md_output_path.encode())

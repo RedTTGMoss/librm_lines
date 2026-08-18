@@ -23,10 +23,10 @@ void SceneTree::addNode(const CrdtId &nodeId, const CrdtId &parentNodeId, const 
         }
     }
     if (parentTreeId != BLANK_NODE) {
-        logDebug(std::format("Add node {}, with tree parent {}", nodeId.repr(), parentTreeId.repr()));
+        // logDebug(std::format("Add node {}, with tree parent {}", nodeId.repr(), parentTreeId.repr()));
         _nodeIds[nodeId] = std::make_unique<Group>(nodeId, parentTreeId);
     } else {
-        logDebug(std::format("Add node {}, with node parent {}", nodeId.repr(), parentNodeId.repr()));
+        // logDebug(std::format("Add node {}, with node parent {}", nodeId.repr(), parentNodeId.repr()));
         _nodeIds[nodeId] = std::make_unique<Group>(nodeId, parentNodeId);
         _nodeIds[nodeId]->parentIs = NODE;
     }

@@ -171,6 +171,16 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
                 .offsetX = trackX(layer.groupId, offsetX),
                 .offsetY = trackY(layer.groupId, offsetY),
             });
+        } else if (std::holds_alternative<CrdtSequenceItem<GlyphRange> >(node)) {
+            auto glyphRange = std::get<CrdtSequenceItem<GlyphRange> >(node);
+            if (!glyphRange.value.has_value()) continue;
+            layer.glyphRanges.push_back(LayerInfo::GlyphRangeInfo{
+                .glyphRange = std::move(glyphRange.value.value()),
+                .groupId = groupId,
+                .itemId = glyphRange.itemId,
+                .offsetX = trackX(layer.groupId, offsetX),
+                .offsetY = trackY(layer.groupId, offsetY),
+            });
         }
     }
     auto sizeTracker = getSizeTracker(layer.groupId);
@@ -206,6 +216,16 @@ json Renderer::getLayers() const {
         j.push_back(layer.toJson());
     }
     return j;
+}
+
+json Renderer::getLayerFull(const CrdtId layerId) const {
+    for (const auto &layer: layers) {
+        if (layer.groupId == layerId) {
+            json j = layer.toJsonFull();
+            return j;
+        }
+    }
+    return nullptr;
 }
 
 float Renderer::getTextMargin() const {
