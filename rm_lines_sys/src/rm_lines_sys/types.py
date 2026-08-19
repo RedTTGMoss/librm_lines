@@ -11,8 +11,8 @@ class C_CrdtId(ctypes.Structure):
 class C_RendererConfig(ctypes.Structure):
     _fields_ = [
         ("configVersion", ctypes.c_uint8),
-        ("penWhitelist", ctypes.c_int8 * 10),
-        ("penBlacklist", ctypes.c_int8 * 10),
+        ("penWhitelist", ctypes.c_int8 * 20),
+        ("penBlacklist", ctypes.c_int8 * 20),
         ("useWhitelist", ctypes.c_uint8),
         ("disabledLayers", C_CrdtId * 10),
         ("enableText", ctypes.c_bool),

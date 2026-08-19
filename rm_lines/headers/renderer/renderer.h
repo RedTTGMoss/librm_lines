@@ -28,8 +28,8 @@ typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 
 struct RendererConfig {
     uint8_t configVersion = 1;
-    int8_t penWhitelist[10] = {};
-    int8_t penBlacklist[10] = {};
+    int8_t penWhitelist[20] = {};
+    int8_t penBlacklist[20] = {};
     bool useWhitelist = false;
     CrdtId disabledLayers[10] = {};
     bool enableText = true;
