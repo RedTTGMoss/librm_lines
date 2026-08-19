@@ -18,7 +18,7 @@ lib.setDebugMode(True)
 
 
 class ConfigEditor(pe.Context):
-    AREA = (200, 500)
+    AREA = (200, 550)
     BACKGROUND = (0, 0, 0, 50)
     FLOAT = pe.FLOAT_BOTTOMLEFT
 
@@ -142,6 +142,7 @@ class ConfigEditor(pe.Context):
         self.bool_option("Enable Text", "enableText")
         self.bool_option("Enable Images", "enableImages")
         self.bool_option("Enable Glyphs", "enableGlyphHighlights")
+        self.bool_option("Enable Backdrop", "enableBackdrop")
         self.bool_option("Whitelist MODE", "useWhitelist")
 
         self.pen_y = self.button_y
@@ -173,6 +174,8 @@ class GC(pe.GameContext):
     MODE = pe.display.DISPLAY_MODE_RESIZABLE
     BACKGROUND = pe.colors.white
     TITLE = "Interactive Test"
+
+    TEST_BACKDROP = False
 
     FPS_LOGGER = True
     LANDSCAPES = (
@@ -206,6 +209,15 @@ class GC(pe.GameContext):
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
         self.debug_mode = True
         self.config_editor = ConfigEditor(self.reset_frame)
+
+        if self.TEST_BACKDROP:
+            self._test_backdrop_width = 500
+            self._test_backdrop_height = 500
+            self._test_backdrop_stride = self._test_backdrop_width * 4
+            self._test_backdrop_buffer = bytearray(
+                [230, 230, 230, 255] * (self._test_backdrop_width * self._test_backdrop_height))
+            self._test_backdrop_ptr = (ctypes.c_uint8 * len(self._test_backdrop_buffer)).from_buffer(
+                self._test_backdrop_buffer)
 
         for folder in (files_draw_folder, files_folder, files_color_folder, rm_output_folder):
             for filename in os.listdir(folder):
@@ -258,6 +270,16 @@ class GC(pe.GameContext):
                         continue
                     image_path = os.path.join(images_folder, name)
                     lib.addImage(renderer_id, uuid.encode(), image_path.encode())
+
+        if self.TEST_BACKDROP:
+            lib.setBackdrop(
+                renderer_id,
+                self._test_backdrop_ptr,
+                len(self._test_backdrop_buffer),
+                self._test_backdrop_width,
+                self._test_backdrop_height,
+                self._test_backdrop_stride
+            )
 
     def get_renderer(self):
         renderer = self.loaded.get(self.item)

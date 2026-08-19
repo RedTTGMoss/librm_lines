@@ -79,6 +79,30 @@ uint32_t sampleTextureNearest(const ImageRef &texture, const float u, const floa
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
 
+uint32_t sampleBackdropNearest(const Backdrop &backdrop, const float u, const float v) {
+    if (!backdrop.data || backdrop.width <= 0 || backdrop.height <= 0) {
+        return 0;
+    }
+
+    const float clampedU = u < 0.0f ? 0.0f : (u > 1.0f ? 1.0f : u);
+    const float clampedV = v < 0.0f ? 0.0f : (v > 1.0f ? 1.0f : v);
+    int px = static_cast<int>(clampedU * static_cast<float>(backdrop.width - 1) + 0.5f);
+    int py = static_cast<int>(clampedV * static_cast<float>(backdrop.height - 1) + 0.5f);
+    if (px < 0) px = 0;
+    if (py < 0) py = 0;
+    if (px >= backdrop.width) px = backdrop.width - 1;
+    if (py >= backdrop.height) py = backdrop.height - 1;
+
+    const auto *pixels = backdrop.data;
+    const size_t index = (static_cast<size_t>(py) * static_cast<size_t>(backdrop.stride)) +
+                         (static_cast<size_t>(px) * sizeof(uint32_t));
+    const uint32_t r = pixels[index + 2];
+    const uint32_t g = pixels[index + 1];
+    const uint32_t b = pixels[index];
+    const uint32_t a = pixels[index + 3];
+    return (a << 24) | (r << 16) | (g << 8) | b;
+}
+
 void blendPixel(RMLinesRenderer::ImageBuffer &buffer, const int x, const int y, const uint32_t src) {
     if (x < 0 || y < 0 || x >= static_cast<int>(buffer.width) || y >= static_cast<int>(buffer.height)) {
         return;
@@ -206,6 +230,32 @@ namespace RendererImage {
             }
 
             rasterizeTexturedTriangle(buffer, ImageRef::blank(), vertices[i0], vertices[i1], vertices[i2]);
+        }
+    }
+
+    void renderBackdrop(RMLinesRenderer::ImageBuffer &buffer, const Backdrop &backdrop,
+                        const AdvancedMath::Vector &position, const AdvancedMath::Vector &frameSize,
+                        const AdvancedMath::Vector &scale) {
+        const float backdropX = (position.x + frameSize.halfX() - static_cast<float>(backdrop.width) / 2.0f) * scale.x;
+        const float backdropY = (position.y + frameSize.halfY() - static_cast<float>(backdrop.height) / 2.0f) * scale.y;
+        const float backdropWidth = static_cast<float>(backdrop.width) * scale.x;
+        const float backdropHeight = static_cast<float>(backdrop.height) * scale.y;
+
+        // NOT allowing for rotation, we don't need to worry about vertices!
+        for (uint32_t y = 0; y < backdropHeight; ++y) {
+            for (uint32_t x = 0; x < backdropWidth; ++x) {
+                const int bufX = static_cast<int>(backdropX + x);
+                const int bufY = static_cast<int>(backdropY + y);
+                const auto texel = sampleBackdropNearest(backdrop, static_cast<float>(x) / scale.x,
+                                                         static_cast<float>(y) / scale.y);
+
+                if (bufX < 0 || bufY < 0 || bufX >= static_cast<int>(buffer.width) || bufY >= static_cast<int>(buffer.
+                        height)) {
+                    continue;
+                }
+
+                buffer.scanline(static_cast<size_t>(bufY))[static_cast<size_t>(bufX)] = texel;
+            }
         }
     }
 }

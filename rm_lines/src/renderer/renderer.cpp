@@ -354,11 +354,11 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, Vector frameSize,
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, Vector renderSize,
                         const Vector bufferSize, const bool antialias) {
     const auto buf = &stroker.raster.raster.fill.buffer;
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
-    const auto scale = bufferSize / frameSize;
+    const auto scale = bufferSize / renderSize;
 
     position *= -1; // It's technically an offset
 
@@ -372,6 +372,10 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     lineBuf->allocate(bufferSize);
     stroker.raster.x1 = static_cast<float>(buf->width);
     stroker.raster.y1 = static_cast<float>(buf->height);
+
+    if (config.enableBackdrop && backdrop.data) {
+        RendererImage::renderBackdrop(*buf, backdrop, position, this->frameSize, scale);
+    }
 
     for (const auto &layer: filtered_layers()) {
         // For each layer, each line, each point
@@ -590,4 +594,13 @@ void Renderer::setTemplate(const std::string &templateName) {
 void Renderer::addImage(const char *uuid, const char *path) {
     auto ref = ImageRef::load(path);
     imageRefMap[uuid] = std::make_shared<ImageRef>(ref);
+}
+
+void Renderer::setBackdrop(const uint8_t *data, const size_t size, const uint32_t width, const uint32_t height,
+                           const uint32_t stride) {
+    backdrop.data = data;
+    backdrop.size = size;
+    backdrop.width = width;
+    backdrop.height = height;
+    backdrop.stride = stride;
 }

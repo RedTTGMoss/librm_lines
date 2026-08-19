@@ -11,6 +11,7 @@
 #include <unordered_map>
 
 #include "image_ref.h"
+#include "image_renderer.h"
 #include "text/text_renderer.h"
 
 class Renderer;
@@ -27,7 +28,7 @@ static constexpr CrdtId TEXT_LAYER{7, 1};
 typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 
 struct RendererConfig {
-    uint8_t configVersion = 1;
+    uint8_t configVersion = 2;
     int8_t penWhitelist[20] = {};
     int8_t penBlacklist[20] = {};
     bool useWhitelist = false;
@@ -35,6 +36,7 @@ struct RendererConfig {
     bool enableText = true;
     bool enableImages = true;
     bool enableGlyphHighlights = true;
+    bool enableBackdrop = true;
 
     RendererConfig() {
         std::ranges::fill(penWhitelist, -1);
@@ -95,7 +97,7 @@ public:
 
     void toHtml(std::ostream &stream);
 
-    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector frameSize, Vector bufferSize,
+    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector renderSize, Vector bufferSize,
                   bool antialias);
 
     void setTemplate(const std::string &templateName);
@@ -112,12 +114,15 @@ public:
         return addImage(uuid.c_str(), path.c_str());
     }
 
+    void setBackdrop(const uint8_t *data, size_t size, uint32_t width, uint32_t height, uint32_t stride);
+
     friend class TaggedBlockWriter;
     friend class TextRenderer;
 
 private:
     SceneTree *sceneTree;
     Vector frameSize;
+    Backdrop backdrop;
     std::unordered_map<std::string, std::shared_ptr<ImageRef> > imageRefMap;
     std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,

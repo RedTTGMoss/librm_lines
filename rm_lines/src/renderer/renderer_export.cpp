@@ -295,3 +295,13 @@ void addImage(const char *rendererId, const char *uuid, const char *path) {
     }
     renderer->addImage(uuid, path);
 }
+
+void setBackdrop(const char *rendererId, const uint8_t *data, size_t size, uint32_t width, uint32_t height,
+                 uint32_t stride) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid rendererId provided");
+        return;
+    }
+    renderer->setBackdrop(data, size, width, height, stride);
+}

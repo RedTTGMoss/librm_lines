@@ -46,3 +46,12 @@ EXPORT void setTemplate(const char *rendererId, const char *templateName);
 EXPORT const char *getSizeTracker(const char *rendererId, const char *layerId);
 
 EXPORT void addImage(const char *rendererId, const char *uuid, const char *path);
+
+EXPORT void setBackdrop(
+    const char *rendererId,
+    const uint8_t *data,
+    size_t size,
+    uint32_t width,
+    uint32_t height,
+    uint32_t stride
+);
