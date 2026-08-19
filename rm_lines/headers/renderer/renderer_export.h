@@ -39,6 +39,8 @@ EXPORT void getFrame(
     bool antialias
 );
 
+EXPORT RendererConfig *getConfig(const char *rendererId);
+
 EXPORT void setTemplate(const char *rendererId, const char *templateName);
 
 EXPORT const char *getSizeTracker(const char *rendererId, const char *layerId);

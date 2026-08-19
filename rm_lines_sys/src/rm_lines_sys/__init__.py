@@ -3,6 +3,7 @@ import os
 import sys
 from logging import Logger
 from typing import Optional, Annotated
+from .types import C_CrdtId, C_RendererConfig
 
 logger = Logger("rm_lines_sys")
 MODULE_FOLDER = os.path.dirname(os.path.abspath(__file__))
@@ -68,6 +69,9 @@ class LibAnnotations(ctypes.Structure):
 
     def getFrame(self, renderer_id: bytes, data_buffer, data_size, x: int, y: int, frame_width: int, frame_height: int,
                  width: int, height: int, antialias: bool):
+        pass
+
+    def getConfig(self, renderer_id: bytes) -> C_RendererConfig:
         pass
 
     def setTemplate(self, renderer_id: bytes, template: bytes):
@@ -191,6 +195,10 @@ def load_lib() -> Optional[ctypes.CDLL]:
     # Function getFrame(str, *, size_t, (x)int, (y)int, (fw)int, (fh)int, (w)int, (h)int, bool)
     _lib.getFrame.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_size_t, ctypes.c_int,
                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_bool]
+
+    # Function getConfig(str) -> C_RendererConfig
+    _lib.getConfig.argtypes = [ctypes.c_char_p]
+    _lib.getConfig.restype = ctypes.POINTER(C_RendererConfig)
 
     # Function setTemplate(str, str)
     _lib.setTemplate.argtypes = [ctypes.c_char_p, ctypes.c_char_p]

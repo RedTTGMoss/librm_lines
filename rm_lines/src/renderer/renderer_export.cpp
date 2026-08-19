@@ -253,6 +253,15 @@ void getFrame(
     );
 }
 
+RendererConfig *getConfig(const char *rendererId) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid rendererId provided");
+        return nullptr;
+    }
+    return &renderer->config;
+}
+
 void setTemplate(
     const char *rendererId, const char *templateName) {
     const auto renderer = getRenderer(rendererId);

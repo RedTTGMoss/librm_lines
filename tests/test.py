@@ -13,6 +13,7 @@ for folder in folders:
         svg_output_path = os.path.join(svg_output_folder, file.replace('.rm', '.svg'))
         png_output_path = os.path.join(png_output_folder, file.replace('.rm', '.png'))
         json_output_path = os.path.join(json_output_folder, file.replace('.rm', '.json'))
+        paragraph_output_path = os.path.join(paragraphs_output_folder, file.replace('.rm', '.json'))
         layers_output_path = os.path.join(layers_output_folder, file.replace('.rm', '.json'))
         md_output_path = os.path.join(md_output_folder, file.replace('.rm', '.md'))
         txt_output_path = os.path.join(txt_output_folder, file.replace('.rm', '.txt'))
@@ -61,7 +62,10 @@ for folder in folders:
         paragraphs = lib.getParagraphs(renderer_id)
         if paragraphs:
             print(f"Paragraphs: {paragraphs.decode()}")
-        # Get the paragraphs
+        with open(paragraph_output_path, 'w', encoding='utf-8') as f:
+            f.write(paragraphs.decode() if paragraphs else '')
+
+        # Get the layers
         raw_layers = lib.getLayers(renderer_id)
         if raw_layers:
             str_layers = raw_layers.decode()
