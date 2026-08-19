@@ -3,6 +3,7 @@ import os.path
 import threading
 from typing import Optional, TYPE_CHECKING
 
+from functools import lru_cache
 from pygameextra import Rect
 
 from tests_base import *
@@ -11,9 +12,160 @@ import pygameextra as pe
 if TYPE_CHECKING:
     from rm_lines_sys.src.rm_lines_sys import LibAnnotations
 
-pe.init()
+pe.init((0, 0))
 lib: Optional["LibAnnotations"]
 lib.setDebugMode(True)
+
+
+class ConfigEditor(pe.Context):
+    AREA = (200, 500)
+    BACKGROUND = (0, 0, 0, 50)
+    FLOAT = pe.FLOAT_BOTTOMLEFT
+
+    D_INACTIVE = (150, 100, 100, 200)
+    D_ACTIVE = (100, 50, 50, 255)
+    E_INACTIVE = (100, 150, 100, 200)
+    E_ACTIVE = (50, 100, 50, 255)
+
+    def __init__(self, reset_frame):
+        super().__init__()
+        self.config = None
+        self.button_y = 10
+        self.pen_x = 30
+        self.pen_y = 10
+        self.reset_frame = reset_frame
+        self.icons = {}
+
+        for icon_name in os.listdir(icons_folder):
+            icon_path = os.path.join(icons_folder, icon_name)
+            self.icons[icon_name.split('.')[0]] = pe.Sprite(icon_path, resize=(40, 40))
+
+    @lru_cache
+    def get_text(self, text: str, background: bool = False):
+        return pe.Text(text, font_size=15, colors=(pe.colors.white, (100, 100, 100) if background else None))
+
+    def bool_option(self, name: str, attr: str):
+        if not self.config:
+            return
+        value = getattr(self.config.contents, attr)
+        if value:
+            pe.button.rect((10, self.button_y, self.width - 20, 30), self.E_INACTIVE, self.E_ACTIVE,
+                           self.get_text(f"{name}: True"),
+                           action=self.set_attr, data=(attr, False))
+        else:
+            pe.button.rect((10, self.button_y, self.width - 20, 30), self.D_INACTIVE, self.D_ACTIVE,
+                           self.get_text(f"{name}: False"),
+                           action=self.set_attr, data=(attr, True))
+        self.button_y += 40
+
+    def pen_icon(self, icon: str, pen: int, is_v2: bool):
+        state = self.get_pen_state(pen)
+        rect = (self.pen_x, self.pen_y, 40, 40)
+
+        if state:
+            pe.button.rect(rect, self.E_INACTIVE, self.E_ACTIVE, None,
+                           action=self.set_pen_state, data=(pen, False))
+        else:
+            pe.button.rect(rect, self.D_INACTIVE, self.D_ACTIVE, None,
+                           action=self.set_pen_state, data=(pen, True))
+
+        self.icons[icon].display((self.pen_x, self.pen_y))
+        if is_v2:
+            text = self.get_text(f"V2", True)
+        else:
+            text = self.get_text(f"V1", True)
+        text.rect.bottomright = (self.pen_x + 40, self.pen_y + 40)
+        text.display()
+
+        self.pen_x += 50
+        if self.pen_x + 50 > self.width:
+            self.pen_x = 30
+            self.pen_y += 50
+
+    def get_pen_state(self, pen: int):
+        if not self.config:
+            return None
+        whitelist = self.config.contents.penWhitelist
+        blacklist = self.config.contents.penBlacklist
+        use_whitelist = self.config.contents.useWhitelist
+
+        if use_whitelist:
+            return pen in whitelist
+        else:
+            return pen not in blacklist
+
+    def set_pen_state(self, pen: int, state: bool):
+        if not self.config:
+            return
+        whitelist = self.config.contents.penWhitelist
+        blacklist = self.config.contents.penBlacklist
+        use_whitelist = self.config.contents.useWhitelist
+
+        if use_whitelist:
+            for i in range(len(whitelist)):
+                if whitelist[i] == pen:
+                    if not state:
+                        whitelist[i] = -1
+                    break
+            else:
+                if state:
+                    for i in range(len(whitelist)):
+                        if whitelist[i] == -1:
+                            whitelist[i] = pen
+                            break
+        else:
+            for i in range(len(blacklist)):
+                if blacklist[i] == pen:
+                    if state:
+                        blacklist[i] = -1
+                    break
+            else:
+                if not state:
+                    for i in range(len(blacklist)):
+                        if blacklist[i] == -1:
+                            blacklist[i] = pen
+                            break
+
+        self.reset_frame()
+
+    def set_attr(self, attr: str, value):
+        if not self.config:
+            return
+        setattr(self.config.contents, attr, value)
+        self.reset_frame()
+
+    def loop(self):
+        if not self.config:
+            return
+        self.button_y = 10
+        self.pen_x = 30
+        self.bool_option("Enable Text", "enableText")
+        self.bool_option("Enable Images", "enableImages")
+        self.bool_option("Enable Glyphs", "enableGlyphHighlights")
+        self.bool_option("Whitelist MODE", "useWhitelist")
+
+        self.pen_y = self.button_y
+        self.pen_icon('ballpoint', 2, False)
+        self.pen_icon('fineliner', 4, False)
+        self.pen_icon('highlighter', 5, False)
+        self.pen_icon('pencil', 1, False)
+        self.pen_icon('mechanical_pencil', 7, False)
+        self.pen_icon('calligraphy', 21, True)
+        self.pen_icon('marker', 3, False)
+        self.pen_icon('shader', 23, True)
+        self.pen_icon('paintbrush', 0, False)
+
+        pe.draw.line(pe.colors.black, (0, self.pen_y), (self.width, self.pen_y), 2)
+        self.pen_y += 10
+        self.pen_icon('ballpoint', 15, True)
+        self.pen_icon('fineliner', 17, True)
+        self.pen_icon('highlighter', 18, True)
+        self.pen_icon('pencil', 14, True)
+        self.pen_icon('mechanical_pencil', 13, True)
+        self.pen_icon('calligraphy', 21, True)
+        self.pen_icon('marker', 16, True)
+        self.pen_icon('shader', 23, True)
+        self.pen_icon('paintbrush', 12, True)
 
 
 class GC(pe.GameContext):
@@ -53,6 +205,7 @@ class GC(pe.GameContext):
         self.draggable = pe.Draggable((0, 0))
         self.text = pe.Text(colors=(pe.colors.white, pe.colors.black))
         self.debug_mode = True
+        self.config_editor = ConfigEditor(self.reset_frame)
 
         for folder in (files_draw_folder, files_folder, files_color_folder, rm_output_folder):
             for filename in os.listdir(folder):
@@ -74,6 +227,9 @@ class GC(pe.GameContext):
         super().__init__()
         self.sprite = pe.Sprite("rm_lines_cat.png", (100, 100))
 
+    def reset_frame(self):
+        self.frame = None
+
     def save_index(self):
         with open('pos', 'w') as f:
             f.write(str(self.index))
@@ -87,10 +243,11 @@ class GC(pe.GameContext):
         renderer_id = lib.makeRenderer(tree_id, 0, any(
             self.filenames[index].startswith(landscape) for landscape in self.LANDSCAPES
         ))
+        config = lib.getConfig(renderer_id)
         if not renderer_id:
             print(f"Failed to make renderer for {item}")
             return
-        self.loaded[item] = (tree_id, renderer_id)
+        self.loaded[item] = (tree_id, renderer_id, config)
         self.set_template(self.TEMPLATES[self.template_index])
         image_info = lib.getImageInfo(tree_id)
         if image_info:
@@ -106,14 +263,14 @@ class GC(pe.GameContext):
         renderer = self.loaded.get(self.item)
 
         if renderer is None:
-            self.loaded[self.item] = (None, None)
+            self.loaded[self.item] = (None, None, None)
             threading.Thread(target=self.prepare_renderer, args=(self.item, self.index), daemon=True).start()
             return None, None
         return renderer
 
     def handle_event(self, e: pe.event.Event):
         if pe.event.key_DOWN(pe.K_s):
-            tree_id, renderer_id = self.get_renderer()
+            tree_id, renderer_id, _ = self.get_renderer()
             layers = lib.getLayers(renderer_id)
             layer_0 = json.loads(layers.decode())[0]['groupId']
             size_tracker_raw = lib.getSizeTracker(renderer_id, layer_0.encode())
@@ -232,6 +389,11 @@ class GC(pe.GameContext):
     def resize(self, new_size):
         self.frame = None
 
+    # def pre_loop(self):
+    #     rect = pe.Rect(0, 0, *self.config_editor.size)
+    #     rect.bottomleft = (0, self.height)
+    #     self.config_editor.position = rect.topleft
+
     def loop(self):
         self.text.display()
 
@@ -253,24 +415,10 @@ class GC(pe.GameContext):
             self.sprite.alpha = 100
         else:
             self.sprite.alpha = 255
-        if self.anchors is not None:
-            prev_pos = None
-            prev_end = None
-            for anchor_id, pos in self.anchors.items():
-                pos -= 140  # remove top margin
-                pos *= 1 - self.scale
-                pe.draw.line(pe.colors.red, (0, pos), (150, pos), 3)
-                if text := self.get_paragraph(anchor_id):
-                    text = pe.Text(text, font_size=20, colors=[pe.colors.white, pe.colors.black])
-                    if prev_pos is not None and abs(pos - prev_pos) < 20:
-                        text.rect.midleft = (prev_end + 20, pos)
-                    else:
-                        text.rect.midleft = (160, pos)
-                    text.position = text.rect.center
-                    text.display()
-                    prev_pos = pos
-                    prev_end = text.rect.right
         self.sprite.display((self.width - 100, self.height - 100))
+
+        self.config_editor.config = self.get_renderer()[2]
+        self.config_editor()
 
     def get_paragraph(self, anchor_id):
         for paragraph in self.paragraphs:
