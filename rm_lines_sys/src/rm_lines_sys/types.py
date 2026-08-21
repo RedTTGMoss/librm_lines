@@ -13,7 +13,7 @@ class C_RendererConfig(ctypes.Structure):
         ("configVersion", ctypes.c_uint8),
         ("penWhitelist", ctypes.c_int8 * 20),
         ("penBlacklist", ctypes.c_int8 * 20),
-        ("useWhitelist", ctypes.c_uint8),
+        ("useWhitelist", ctypes.c_bool),
         ("disabledLayers", C_CrdtId * 10),
         ("enableText", ctypes.c_bool),
         ("enableImages", ctypes.c_bool),
