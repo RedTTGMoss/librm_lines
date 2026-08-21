@@ -180,3 +180,16 @@ void rMPenFill::debugTool(const float width) {
 void rMPenFill::debugToolSetWidth(const float width) const {
     stroker->width = width * stroker->raster.raster.fill.scale;
 }
+
+const unsigned int *rMPenFill::sample(const int x, const int y) const {
+    static constexpr unsigned int ALPHA = 0x00FFFFFF;
+
+    const unsigned int *baseSample = buffer.scanline(y) + x;
+
+    if (sampleFunction && *baseSample == ALPHA) {
+        if (const auto sample = sampleFunction(x, y); sample != nullptr)
+            return sample;
+        return &ALPHA;
+    }
+    return baseSample;
+}

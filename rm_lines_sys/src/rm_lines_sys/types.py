@@ -19,4 +19,5 @@ class C_RendererConfig(ctypes.Structure):
         ("enableImages", ctypes.c_bool),
         ("enableGlyphHighlights", ctypes.c_bool),
         ("enableBackdrop", ctypes.c_bool),
+        ("useBackdropForSamplingOnly", ctypes.c_bool),
     ]

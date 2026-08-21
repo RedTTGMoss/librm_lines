@@ -70,6 +70,8 @@ public:
     float intensity;
     float previousIntensity;
     Color baseColor;
+
+    std::function<const unsigned int *(int, int)> sampleFunction;
     OperatorFunction *operatorFunction;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         RMLinesRenderer::VaryingGeneratorLengthWidth> *stroker;
@@ -90,4 +92,6 @@ public:
     void debugTool(float width = 7.0f);
 
     void debugToolSetWidth(float width) const;
+
+    const unsigned int *sample(int x, int y) const;
 };

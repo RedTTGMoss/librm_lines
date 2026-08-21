@@ -50,11 +50,11 @@ class ConfigEditor(pe.Context):
         value = getattr(self.config.contents, attr)
         if value:
             pe.button.rect((10, self.button_y, self.width - 20, 30), self.E_INACTIVE, self.E_ACTIVE,
-                           self.get_text(f"{name}: True"),
+                           self.get_text(name),
                            action=self.set_attr, data=(attr, False))
         else:
             pe.button.rect((10, self.button_y, self.width - 20, 30), self.D_INACTIVE, self.D_ACTIVE,
-                           self.get_text(f"{name}: False"),
+                           self.get_text(name),
                            action=self.set_attr, data=(attr, True))
         self.button_y += 40
 
@@ -143,6 +143,7 @@ class ConfigEditor(pe.Context):
         self.bool_option("Enable Images", "enableImages")
         self.bool_option("Enable Glyphs", "enableGlyphHighlights")
         self.bool_option("Enable Backdrop", "enableBackdrop")
+        self.bool_option("Sample only", "useBackdropForSamplingOnly")
         self.bool_option("Whitelist MODE", "useWhitelist")
 
         self.pen_y = self.button_y
@@ -175,7 +176,7 @@ class GC(pe.GameContext):
     BACKGROUND = pe.colors.white
     TITLE = "Interactive Test"
 
-    TEST_BACKDROP = False
+    TEST_BACKDROP = True
 
     FPS_LOGGER = True
     LANDSCAPES = (
@@ -215,7 +216,7 @@ class GC(pe.GameContext):
             self._test_backdrop_height = 500
             self._test_backdrop_stride = self._test_backdrop_width * 4
             self._test_backdrop_buffer = bytearray(
-                [230, 230, 230, 255] * (self._test_backdrop_width * self._test_backdrop_height))
+                [255, 100, 100, 255] * (self._test_backdrop_width * self._test_backdrop_height))
             self._test_backdrop_ptr = (ctypes.c_uint8 * len(self._test_backdrop_buffer)).from_buffer(
                 self._test_backdrop_buffer)
 
@@ -280,6 +281,7 @@ class GC(pe.GameContext):
                 self._test_backdrop_height,
                 self._test_backdrop_stride
             )
+            config.contents.enableBackdrop = False
 
     def get_renderer(self):
         renderer = self.loaded.get(self.item)

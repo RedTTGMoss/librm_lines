@@ -24,6 +24,8 @@ struct Backdrop {
     uint32_t stride = 0;
 };
 
+uint32_t sampleBackdropNearest(const Backdrop &backdrop, const float u, const float v);
+
 namespace RendererImage {
     void renderImage(RMLinesRenderer::ImageBuffer &buffer, const ImageRef &texture,
                      const LayerInfo::ImageInfo &imageInfo, const AdvancedMath::Vector &position,

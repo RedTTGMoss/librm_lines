@@ -28,7 +28,7 @@ static constexpr CrdtId TEXT_LAYER{7, 1};
 typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 
 struct RendererConfig {
-    uint8_t configVersion = 2;
+    const uint8_t configVersion = 3;
     int8_t penWhitelist[20] = {};
     int8_t penBlacklist[20] = {};
     bool useWhitelist = false;
@@ -37,6 +37,7 @@ struct RendererConfig {
     bool enableImages = true;
     bool enableGlyphHighlights = true;
     bool enableBackdrop = true;
+    bool useBackdropForSamplingOnly = false;
 
     RendererConfig() {
         std::ranges::fill(penWhitelist, -1);
@@ -115,6 +116,9 @@ public:
     }
 
     void setBackdrop(const uint8_t *data, size_t size, uint32_t width, uint32_t height, uint32_t stride);
+
+    const unsigned int *sampleBackdrop(int x, int y, const AdvancedMath::Vector &position,
+                                       const AdvancedMath::Vector &scale);
 
     friend class TaggedBlockWriter;
     friend class TextRenderer;

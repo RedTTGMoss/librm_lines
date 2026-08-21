@@ -29,7 +29,7 @@ void PencilPen(rMPenFill *fill, const int x, const int y, const int length, Vary
             }
 
             const uint32_t colorRGBA = color.toRGBA();
-            if (dst[i] < colorRGBA) {
+            if (*fill->sample(x + i, y) < colorRGBA) {
                 dst[i] = colorRGBA;
             }
         }

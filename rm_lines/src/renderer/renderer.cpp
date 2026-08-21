@@ -367,6 +367,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     // ReSharper disable once CppDFALocalValueEscapesFunction
     stroker.raster.raster.fill.position = &position;
     stroker.raster.raster.fill.scale = std::min(scale.x, scale.y);
+    stroker.raster.raster.fill.sampleFunction = nullptr;
     buf->allocate(bufferSize);
     buf->fill(0x00FFFFFF);
     lineBuf->allocate(bufferSize);
@@ -374,7 +375,15 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     stroker.raster.y1 = static_cast<float>(buf->height);
 
     if (config.enableBackdrop && backdrop.data) {
-        RendererImage::renderBackdrop(*buf, backdrop, position, this->frameSize, scale);
+        if (config.useBackdropForSamplingOnly) {
+            stroker.raster.raster.fill.sampleFunction =
+                    [this, position, scale](const int x, const int y) {
+                        return this->sampleBackdrop(x, y, position, scale);
+                    };
+        } else {
+            RendererImage::renderBackdrop(*buf, backdrop, position, this->frameSize, scale);
+            // Reset the sample function after rendering the backdrop
+        }
     }
 
     for (const auto &layer: filtered_layers()) {
@@ -603,4 +612,37 @@ void Renderer::setBackdrop(const uint8_t *data, const size_t size, const uint32_
     backdrop.width = width;
     backdrop.height = height;
     backdrop.stride = stride;
+}
+
+const unsigned int *Renderer::sampleBackdrop(int x, int y, const AdvancedMath::Vector &position,
+                                             const AdvancedMath::Vector &scale) {
+    static unsigned int sampleReturn = 0;
+
+    // Align to frame space
+    x -= position.x * scale.x;
+    y -= position.y * scale.y;
+
+    // Align to the center of the frame (0, 0) is now the center of the frame
+    x -= frameSize.halfX() * scale.x;
+    y -= frameSize.halfY() * scale.y;
+
+    // Calculate the backdrop size to scale
+    const int bw = static_cast<float>(backdrop.width) * scale.x;
+    const int bh = static_cast<float>(backdrop.height) * scale.y;
+
+    // Align to the center of the backdrop (0, 0) is now the top left of the backdrop !scaled!
+    x += bw / 2;
+    y += bh / 2;
+
+    // Check if the point is outside the backdrop
+    if (x < 0 || y < 0 || x >= bw || y >= bh) {
+        return nullptr;
+    }
+
+    // Sample the backdrop at the given point
+    const float sampleU = static_cast<float>(x) / bw;
+    const float sampleV = static_cast<float>(y) / bh;
+    sampleReturn = sampleBackdropNearest(backdrop, sampleU, sampleV);
+
+    return &sampleReturn;
 }
