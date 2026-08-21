@@ -217,6 +217,10 @@ class GC(pe.GameContext):
             self._test_backdrop_stride = self._test_backdrop_width * 4
             self._test_backdrop_buffer = bytearray(
                 [255, 100, 100, 255] * (self._test_backdrop_width * self._test_backdrop_height))
+            # image = Image.open("rm_lines_cat.png")
+            # self._test_backdrop_width, self._test_backdrop_height = image.size
+            # self._test_backdrop_stride = self._test_backdrop_width * 4
+            # self._test_backdrop_buffer = bytearray(image.tobytes())
             self._test_backdrop_ptr = (ctypes.c_uint8 * len(self._test_backdrop_buffer)).from_buffer(
                 self._test_backdrop_buffer)
 

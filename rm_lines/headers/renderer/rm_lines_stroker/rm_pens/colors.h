@@ -35,6 +35,10 @@ inline Color blendDarken(const Color base, const Color blend) {
     const float source_alpha = (blend.alpha / 255.0f);
     const float base_alpha = base.alpha / 255.0f;
 
+    if (IS_UNLIKELY(base_alpha <= 0.0f)) {
+        return blend;
+    }
+
     const float output_alpha =
             source_alpha + base_alpha * (1.0f - source_alpha);
 

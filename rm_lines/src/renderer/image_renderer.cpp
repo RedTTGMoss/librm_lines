@@ -246,8 +246,8 @@ namespace RendererImage {
             for (uint32_t x = 0; x < backdropWidth; ++x) {
                 const int bufX = static_cast<int>(backdropX + x);
                 const int bufY = static_cast<int>(backdropY + y);
-                const auto texel = sampleBackdropNearest(backdrop, static_cast<float>(x) / scale.x,
-                                                         static_cast<float>(y) / scale.y);
+                const auto texel = sampleBackdropNearest(backdrop, static_cast<float>(x) / backdropWidth,
+                                                         static_cast<float>(y) / backdropHeight);
 
                 if (bufX < 0 || bufY < 0 || bufX >= static_cast<int>(buffer.width) || bufY >= static_cast<int>(buffer.
                         height)) {
