@@ -381,7 +381,7 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
                         return this->sampleBackdrop(x, y, position, scale);
                     };
         } else {
-            RendererImage::renderBackdrop(*buf, backdrop, position, this->frameSize, scale);
+            RendererImage::renderBackdrop(*buf, backdrop, position, getBackdropOffset(), this->frameSize, scale);
             // Reset the sample function after rendering the backdrop
         }
     }
@@ -614,25 +614,61 @@ void Renderer::setBackdrop(const uint8_t *data, const size_t size, const uint32_
     backdrop.stride = stride;
 }
 
+Vector Renderer::getBackdropOffset() {
+    if (!backdrop.data) {
+        return Vector(0, 0);
+    }
+
+    // Calculate the offset to center the backdrop in the frame
+    Vector offset{0, 0};
+    switch (config.backdropAlign) {
+        case BACKDROP_ALIGN_CENTER:
+            offset = Vector{
+                (frameSize.x - backdrop.width) / 2.0f,
+                (frameSize.y - backdrop.height) / 2.0f
+            };
+        case BACKDROP_ALIGN_TOP_LEFT:
+            break;
+        case BACKDROP_ALIGN_TOP_CENTER:
+            offset = Vector{(frameSize.x - backdrop.width) / 2.0f, 0};
+        case BACKDROP_ALIGN_TOP_RIGHT:
+            offset = Vector{frameSize.x - backdrop.width, 0};
+        case BACKDROP_ALIGN_BOTTOM_LEFT:
+            offset = Vector{0, frameSize.y - backdrop.height};
+        case BACKDROP_ALIGN_BOTTOM_CENTER:
+            offset = Vector{(frameSize.x - backdrop.width) / 2.0f, frameSize.y - backdrop.height};
+        case BACKDROP_ALIGN_BOTTOM_RIGHT:
+            offset = Vector{frameSize.x - backdrop.width, frameSize.y - backdrop.height};
+        case BACKDROP_ALIGN_LEFT_CENTER:
+            offset = Vector{0, (frameSize.y - backdrop.height) / 2.0f};
+        case BACKDROP_ALIGN_RIGHT_CENTER:
+            offset = Vector{frameSize.x - backdrop.width, (frameSize.y - backdrop.height) / 2.0f};
+        default:
+            logError(std::format("Unknown backdrop alignment: {}", config.backdropAlign));
+            break;
+    }
+    offset.x += config.backdropOffsetX;
+    offset.y += config.backdropOffsetY;
+    return offset;
+}
+
 const unsigned int *Renderer::sampleBackdrop(int x, int y, const AdvancedMath::Vector &position,
                                              const AdvancedMath::Vector &scale) {
     static unsigned int sampleReturn = 0;
+
+    const auto offset = getBackdropOffset();
 
     // Align to frame space
     x -= position.x * scale.x;
     y -= position.y * scale.y;
 
     // Align to the center of the frame (0, 0) is now the center of the frame
-    x -= frameSize.halfX() * scale.x;
-    y -= frameSize.halfY() * scale.y;
+    x -= offset.x * scale.x;
+    y -= offset.y * scale.y;
 
     // Calculate the backdrop size to scale
     const int bw = static_cast<float>(backdrop.width) * scale.x;
     const int bh = static_cast<float>(backdrop.height) * scale.y;
-
-    // Align to the center of the backdrop (0, 0) is now the top left of the backdrop !scaled!
-    x += bw / 2;
-    y += bh / 2;
 
     // Check if the point is outside the backdrop
     if (x < 0 || y < 0 || x >= bw || y >= bh) {

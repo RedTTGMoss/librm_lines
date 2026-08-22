@@ -39,6 +39,7 @@ namespace RendererImage {
 
     void renderBackdrop(RMLinesRenderer::ImageBuffer &buffer, const Backdrop &backdrop,
                         const AdvancedMath::Vector &position,
+                        const AdvancedMath::Vector &backdropOffset,
                         const AdvancedMath::Vector &frameSize,
                         const AdvancedMath::Vector &scale);
 }

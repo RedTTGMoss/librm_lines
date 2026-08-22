@@ -234,10 +234,11 @@ namespace RendererImage {
     }
 
     void renderBackdrop(RMLinesRenderer::ImageBuffer &buffer, const Backdrop &backdrop,
-                        const AdvancedMath::Vector &position, const AdvancedMath::Vector &frameSize,
+                        const AdvancedMath::Vector &position, const AdvancedMath::Vector &backdropOffset,
+                        const AdvancedMath::Vector &frameSize,
                         const AdvancedMath::Vector &scale) {
-        const float backdropX = (position.x + frameSize.halfX() - static_cast<float>(backdrop.width) / 2.0f) * scale.x;
-        const float backdropY = (position.y + frameSize.halfY() - static_cast<float>(backdrop.height) / 2.0f) * scale.y;
+        const float backdropX = (position.x + backdropOffset.x) * scale.x;
+        const float backdropY = (position.y + backdropOffset.y) * scale.y;
         const float backdropWidth = static_cast<float>(backdrop.width) * scale.x;
         const float backdropHeight = static_cast<float>(backdrop.height) * scale.y;
 

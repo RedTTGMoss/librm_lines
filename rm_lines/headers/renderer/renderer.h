@@ -27,8 +27,20 @@ static constexpr CrdtId TEXT_LAYER{7, 1};
 
 typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 
+enum BackdropAlign {
+    BACKDROP_ALIGN_CENTER = 0,
+    BACKDROP_ALIGN_TOP_LEFT = 1,
+    BACKDROP_ALIGN_TOP_CENTER = 2,
+    BACKDROP_ALIGN_TOP_RIGHT = 3,
+    BACKDROP_ALIGN_BOTTOM_LEFT = 4,
+    BACKDROP_ALIGN_BOTTOM_CENTER = 5,
+    BACKDROP_ALIGN_BOTTOM_RIGHT = 6,
+    BACKDROP_ALIGN_LEFT_CENTER = 7,
+    BACKDROP_ALIGN_RIGHT_CENTER = 8
+};
+
 struct RendererConfig {
-    const uint8_t configVersion = 3;
+    const uint8_t configVersion = 4;
     int8_t penWhitelist[20] = {};
     int8_t penBlacklist[20] = {};
     bool useWhitelist = false;
@@ -38,6 +50,10 @@ struct RendererConfig {
     bool enableGlyphHighlights = true;
     bool enableBackdrop = true;
     bool useBackdropForSamplingOnly = false;
+    bool followRulesInJson = false;
+    float backdropOffsetX = 0.0f;
+    float backdropOffsetY = 0.0f;
+    uint8_t backdropAlign = 2; // BackdropAlign TYPE
 
     RendererConfig() {
         std::ranges::fill(penWhitelist, -1);
@@ -116,6 +132,8 @@ public:
     }
 
     void setBackdrop(const uint8_t *data, size_t size, uint32_t width, uint32_t height, uint32_t stride);
+
+    Vector getBackdropOffset();
 
     const unsigned int *sampleBackdrop(int x, int y, const AdvancedMath::Vector &position,
                                        const AdvancedMath::Vector &scale);
