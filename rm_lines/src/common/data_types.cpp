@@ -199,6 +199,10 @@ std::string Color::repr() const {
     return std::format("Color(r={}, g={}, b={}, a={})", red, green, blue, alpha);
 }
 
+std::string Color::reprHex() const {
+    return std::format("#{0:02X}{1:02X}{2:02X}{3:02X}", red, green, blue, alpha);
+}
+
 uint32_t Color::toRGBA() const {
     // Writing to buffer (ABGR)
     return alpha << 24 | blue << 16 | green << 8 | red;

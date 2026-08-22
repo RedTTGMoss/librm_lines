@@ -1,5 +1,6 @@
 #pragma once
 #include "common/data_types.h"
+#include "renderer/renderer_config.h"
 #include "scene_tree/scene_tree.h"
 #include <nlohmann/json.hpp>
 
@@ -37,12 +38,30 @@ public:
         };
     }
 
-    json toJsonFull() const {
+    json toJsonFull(const RendererConfig *config = nullptr,
+                    RMLinesRenderer::DefaultStrokerType *stroker = nullptr) const {
         auto j = toJson();
         j["lines"] = json::array();
         for (const auto &line: lines) {
+            if (config) {
+                if (config->useWhitelist) {
+                    if (std::ranges::find(
+                            config->penWhitelist,
+                            static_cast<int>(line.line.tool)
+                        ) == std::ranges::end(config->penWhitelist)) {
+                        continue;
+                    }
+                } else {
+                    if (std::ranges::find(
+                            config->penBlacklist,
+                            static_cast<int>(line.line.tool)
+                        ) != std::ranges::end(config->penBlacklist)) {
+                        continue;
+                    }
+                }
+            }
             j["lines"].push_back({
-                {"line", line.line.toJson()},
+                {"line", line.line.toJson(stroker)},
                 {"groupId", line.groupId.toJson()},
                 {"itemId", line.itemId.toJson()},
                 {"offsetX", line.offsetX},

@@ -19,6 +19,10 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
     if (sceneTree->sceneInfo.has_value() && sceneTree->sceneInfo.value().paperSize.has_value()) {
         this->paperSize = sceneTree->sceneInfo.value().paperSize.value();
     }
+
+    // Initialize the stroker
+    stroker.raster.raster.fill.stroker = &stroker;
+
     this->frameSize = landscape
                           ? Vector(paperSize.second, paperSize.first)
                           : Vector(paperSize.first, paperSize.second);
@@ -217,11 +221,13 @@ json Renderer::getLayers() const {
     return j;
 }
 
-json Renderer::getLayerFull(const CrdtId layerId) const {
+json Renderer::getLayerFull(const CrdtId layerId) {
     for (const auto &layer: layers) {
         if (layer.groupId == layerId) {
-            json j = layer.toJsonFull();
-            return j;
+            return layer.toJsonFull(
+                config.followRulesInJson ? &config : nullptr,
+                config.strokerDataInJson ? &stroker : nullptr
+            );
         }
     }
     return nullptr;

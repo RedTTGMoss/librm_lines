@@ -400,6 +400,8 @@ struct Color {
 
     std::string repr() const;
 
+    std::string reprHex() const;
+
     uint32_t toRGBA() const;
 
     uint32_t toARGB() const;

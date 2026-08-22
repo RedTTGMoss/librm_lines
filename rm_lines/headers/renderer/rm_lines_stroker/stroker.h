@@ -6,6 +6,8 @@
 #include "line.h"
 #include "varying.h"
 
+class rMPenFill;
+
 namespace RMLinesRenderer {
     enum CapStyle : uint8_t {
         FlatCap,

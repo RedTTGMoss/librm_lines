@@ -21,6 +21,7 @@ class C_RendererConfig(ctypes.Structure):
         ("enableBackdrop", ctypes.c_bool),
         ("useBackdropForSamplingOnly", ctypes.c_bool),
         ("followRulesInJson", ctypes.c_bool),
+        ("strokerDataInJson", ctypes.c_bool),
         ("backdropOffsetX", ctypes.c_float),
         ("backdropOffsetY", ctypes.c_float),
         ("backdropAlign", ctypes.c_uint8),

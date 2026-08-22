@@ -105,22 +105,37 @@ bool Line::write(TaggedBlockWriter *writer) const {
     return true;
 }
 
-json Line::toJson() const {
-    std::vector<json> pointsJson;
-    for (auto &point: points) {
-        pointsJson.push_back(point.toJson());
+json Line::toJson(RMLinesRenderer::DefaultStrokerType *stroker) const {
+    if (stroker) {
+        stroker->raster.raster.fill.line = this;
+        stroker->raster.raster.fill.newLine();
     }
 
-    return {
+
+    json j = {
         {"tool", tool},
         {"color", color},
         {"thicknessScale", thicknessScale},
         {"startingLength", startingLength},
-        {"points", pointsJson},
         {"timestamp", timestamp.toJson()},
         {"moveId", moveId.has_value() ? moveId->toJson() : nullptr},
         {"argbColor", argbColor.has_value() ? argbColor->toJson() : nullptr}
     };
+    if (stroker) {
+        j["_calc_baseColor"] = stroker->raster.raster.fill.baseColor.reprHex();
+        j["_calc_baseWidth"] = stroker->raster.raster.fill.baseWidth;
+        j["_calc_lengthFactor"] = stroker->varying.lengthFactor;
+        j["_calc_widthFactor"] = stroker->varying.widthFactor;
+        j["_calc_capStyle"] = stroker->capStyle;
+        j["_calc_joinStyle"] = stroker->joinStyle;
+        j["_calc_width"] = stroker->width;
+    }
+    std::vector<json> pointsJson;
+    for (auto &point: points) {
+        pointsJson.push_back(point.toJson(stroker));
+    }
+    j["points"] = pointsJson;
+    return j;
 }
 
 json Text::toJson() const {
@@ -226,8 +241,8 @@ bool Point::write(TaggedBlockWriter *writer, const uint8_t version) const {
     return true;
 }
 
-json Point::toJson() const {
-    return {
+json Point::toJson(RMLinesRenderer::DefaultStrokerType *stroker) const {
+    json j = {
         {"x", x},
         {"y", y},
         {"speed", speed},
@@ -235,6 +250,14 @@ json Point::toJson() const {
         {"width", width},
         {"pressure", pressure}
     };
+    if (stroker) {
+        stroker->raster.raster.fill.point = this;
+        stroker->raster.raster.fill.newPoint();
+        j["_calc_width"] = stroker->width;
+        j["_calc_intensity"] = stroker->raster.raster.fill.intensity;
+    }
+
+    return j;
 }
 
 bool GlyphRange::read(TaggedBlockReader *reader) {

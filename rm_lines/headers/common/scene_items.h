@@ -7,6 +7,7 @@
 #include <common/crdt_sequence_item.h>
 #include <nlohmann/json.hpp>
 
+#include "renderer/rm_lines_stroker/default.h"
 
 class TaggedBlockWriter;
 using json = nlohmann::json;
@@ -69,7 +70,7 @@ struct Point {
 
     bool write(TaggedBlockWriter *writer, uint8_t version) const;
 
-    json toJson() const;
+    json toJson(RMLinesRenderer::DefaultStrokerType *stroker = nullptr) const;
 };
 
 struct Line {
@@ -88,7 +89,7 @@ struct Line {
 
     bool write(TaggedBlockWriter *writer) const;
 
-    json toJson() const;
+    json toJson(RMLinesRenderer::DefaultStrokerType *stroker = nullptr) const;
 };
 
 struct Text {
