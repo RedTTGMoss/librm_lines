@@ -27,7 +27,7 @@ struct RendererConfig {
     bool strokerDataInJson = false;
     float backdropOffsetX = 0.0f;
     float backdropOffsetY = 0.0f;
-    uint8_t backdropAlign = 2; // BackdropAlign TYPE
+    uint8_t backdropAlign = BACKDROP_ALIGN_TOP_CENTER; // BackdropAlign TYPE
 
     RendererConfig() {
         std::ranges::fill(penWhitelist, -1);

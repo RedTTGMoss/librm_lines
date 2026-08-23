@@ -637,18 +637,25 @@ Vector Renderer::getBackdropOffset() {
             break;
         case BACKDROP_ALIGN_TOP_CENTER:
             offset = Vector{(frameSize.x - backdrop.width) / 2.0f, 0};
+            break;
         case BACKDROP_ALIGN_TOP_RIGHT:
             offset = Vector{frameSize.x - backdrop.width, 0};
+            break;
         case BACKDROP_ALIGN_BOTTOM_LEFT:
             offset = Vector{0, frameSize.y - backdrop.height};
+            break;
         case BACKDROP_ALIGN_BOTTOM_CENTER:
             offset = Vector{(frameSize.x - backdrop.width) / 2.0f, frameSize.y - backdrop.height};
+            break;
         case BACKDROP_ALIGN_BOTTOM_RIGHT:
             offset = Vector{frameSize.x - backdrop.width, frameSize.y - backdrop.height};
+            break;
         case BACKDROP_ALIGN_LEFT_CENTER:
             offset = Vector{0, (frameSize.y - backdrop.height) / 2.0f};
+            break;
         case BACKDROP_ALIGN_RIGHT_CENTER:
             offset = Vector{frameSize.x - backdrop.width, (frameSize.y - backdrop.height) / 2.0f};
+            break;
         default:
             logError(std::format("Unknown backdrop alignment: {}", config.backdropAlign));
             break;
