@@ -12,17 +12,15 @@ enum PageType {
 class DocumentSizeTracker {
 public:
     explicit DocumentSizeTracker(const Vector frameSize, const PageType pageType,
-                                 const bool landscape): documentCenter(0, 0),
-                                                        documentCap(0, 0, 0, 0),
-                                                        track(Rect::fromSides(
-                                                            0, landscape ? frameSize.x : frameSize.y, 0,
-                                                            landscape ? frameSize.y : frameSize.x)),
-                                                        frameSize(landscape
-                                                                      ? Vector(frameSize.y, frameSize.x)
-                                                                      : frameSize),
-                                                        offset(0, 0), pageType(pageType), landscape(landscape) {
-        if (pageType == DOCUMENT)
-            this->offset.x = this->frameSize.x * 0.2;
+                                 const bool landscape) : documentCenter(0, 0),
+                                                         documentCap(0, 0, 0, 0),
+                                                         track(Rect::fromSides(
+                                                             0, landscape ? frameSize.x : frameSize.y, 0,
+                                                             landscape ? frameSize.y : frameSize.x)),
+                                                         frameSize(landscape
+                                                                       ? Vector(frameSize.y, frameSize.x)
+                                                                       : frameSize),
+                                                         offset(0, 0), pageType(pageType), landscape(landscape) {
         // logDebug(std::format("Initial size tracker {}x{} AKA {}->{}x{}->{}, landscape: {}", frameSize.x, frameSize.y,
         //                      track.getLeft(), track.getRight(), track.getTop(), track.getBottom(), landscape));
     }
@@ -60,26 +58,12 @@ public:
     }
 
     [[nodiscard]] float getFrameWidth() const {
-        switch (pageType) {
-            case NOTEBOOK:
-                return frameSize.x;
-            case DOCUMENT:
-                return frameSize.x * 1.4;
-            default:
-                return -1;
-        }
+        return frameSize.x;
     }
 
     [[nodiscard]] float getFrameHeight() const {
         // This really isn't used anywhere since the horizontal coordinates are more important
-        switch (pageType) {
-            case NOTEBOOK:
-                return frameSize.y;
-            case DOCUMENT:
-                return frameSize.y * 1.4;
-            default:
-                return -1;
-        }
+        return frameSize.y;
     }
 
     [[nodiscard]] float getTop() const {
