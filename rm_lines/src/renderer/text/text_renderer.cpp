@@ -171,13 +171,15 @@ TextRenderer::TextRenderer() : TextRenderer(nullptr) {
 
 TextRenderer::TextRenderer(Renderer *renderer) {
     setRenderer(renderer);
+    if (!renderer->textDocument.text)
+        return; // Skip initializing fonts
     // Ensure font manager instance
     FontManager::instance();
 }
 
 void TextRenderer::setRenderer(Renderer *newRenderer) {
     this->renderer = newRenderer;
-    if (!renderer)
+    if (!renderer || !renderer->textDocument.text)
         return;
     textMargin = renderer->getTextMargin();
 }
@@ -220,7 +222,6 @@ void TextRenderer::renderGlyphHighlights(const Vector *position, Vector scale, c
     // Get the highlighter color
     if (glyphRange.color == ARGB) {
         renderer->stroker.raster.raster.fill.baseColor = glyphRange.argbColor;
-        renderer->stroker.raster.raster.fill.baseColor.alpha = 64; // Fix it to 25%
     } else
         renderer->stroker.raster.raster.fill.baseColor = getHighlighterColorFromPalette(glyphRange.color);
 
