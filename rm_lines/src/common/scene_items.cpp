@@ -317,7 +317,7 @@ bool GlyphRange::read(TaggedBlockReader *reader) {
 
     // Optionally read argbColor, this is only for new highlighters
     reader->getTag();
-    if (PENCOLOR_EXTRA_HIGHLIGHTER(color) && reader->checkTag(10, TagType::Byte4)) {
+    if (color == ARGB && reader->checkTag(10, TagType::Byte4)) {
         Color _argbColor;
         if (!reader->readColor(10, &_argbColor)) return false;
         argbColor = _argbColor;
