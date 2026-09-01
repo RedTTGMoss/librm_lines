@@ -12,6 +12,7 @@ on:
       - 'tests/**'
       - 'rm_lines/**'
       - 'rm_lines_sys/**'
+      - 'rm_lines_wasm_sys/**'
       - 'requirements.txt'
       - 'tools/**'
   pull_request:
@@ -27,8 +28,6 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
-    # Skip the `latest-draft` tag to prevent recursive runs
-    if: github.ref_name != 'latest-draft'
 
     strategy:
       fail-fast: true
@@ -39,36 +38,49 @@ jobs:
             target: 'x86_64-unknown-linux-gnu'
             cpp_compiler: 'g++'
             c_compiler: 'gcc'
-            python_version: '3.9'
-            python_arch: 'x64'
             build_type: 'Release'
             run_tests: true
             build_wheel: true
+
+          - os: 'ubuntu'
+            runner: 'ubuntu-24.04-arm'
+            target: 'aarch64-unknown-linux-gnu'
+            cpp_compiler: 'g++'
+            c_compiler: 'gcc'
+            build_type: 'Release'
+            run_tests: true
+            build_wheel: true
+
           - os: 'windows'
             runner: 'windows-latest'
             target: 'x86_64-pc-windows-msvc'
             cmake_platform: 'x64'
-            python_version: '3.9'
-            python_arch: 'x64'
             build_type: 'Release'
             run_tests: true
             build_wheel: true
+
           - os: 'windows'
             runner: 'windows-11-arm'
             target: 'aarch64-pc-windows-msvc'
             cmake_platform: 'ARM64'
-            python_version: '3.12'
-            python_arch: 'arm64'
             build_type: 'Release'
             run_tests: true
             build_wheel: true
+
           - os: 'macos'
             runner: 'macos-15-intel'
             target: 'x86_64-apple-darwin'
             cpp_compiler: 'clang++'
             c_compiler: 'clang'
-            python_version: '3.9'
-            python_arch: 'x64'
+            build_type: 'Release'
+            run_tests: true
+            build_wheel: true
+
+          - os: 'macos'
+            runner: 'macos-15'
+            target: 'aarch64-apple-darwin'
+            cpp_compiler: 'clang++'
+            c_compiler: 'clang'
             build_type: 'Release'
             run_tests: true
             build_wheel: true
@@ -124,18 +136,6 @@ jobs:
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rm_lines
-
-      - name: Set up python
-        uses: actions/setup-python@v6
-        with:
-          python-version: ${{ matrix.python_version }}
-          architecture: ${{ matrix.python_arch }}
-          cache: 'pip'
-
-      - name: Install Dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install poetry colorama Pillow
 
       - name: Update version
         shell: bash
@@ -216,15 +216,135 @@ jobs:
             artifact/rm_lines.dll
           retention-days: 5
 
-      - uses: rickstaa/action-create-tag@v1
-        if: matrix.runner == 'ubuntu-latest'
-        with:
-          tag: latest-draft
-          force_push_tag: true
+  build-web:
+    name: Build for Emscripten web
+    runs-on: ubuntu-latest
+    env:
+      EM_VERSION: 5.0.1
+      EM_CACHE_FOLDER: 'emsdk-cache'
 
-  create-draft-release:
-    name: Create Draft Release
-    needs: build-sys
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup cache
+        id: cache-system-libraries
+        uses: actions/cache@v5
+        with:
+          path: ${{env.EM_CACHE_FOLDER}}
+          key: ${{env.EM_VERSION}}-${{ runner.os }}
+
+      - uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: ${{env.EM_VERSION}}
+          actions-cache-folder: ${{env.EM_CACHE_FOLDER}}
+
+      - name: Verify emsdk installation
+        run: emcc -v
+
+      - name: Fetch tags for current commit
+        run: git fetch --tags --depth=1
+
+      - name: Set reusable strings
+        # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build-web" >> "$GITHUB_OUTPUT"
+
+      - name: Set up python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+          cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check sys bindings match exports
+        run: |
+          python tools/check_sys_exports.py
+
+      - name: Configure CMake
+        run: >
+          emcmake cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target rm_lines_wasm
+
+      - name: Gather files into temp dir
+        shell: bash
+        run: |
+          mkdir -p artifact
+          mv "${{ steps.strings.outputs.build-output-dir }}/rm_lines_wasm.js" artifact/
+          mv "${{ steps.strings.outputs.build-output-dir }}/rm_lines_wasm.wasm" artifact/
+          mv "${{ steps.strings.outputs.build-output-dir }}/rm_lines_wasm.wasm.map" artifact/
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: web
+          path: |
+            artifact/rm_lines_wasm.*
+          retention-days: 5
+
+  verify-npm-arch:
+    name: Verify NPM package on ${{ matrix.arch }}
+    needs: build-web
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: x64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all the dists
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts/
+
+      - name: Assemble sys package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SYS_DIR="rm_lines_wasm_sys"
+          mkdir -p "$SYS_DIR"
+
+          find artifacts -type f \( \
+            -name "rm_lines_wasm.js" -o \
+            -name "rm_lines_wasm.wasm" -o \
+            -name "rm_lines_wasm.wasm.map" \
+          \) -exec cp {} "$SYS_DIR/" \;
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Validate NPM pack output
+        shell: bash
+        working-directory: rm_lines_wasm_sys
+        run: |
+          set -euo pipefail
+          npm pkg get name
+          npm pkg get version
+          npm pack --dry-run
+
+  create-release:
+    name: Create Release
+    needs:
+      - build-sys
+      - build-web
+      - verify-npm-arch
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -235,14 +355,19 @@ jobs:
         with:
           path: artifacts/
 
-      - name: Create Draft Release
+      - name: Create Release
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: latest-draft
-          body: "Ref: ${{ github.ref_name }}."
-          name: Lib rMLines Draft Release
+          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', github.run_number) }}
+          name: ${{ github.ref_type == 'tag' && github.ref_name || format('Build {0}', github.run_number) }}
+          body: |
+            Automated release for `${{ github.ref_name }}`.
+
+            Commit: `${{ github.sha }}`
+            Run: #${{ github.run_number }}
           files: artifacts/**/*
-          prerelease: true
+          draft: false
+          prerelease: ${{ github.ref_type != 'tag' }}
 
   publish-to-pypi:
     name: >-
@@ -269,3 +394,73 @@ jobs:
           find artifacts -type f -name "*.whl" -exec mv {} dist/ \;
       - name: Publish distribution 📦 to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
+
+  publish-to-npm:
+    name: >-
+      Publish Sys Package to NPM
+    if: startsWith(github.ref, 'refs/tags/')  # only publish to NPM on tag pushes
+    needs:
+      - build-web
+      - verify-npm-arch
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+    permissions:
+      contents: read
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+      - uses: actions/checkout@v6
+      - name: Download all the dists
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts/
+
+      - name: Assemble sys package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SYS_DIR="rm_lines_wasm_sys"
+
+          # ensure clean state
+          mkdir -p "$SYS_DIR"
+
+          # copy wasm artifacts safely
+          find artifacts -type f \( \
+            -name "rm_lines_wasm.js" -o \
+            -name "rm_lines_wasm.wasm" -o \
+            -name "rm_lines_wasm.wasm.map" \
+          \) -exec cp {} "$SYS_DIR/" \;
+
+          ls -R "$SYS_DIR"
+
+      - name: Extract version from tag
+        id: version
+        shell: bash
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"   # v1.3.5 -> 1.3.5
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Sync package.json version
+        shell: bash
+        run: |
+          cd rm_lines_wasm_sys
+          npm version "${{ steps.version.outputs.VERSION }}" --no-git-tag-version
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org/
+          package-manager-cache: false
+
+      - name: Publish to npm (trusted publishing)
+        working-directory: rm_lines_wasm_sys
+        run: |
+          set -euo pipefail
+          npm pkg get name
+          npm pkg get version
+          npm publish --provenance --access public
+
