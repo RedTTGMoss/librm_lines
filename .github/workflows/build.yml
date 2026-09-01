@@ -54,7 +54,8 @@ jobs:
           - os: 'windows'
             runner: 'windows-latest'
             target: 'x86_64-pc-windows-msvc'
-            cmake_platform: 'x64'
+            msvc_arch: 'x64'
+            cmake_generator: 'Ninja'
             build_type: 'Release'
             run_tests: true
             build_wheel: true
@@ -62,7 +63,8 @@ jobs:
           - os: 'windows'
             runner: 'windows-11-arm'
             target: 'aarch64-pc-windows-msvc'
-            cmake_platform: 'ARM64'
+            msvc_arch: 'arm64'
+            cmake_generator: 'Ninja'
             build_type: 'Release'
             run_tests: true
             build_wheel: true
@@ -111,6 +113,12 @@ jobs:
       - name: Set up sccache
         uses: mozilla-actions/sccache-action@v0.0.11
 
+      - name: Set up MSVC (Windows only)
+        if: runner.os == 'Windows'
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.msvc_arch }}
+
       - name: Cache CMake dependencies (FetchContent)
         uses: actions/cache@v6
         with:
@@ -123,10 +131,10 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ${{ steps.strings.outputs.build-output-dir }}
-          key: ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-${{ github.ref_name }}-${{ hashFiles('**/CMakeLists.txt', 'rm_lines/**') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.msvc_arch }}-${{ matrix.c_compiler || matrix.msvc_arch }}-${{ github.ref_name }}-${{ hashFiles('**/CMakeLists.txt', 'rm_lines/**') }}
           restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-${{ github.ref_name }}-
-            ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-
+            ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.msvc_arch }}-${{ matrix.c_compiler || matrix.msvc_arch }}-${{ github.ref_name }}-
+            ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.msvc_arch }}-${{ matrix.c_compiler || matrix.msvc_arch }}-
 
       - name: Configure CMake
         shell: bash
@@ -142,7 +150,7 @@ jobs:
           CMAKE_CMD=(cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${{ matrix.build_type }}" -DFETCHCONTENT_BASE_DIR="$FETCHCONTENT_DIR")
 
           if [ "${{ runner.os }}" = "Windows" ]; then
-            CMAKE_CMD+=(-A "${{ matrix.cmake_platform }}" -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_C_COMPILER_LAUNCHER=sccache)
+            CMAKE_CMD+=(-G "${{ matrix.cmake_generator }}" -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_C_COMPILER_LAUNCHER=sccache)
           else
             CMAKE_CMD+=(-DCMAKE_CXX_COMPILER="${{ matrix.cpp_compiler }}" -DCMAKE_C_COMPILER="${{ matrix.c_compiler }}" -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_C_COMPILER_LAUNCHER=sccache)
           fi
@@ -150,8 +158,7 @@ jobs:
           "${CMAKE_CMD[@]}" -S "$SOURCE_DIR"
 
       - name: Build
-        # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rm_lines
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target rm_lines
 
       - name: Update version
         shell: bash
@@ -209,7 +216,7 @@ jobs:
               mv "${{ steps.strings.outputs.build-output-dir }}/librm_lines.dylib" artifact/
               ;;
             windows*)
-              mv "${{ steps.strings.outputs.build-output-dir }}/${{ matrix.build_type }}/rm_lines.dll" artifact/
+              mv "${{ steps.strings.outputs.build-output-dir }}/rm_lines.dll" artifact/
               ;;
           esac
 
@@ -286,14 +293,6 @@ jobs:
           restore-keys: |
             linux-wasm-cmake-deps-
 
-      - name: Cache CMake build files
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.strings.outputs.build-output-dir }}
-          key: linux-wasm-emscripten-${{ github.ref_name }}-${{ hashFiles('**/CMakeLists.txt', 'rm_lines/**', 'rm_lines_wasm_sys/**') }}
-          restore-keys: |
-            linux-wasm-emscripten-${{ github.ref_name }}-
-            linux-wasm-emscripten-
 
       - name: Check sys bindings match exports
         shell: bash
