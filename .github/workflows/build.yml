@@ -425,18 +425,34 @@ jobs:
           path: artifacts/
 
       - name: Create Release
+        if: github.ref_type == 'tag'
         uses: softprops/action-gh-release@v3
         with:
-          tag_name: ${{ github.ref_type == 'tag' && github.ref_name || format('build-{0}', github.run_number) }}
-          name: ${{ github.ref_type == 'tag' && github.ref_name || format('Build {0}', github.run_number) }}
+          tag_name: ${{ github.ref_name }}
+          name: Lib rMLines Release ${{ github.ref_name }}
           body: |
-            Automated release for `${{ github.ref_name }}`.
+            Release ${{ github.ref_name }}
 
             Commit: `${{ github.sha }}`
             Run: #${{ github.run_number }}
           files: artifacts/**/*
           draft: false
-          prerelease: ${{ github.ref_type != 'tag' }}
+          prerelease: true
+
+      - name: Create Draft Release
+        if: github.ref_type != 'tag'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: Lib rMLines Draft Release ${{ github.ref_name }}
+          body: |
+            Release ${{ github.ref_name }}
+
+            Commit: `${{ github.sha }}`
+            Run: #${{ github.run_number }}
+          files: artifacts/**/*
+          draft: true
+          prerelease: false
 
   publish-to-pypi:
     name: >-
