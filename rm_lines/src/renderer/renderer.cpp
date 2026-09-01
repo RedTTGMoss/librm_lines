@@ -30,6 +30,10 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
     prepareTextDocument();
     calculateAnchors();
 
+    if (sceneTree->hasText()) {
+        this->textRenderer = new TextRenderer(this);
+    }
+
     for (auto &layer: layers) {
         initSizeTracker(layer.groupId);
         groupLayerItems(layer, LAYER_INFO_NODE, layer.groupId);
@@ -72,7 +76,8 @@ void Renderer::calculateAnchors() {
 
     // Map special anchors
     anchors[ANCHOR_ID_START] = TEXT_TOP_Y; // You expect this to be 0 but actually the text area starts a bit lower
-    anchors[ANCHOR_ID_END] = paperSize.second;
+    anchors[ANCHOR_ID_END] = TEXT_TOP_Y;
+    // logDebug(std::format("Anchor text start: {} end: {}", TEXT_TOP_Y, paperSize.second));
 
     // Check for the root text
     if (!sceneTree->hasText()) return;
@@ -82,19 +87,25 @@ void Renderer::calculateAnchors() {
     int posY = 0;
 
     // Calculate the anchors
+    ParagraphStyle prevStyle = TextTop;
     for (const auto &paragraph: textDocument.paragraphs) {
         // Get the height for this paragraph style
-        const auto styleHeight = paragraph.style.value.getLineHeight();
+        const auto styleHeight = paragraph.style.value.styleHeight(prevStyle);
+        prevStyle = paragraph.style.value.getStyle();
         yOffset += styleHeight;
+
+        // Save the anchor for this paragraph
+        anchors[paragraph.startId] = posY; // The start ID is the `\n` which counts to the last posY
 
         posY = yOffset;
 
-        // Save the anchor for this paragraph
-        anchors[paragraph.startId] = posY;
-        // logDebug(std::format("Anchor for paragraph {}: {}", paragraph.startId.repr(), posY));
+        anchors[ANCHOR_ID_END] = std::max<float>(anchors[ANCHOR_ID_END], posY);
+        // logDebug(std::format("Anchor for paragraph {}: {} (height added: {})", paragraph.startId.repr(), posY,
+        //                      styleHeight));
         for (const auto &formattedText: paragraph.contents) {
             for (const auto &characterId: formattedText.characterIDs) {
                 anchors[characterId] = posY;
+                // logDebug(std::format("- Anchor for character {}", characterId.repr()));
             }
         }
         // ReSharper disable once CppNoDiscardExpression
@@ -104,12 +115,16 @@ void Renderer::calculateAnchors() {
 
 void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId groupId, int offsetX, int offsetY) {
     const auto nodes = sceneTree->getGroupChildren(groupId);
-    if (const auto group = sceneTree->getNode(groupId); group->anchorId.has_value()) {
+    const auto group = sceneTree->getNode(groupId);
+    if (group->anchorId.has_value()) {
         offsetX += group->anchorOriginX.value().value;
         if (!anchors.contains(group->anchorId.value().value)) {
             logError(std::format("need anchor id {}", group->anchorId.value().value.repr()));
             throw std::runtime_error("fix this file first");
         }
+        // logDebug(std::format("Anchor for group {}: {}: {} (originX: {})", groupId.repr(),
+        //                      group->anchorId.value().value.repr(), anchors[group->anchorId.value().value],
+        //                      group->anchorOriginX.value().value));
         offsetY = anchors[group->anchorId.value().value];
     }
     for (const auto &node: nodes) {
@@ -123,6 +138,10 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
             for (const auto point: line.value.value().points) {
                 auto x = point.x + offsetX;
                 auto y = point.y + offsetY;
+                // if (offsetY) {
+                //     logDebug(std::format("OffsetY: {} for line {} point ({}, {}) AnchorID: {}", offsetY,
+                //                          line.itemId.repr(), x, y, group->anchorId.value().value.repr()));
+                // }
                 // ReSharper disable once CppNoDiscardExpression
                 trackX(layer.groupId, x);
                 trackY(layer.groupId, y);
@@ -148,6 +167,16 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
                 .image = std::move(image.value.value()),
                 .groupId = groupId,
                 .itemId = image.itemId,
+                .offsetX = trackX(layer.groupId, offsetX),
+                .offsetY = trackY(layer.groupId, offsetY),
+            });
+        } else if (std::holds_alternative<CrdtSequenceItem<GlyphRange> >(node)) {
+            auto glyphRange = std::get<CrdtSequenceItem<GlyphRange> >(node);
+            if (!glyphRange.value.has_value()) continue;
+            layer.glyphRanges.push_back(LayerInfo::GlyphRangeInfo{
+                .glyphRange = std::move(glyphRange.value.value()),
+                .groupId = groupId,
+                .itemId = glyphRange.itemId,
                 .offsetX = trackX(layer.groupId, offsetX),
                 .offsetY = trackY(layer.groupId, offsetY),
             });
@@ -188,6 +217,16 @@ json Renderer::getLayers() const {
     return j;
 }
 
+json Renderer::getLayerFull(const CrdtId layerId) const {
+    for (const auto &layer: layers) {
+        if (layer.groupId == layerId) {
+            json j = layer.toJsonFull();
+            return j;
+        }
+    }
+    return nullptr;
+}
+
 float Renderer::getTextMargin() const {
     return frameSize.halfX() - getTextWidth() / 2;
 }
@@ -195,9 +234,13 @@ float Renderer::getTextMargin() const {
 float Renderer::getTextWidth() const {
     // The size of the text is based on the rM2
     // We need to scale it relative to the paperSize
+
     const float screenRelative = frameSize.x / BASE_PAPER_SIZE_X;
-    const float width = textDocument.text->width.value;
-    return width * screenRelative;
+    float width = textDocument.text->width.value;
+    if (width <= 0) {
+        return textDocument.text->posX * -2 + TEXT_WIDTH_ALIGN; // Margin * -2 to reverse the signs
+    }
+    return width * screenRelative + TEXT_WIDTH_ALIGN;
 }
 
 void Renderer::toMd(std::ostream &stream) const {
@@ -288,7 +331,7 @@ void Renderer::toMd(std::ostream &stream) const {
     }
 }
 
-void Renderer::toRM(std::ostream &stream) const {
+void Renderer::toRM(std::ostream &stream) {
     auto writer = TaggedBlockWriter(stream, this);
     if (!writer.buildRM()) {
         logError("Failed to build RM file!");
@@ -311,11 +354,11 @@ void Renderer::toHtml(std::ostream &stream) {
     stream << HTML_FOOTER;
 }
 
-void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, Vector frameSize,
+void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, Vector renderSize,
                         const Vector bufferSize, const bool antialias) {
     const auto buf = &stroker.raster.raster.fill.buffer;
     const auto lineBuf = &stroker.raster.raster.fill.lineBuffer;
-    const auto scale = bufferSize / frameSize;
+    const auto scale = bufferSize / renderSize;
 
     position *= -1; // It's technically an offset
 
@@ -330,11 +373,13 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
     stroker.raster.x1 = static_cast<float>(buf->width);
     stroker.raster.y1 = static_cast<float>(buf->height);
 
-    // TODO: render the text
+    if (config.enableBackdrop && backdrop.data) {
+        RendererImage::renderBackdrop(*buf, backdrop, position, this->frameSize, scale);
+    }
 
-    for (const auto &layer: layers) {
+    for (const auto &layer: filtered_layers()) {
         // For each layer, each line, each point
-        for (const auto &line: layer.lines) {
+        for (const auto &line: filtered_lines(layer)) {
             bool first = true;
             stroker.raster.raster.fill.line = &line.line;
             stroker.raster.raster.fill.newLine();
@@ -359,33 +404,20 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             }
             stroker.finish();
         }
-        for (const auto &image: layer.images) {
-            stroker.raster.raster.fill.baseColor = Color(255, 0, 255, 255);
-            stroker.raster.raster.fill.debugTool(3.0f);
-            double startX, startY;
-            for (int i = 0; i < image.image.vertices.size(); i += 4) {
-                auto x = position.x + image.image.vertices[i] + image.offsetX + this->frameSize.x / 2;
-                auto y = position.y + image.image.vertices[i + 1] + image.offsetY;
-                x *= scale.x;
-                y *= scale.y;
-                if (i == 0) {
-                    startX = x;
-                    startY = y;
-                    stroker.moveTo(x, y);
-                } else {
-                    stroker.lineTo(x, y);
+        if (config.enableImages) {
+            for (auto &image: layer.images) {
+                const auto textureIt = imageRefMap.find(image.image.imageRef.value);
+                if (textureIt == imageRefMap.end() || !textureIt->second || !textureIt->second->data) {
+                    if (!image.warning) {
+                        logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
+                        image.warning = true;
+                    }
+                    RendererImage::renderImageError(*buf, image, position, this->frameSize, scale);
+                    continue;
                 }
-            }
-            stroker.lineTo(startX, startY);
-            stroker.finish();
 
-            const auto textureIt = imageRefMap.find(image.image.imageRef.value);
-            if (textureIt == imageRefMap.end() || !textureIt->second || !textureIt->second->data) {
-                logError(std::format("Image texture {} not loaded", image.image.imageRef.value));
-                continue;
+                RendererImage::renderImage(*buf, *textureIt->second, image, position, this->frameSize, scale);
             }
-
-            RendererImage::renderImage(*buf, *textureIt->second, image, position, this->frameSize, scale);
         }
         if (getDebugMode()) {
             const DocumentSizeTracker *sizeTracker = getSizeTracker(layer.groupId);
@@ -423,44 +455,47 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
 
             // Make basic test tool and a point
 
-            stroker.raster.raster.fill.baseColor = Color(150, 0, 150, 255);
+            stroker.raster.raster.fill.baseColor = Color(150, 0, 150, 200);
             stroker.raster.raster.fill.debugTool(5.0f);
 
-            // Draw a rect and cross of the frame
+            // Draw a rect and cross of the frame (just the paper size)
             stroker.moveTo(left, top);
             stroker.lineTo(right, top);
             stroker.lineTo(right, bottom);
             stroker.lineTo(left, bottom);
             stroker.lineTo(left, top);
             stroker.lineTo(right, bottom);
+
             stroker.moveTo(right, top);
             stroker.lineTo(left, bottom);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(0, 150, 150);
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 150, 200);
             top = (position.y + sizeTracker->getTop()) * scale.y;
             bottom = (position.y + sizeTracker->getBottom()) * scale.y;
             left = (position.x + sizeTracker->getLeft()) * scale.x;
             right = (position.x + sizeTracker->getRight()) * scale.x;
 
+            // Draw a rect and cross of the size tracker area
             stroker.moveTo(left, top);
             stroker.lineTo(right, top);
             stroker.lineTo(right, bottom);
             stroker.lineTo(left, bottom);
             stroker.lineTo(left, top);
             stroker.lineTo(right, bottom);
+
             stroker.moveTo(right, top);
             stroker.lineTo(left, bottom);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(150, 0, 0);
+            stroker.raster.raster.fill.baseColor = Color(150, 0, 0, 200);
             stroker.moveTo(x, 0);
             stroker.lineTo(x, buf->height);
             stroker.moveTo(0, y);
             stroker.lineTo(buf->width, y);
             stroker.finish();
 
-            stroker.raster.raster.fill.baseColor = Color(0, 150, 0);
+            stroker.raster.raster.fill.baseColor = Color(0, 150, 0, 200);
             stroker.moveTo(x2, 0);
             stroker.lineTo(x2, buf->height);
             stroker.moveTo(0, y2);
@@ -468,8 +503,14 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
             stroker.finish();
 
             bool alternate = true;
-            for (auto anchor: anchors | std::views::values) {
-                if (alternate)
+
+            // Draw lines for every anchor, in alternating colors
+            for (auto &[anchorId, anchor]: anchors) {
+                stroker.raster.raster.fill.debugToolSetWidth(5.0f);
+                if (anchorId == ANCHOR_ID_START || anchorId == ANCHOR_ID_END) {
+                    stroker.raster.raster.fill.baseColor = Color(255, 150, 150, 255);
+                    stroker.raster.raster.fill.debugToolSetWidth(10.0f);
+                } else if (alternate)
                     stroker.raster.raster.fill.baseColor = Color(150, 200, 0, 200);
                 else
                     stroker.raster.raster.fill.baseColor = Color(150, 150, 255, 200);
@@ -485,6 +526,40 @@ void Renderer::getFrame(uint32_t *data, const size_t dataSize, Vector position, 
                     stroker.lineTo(buf->width, (position.y + anchor) * scale.y);
                 }
                 stroker.finish();
+            }
+
+            // Draw debug rects of the image vertices
+            for (const auto &image: layer.images) {
+                stroker.raster.raster.fill.baseColor = Color(255, 0, 255, 255);
+                stroker.raster.raster.fill.debugTool(3.0f);
+                double startX, startY;
+                for (int i = 0; i < image.image.vertices.size(); i += 4) {
+                    auto x = position.x + image.image.vertices[i] + image.offsetX + this->frameSize.x / 2;
+                    auto y = position.y + image.image.vertices[i + 1] + image.offsetY;
+                    x *= scale.x;
+                    y *= scale.y;
+                    if (i == 0) {
+                        startX = x;
+                        startY = y;
+                        stroker.moveTo(x, y);
+                    } else {
+                        stroker.lineTo(x, y);
+                    }
+                }
+                stroker.lineTo(startX, startY);
+                stroker.finish();
+            }
+        }
+    }
+    if (config.enableText && sceneTree->hasText()) {
+        this->textRenderer->renderText(stroker.raster.raster.fill.position, scale);
+        if (config.enableGlyphHighlights) {
+            for (const auto &layer: filtered_layers()) {
+                if (layer.glyphRanges.empty()) continue;
+                for (const auto &glyphRange: layer.glyphRanges) {
+                    this->textRenderer->renderGlyphHighlights(stroker.raster.raster.fill.position, scale,
+                                                              glyphRange.glyphRange);
+                }
             }
         }
     }
@@ -519,4 +594,13 @@ void Renderer::setTemplate(const std::string &templateName) {
 void Renderer::addImage(const char *uuid, const char *path) {
     auto ref = ImageRef::load(path);
     imageRefMap[uuid] = std::make_shared<ImageRef>(ref);
+}
+
+void Renderer::setBackdrop(const uint8_t *data, const size_t size, const uint32_t width, const uint32_t height,
+                           const uint32_t stride) {
+    backdrop.data = data;
+    backdrop.size = size;
+    backdrop.width = width;
+    backdrop.height = height;
+    backdrop.stride = stride;
 }

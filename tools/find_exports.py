@@ -5,9 +5,11 @@ from pathlib import Path
 
 src_dir = Path(sys.argv[1])
 
-# ONLY match EXPORT functions (your macro already expands extern "C")
+# Match EXPORT function declarations/definitions, including multi-token return
+# types such as `const char *` and signatures that span multiple lines.
 pattern = re.compile(
-    r'EXPORT\s+[^\s]+\s+([a-zA-Z_][a-zA-Z0-9_]*)\s*\('
+    r'\bEXPORT\b(?:(?![;{}]).)*?\b([a-zA-Z_][a-zA-Z0-9_]*)\s*\(',
+    re.DOTALL,
 )
 
 exports = set()
@@ -15,7 +17,12 @@ exports = set()
 for file in src_dir.rglob("*"):
     if file.suffix in [".cpp", ".h", ".hpp"]:
         text = file.read_text(errors="ignore")
-        exports.update(pattern.findall(text))
+        # Ignore preprocessor directives so `#define EXPORT ...` is never
+        # mistaken for an exported function declaration.
+        filtered_text = "\n".join(
+            line for line in text.splitlines() if not line.lstrip().startswith("#")
+        )
+        exports.update(pattern.findall(filtered_text))
 
 exports = sorted(exports)
 
@@ -23,10 +30,10 @@ exports = sorted(exports)
 Path("exports.txt").write_text("\n".join(exports))
 
 # wasm export format (_ prefix required)
-flags = ",".join([f"_{e}" for e in exports])
+flags = ["_malloc", "_free", *[f"_{e}" for e in exports]]
 
 Path("exported_functions.txt").write_text(
-    f"-s EXPORTED_FUNCTIONS=[_malloc,_free,{flags}]\n"
+    f"-s EXPORTED_FUNCTIONS=[{','.join(flags)}]\n"
 )
 
 print(f"Found EXPORT functions: {len(exports)}")

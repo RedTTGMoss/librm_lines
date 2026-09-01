@@ -128,13 +128,21 @@ json Text::toJson() const {
     for (const auto &style: styles) {
         stylesJson.push_back(textFormatToJson(style));
     }
+    const auto itemsJson = items.toJson();
     return {
-        {"items", items.toJson()},
+        {"items", itemsJson.is_null() ? json::object() : itemsJson},
         {"styles", stylesJson},
         {"posX", posX},
         {"posY", posY},
         {"width", width.toJson()},
     };
+}
+
+void Text::prepStyleMap() {
+    styleMap.clear();
+    for (const auto &[id, val]: styles) {
+        styleMap[id] = val;
+    }
 }
 
 bool Point::read(TaggedBlockReader *reader, uint8_t version) {

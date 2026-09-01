@@ -16,5 +16,15 @@ namespace LayerInfo {
         CrdtId itemId;
         float offsetX;
         float offsetY;
+        // Used for warnings of texture not loaded
+        mutable bool warning;
+    };
+
+    struct GlyphRangeInfo {
+        GlyphRange glyphRange;
+        CrdtId groupId;
+        CrdtId itemId;
+        float offsetX;
+        float offsetY;
     };
 }

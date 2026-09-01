@@ -37,10 +37,46 @@ public:
         };
     }
 
+    json toJsonFull() const {
+        auto j = toJson();
+        j["lines"] = json::array();
+        for (const auto &line: lines) {
+            j["lines"].push_back({
+                {"line", line.line.toJson()},
+                {"groupId", line.groupId.toJson()},
+                {"itemId", line.itemId.toJson()},
+                {"offsetX", line.offsetX},
+                {"offsetY", line.offsetY}
+            });
+        }
+        j["images"] = json::array();
+        for (const auto &image: images) {
+            j["images"].push_back({
+                {"image", image.image.toJson()},
+                {"groupId", image.groupId.toJson()},
+                {"itemId", image.itemId.toJson()},
+                {"offsetX", image.offsetX},
+                {"offsetY", image.offsetY}
+            });
+        }
+        j["glyphRanges"] = json::array();
+        for (const auto &glyphRange: glyphRanges) {
+            j["glyphRanges"].push_back({
+                {"glyphRange", glyphRange.glyphRange.toJson()},
+                {"groupId", glyphRange.groupId.toJson()},
+                {"itemId", glyphRange.itemId.toJson()},
+                {"offsetX", glyphRange.offsetX},
+                {"offsetY", glyphRange.offsetY}
+            });
+        }
+        return j;
+    }
+
     CrdtId groupId;
     bool visible;
     std::vector<LayerInfo::LineInfo> lines;
     std::vector<LayerInfo::ImageInfo> images;
+    std::vector<LayerInfo::GlyphRangeInfo> glyphRanges;
 
 private:
     SceneTree *tree;

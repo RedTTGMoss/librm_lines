@@ -210,7 +210,10 @@ bool processFile(const std::string &filename, const std::string &path) {
             }
 
             // Export the original text items in json
-            rawTextFilePtr << "\n\n" << textCopy->items.toJson().dump(4);
+            rawTextFilePtr << "\nEXPANDED\n" << textCopy->items.toJson().dump(4);
+            textCopy->items.compactTextItems();
+            rawTextFilePtr << "\nCOMPACTED\n" << textCopy->items.toJson().dump(4);
+            textCopy->items.expandTextItems();
 
             // Export the text to python symbols for testing
             textExpandPythonFilePtr << "[";
@@ -351,6 +354,20 @@ int main(const int argc, char *argv[]) {
         }
         // Iterate over the directory entries for draw tests
         for (const fs::path dirPath = "./draw_files"; const auto &entry: fs::directory_iterator(dirPath)) {
+            std::string filename = entry.path().filename().string();
+            if (fileFilter.has_value() && filename != fileFilter.value()) {
+                continue;
+            }
+            std::string file = entry.path().string();
+            if (!file.ends_with(".rm")) {
+                std::cerr << "File " << file << " is not a LINES file" << std::endl;
+                return -1;
+            }
+            if (!processFile(filename.substr(0, filename.length() - 3), file))
+                std::cerr << "Failed to process file " << filename << std::endl;
+        }
+        // Iterate over the directory entries for rm
+        for (const fs::path dirPath = RM_OUT; const auto &entry: fs::directory_iterator(dirPath)) {
             std::string filename = entry.path().filename().string();
             if (fileFilter.has_value() && filename != fileFilter.value()) {
                 continue;

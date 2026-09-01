@@ -21,6 +21,52 @@ constexpr Color getColorFromPalette(const PenColor penColor) {
     }
 }
 
+constexpr Color getHighlighterColorFromPalette(const PenColor penColor) {
+    switch (penColor) {
+        case GRAY_OVERLAP: return Color(0, 0, 0, 64);
+        case YELLOW: return Color(255, 237, 117, 255);
+        case GREEN: return Color(169, 250, 92, 255);
+        case PINK: return Color(255, 85, 207, 255);
+        default: return Color(255, 0, 0, 255);
+    }
+}
+
+inline Color blendDarken(const Color base, const Color blend) {
+    const float source_alpha = (blend.alpha / 255.0f);
+    const float base_alpha = base.alpha / 255.0f;
+
+    const float output_alpha =
+            source_alpha + base_alpha * (1.0f - source_alpha);
+
+    if (output_alpha <= 0.0f)
+        return Color{0, 0, 0, 0};
+
+    const uint8_t red = static_cast<uint8_t>(
+        (std::min(base.red, blend.red) * source_alpha +
+         base.red * base_alpha * (1.0f - source_alpha)) /
+        output_alpha
+    );
+
+    const uint8_t green = static_cast<uint8_t>(
+        (std::min(base.green, blend.green) * source_alpha +
+         base.green * base_alpha * (1.0f - source_alpha)) /
+        output_alpha
+    );
+
+    const uint8_t blue = static_cast<uint8_t>(
+        (std::min(base.blue, blend.blue) * source_alpha +
+         base.blue * base_alpha * (1.0f - source_alpha)) /
+        output_alpha
+    );
+
+    return Color{
+        red,
+        green,
+        blue,
+        static_cast<uint8_t>(output_alpha * 255.0f)
+    };
+}
+
 inline Color blendMultiply(const Color base, const Color blend, const float blend_amount) {
     if (IS_LIKELY(base.alpha == 0)) {
         return blend;

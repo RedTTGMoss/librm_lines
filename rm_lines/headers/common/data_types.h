@@ -48,9 +48,12 @@ struct CrdtId {
 };
 
 constexpr auto BLANK_NODE = CrdtId{0, 0};
-constexpr auto ROOT_NODE = CrdtId{0, 1};
-constexpr auto ROOT_TEXT_NODE = CrdtId{0, 11};
-constexpr auto TEXT_START = CrdtId{1, 17};
+constexpr auto ROOT_NODE = CrdtId{0, 1}; // This is fixed.
+constexpr auto ROOT_TEXT_NODE = CrdtId{0, 11}; // This is fixed.
+constexpr auto TEXT_START = CrdtId{1, 17}; // This is invalid. ;)
+// The ID of text start is whatever the next ID is, for when the text is getting written
+// Usually if you create a blank doc and start typing, depending on the version
+// This might be the actual ID it ends up to be, after accounting for the rest of the data
 
 enum ParentTypes {
     TREE,
@@ -73,6 +76,22 @@ enum Side {
 
 
 static constexpr CrdtId END_MARKER(0, 0);
+// Used mainly for text to signal a START/END or a cutoff point
+// Cut off points are created when deleted text is present
+// The tablet will force itself to not destroy already created IDs, so it just snips the sections
+// before connecting them together again.
+// The first section points right to END and the deleted space points right to END too
+// Only the second section, which correctly points back to the cutoff is valid
+// The cutoff itself also points left to the first section
+// START <- first -> END
+// first <- cutoff -> END
+// The end result being the second section owning the path
+// START <- first <-| cutoff <-| second -> END
+// Where as before the cutoff, it would have looked like this
+// START <- first <-> second -> END
+// Effectively the cutoff is skipped this way
+// Check the raw_text output of "Test deleted text" to see this in action!
+static constexpr CrdtId NULL_MARKER(-1, -1); // Used internally
 
 
 template<typename T>
@@ -178,7 +197,7 @@ struct CrdtSequence {
     }
 
     [[nodiscard]] json toJson() const {
-        json j;
+        json j = json::object();
         // Iterate over the map and convert each item to JSON
 
         for (const auto &[key, value]: sequence) {
@@ -282,7 +301,12 @@ public:
 };
 
 enum ParagraphStyle {
+    // MAGIC VALUE
     MISSING = -1,
+    TextTop = -2, // Used for the style height from the TOP to the next line
+    END_STYLE_LIST = -473435454553,
+
+    // FILE VALUES
     BASIC = 0,
     PlainText = 1,
     Title = 2,
@@ -295,6 +319,14 @@ enum ParagraphStyle {
     CheckBoxTabChecked = 9,
     Numbered = 10,
     NumberedTab = 11,
+
+    // COUNT
+    PARAGRAPH_STYLES_COUNT
+};
+
+enum FontType {
+    Serif,
+    Sans
 };
 
 struct ParagraphStyleNew {
@@ -305,17 +337,36 @@ struct ParagraphStyleNew {
 
     ParagraphStyleNew() = default;
 
-    explicit ParagraphStyleNew(const ParagraphStyle legacy) : legacy(legacy) {
-        styleProperties = legacy;
+    explicit ParagraphStyleNew(const ParagraphStyle legacy) {
+        setStyle(legacy);
+    }
+
+    void setStyle(const ParagraphStyle _legacy) {
+        baseStyle = 2;
+        legacy = _legacy;
+        styleProperties = _legacy;
+        isLegacy = true;
     }
 
     int tabbed() const;
 
-    float getLineHeight() const;
+    float styleHeight(ParagraphStyle against = TextTop) const;
+
+    float styleMargin() const;
+
+    float fontSize() const;
 
     float getTabOffset() const;
 
+    std::string styleLabel() const;
+
     [[nodiscard]] json toJson() const;
+
+    FontType getFont() const;
+
+    // Aggregates OLD + New paragraph styles into one enum result
+    // Please use this instead of legacy, or you will get the wrong values.
+    ParagraphStyle getStyle() const;
 };
 
 // Templates for data types

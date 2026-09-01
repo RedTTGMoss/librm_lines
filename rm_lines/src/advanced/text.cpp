@@ -13,6 +13,7 @@ bool operator==(const std::string &str, const char rhs) {
     return str.size() == 1 && *str.begin() == rhs;
 }
 
+
 json TextFormattingOptions::toJson() const {
     return {
         {"bold", bold},
@@ -81,23 +82,30 @@ json Paragraph::toJson() const {
 void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
     text = _text;
     text->items.expandTextItems();
+    text->prepStyleMap();
     paragraphs.clear();
     const auto characterIDs = text->items.getSortedIds();
 
     TextFormattingOptions formatting;
 
     int i = 0;
+    bool hadFirst = false;
 
     while (i < characterIDs.size()) {
         // Initiate a new paragraph
         Paragraph paragraph;
 
         if (checkString(text->items[characterIDs[i]], "\n")) {
-            paragraph.startId = characterIDs[i];
-            i++;
+            if (!hadFirst) {
+                paragraph.startId = END_MARKER;
+            } else {
+                paragraph.startId = characterIDs[i];
+                i++;
+            }
         } else {
             paragraph.startId = END_MARKER;
         }
+        logDebug(std::format("Starting new paragraph at index {} with ID {}", i, paragraph.startId.repr()));
 
         FormattedText currentText;
         currentText.formatting = formatting;
@@ -110,6 +118,7 @@ void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
             } else {
                 auto characterString = std::get<std::string>(characterItem.value.value());
                 if (characterString == "\n") {
+                    logDebug(std::format("Found newline at index {} with ID {}", i, characterIDs[i].repr()));
                     break; // Time for the next paragraph
                 }
                 // assert(characterString.size() <= 1); This is not ideal due to utf8 encoding multiple bytes
@@ -148,7 +157,18 @@ void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
             paragraph.style = text->styleMap[paragraph.startId];
         }
         paragraphs.push_back(std::move(paragraph));
+        hadFirst = true;
     }
+}
+
+void TextDocument::updateInplace(int *nextId) {
+    // DEP: The idea here was to make it auto-convert paragraphs into text
+    // But this idea would fundamentally break updating existing text
+    // Working with the raw text data is necessary
+    if (!this->text) {
+        throw std::invalid_argument("Text is null");
+    }
+    text->items.expandTextItems();
 }
 
 Text TextDocument::toText() const {

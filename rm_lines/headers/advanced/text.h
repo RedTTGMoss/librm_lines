@@ -5,36 +5,24 @@
 #include "common/scene_items.h"
 
 struct Text;
-constexpr std::array<std::pair<ParagraphStyle, int>, 12> LineHeights = {
-    {
-        {BASIC, 100},
-        {PlainText, 71},
-        {Title, 150},
-        {Sub, 70},
-        {Bullet, 35},
-        {BulletTab, 35},
-        {CheckBox, 100},
-        {CheckBoxChecked, 100},
-        {CheckBoxTab, 100},
-        {CheckBoxTabChecked, 100},
-        {Numbered, 100}, // TODO: Update line height for numbered
-        {NumberedTab, 100}
-    }
-};
-
-constexpr float getStyleHeight(const ParagraphStyle style) {
-    for (const auto &[key, value]: LineHeights) {
-        if (key == style)
-            return static_cast<float>(value);
-    }
-    return static_cast<float>(LineHeights[0].second);
-}
+struct TextFormattingOptions;
 
 enum FormattingOptions {
     BOLD_ON = 1,
     BOLD_OFF = 2,
     ITALIC_ON = 3,
     ITALIC_OFF = 4,
+};
+
+enum TextColumnWidth {
+    ColumnNarrow,
+    ColumnMedium,
+    ColumnWide
+};
+
+struct FontStyle {
+    bool italic;
+    float weight;
 };
 
 constexpr CrdtId ANCHOR_ID_START(0, 281474976710654);
@@ -117,6 +105,8 @@ struct TextDocument {
     std::vector<Paragraph> paragraphs;
 
     void fromText(const std::shared_ptr<Text> &_text);
+
+    void updateInplace(int *nextId);
 
     Text toText() const;
 

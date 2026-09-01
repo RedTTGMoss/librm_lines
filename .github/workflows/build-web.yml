@@ -11,6 +11,9 @@ on:
       - '.github/workflows/build-web.yml'
       - 'tests/**'
       - 'rm_lines/**'
+      - 'rm_lines_sys/**'
+      - 'requirements.txt'
+      - 'tools/**'
   pull_request:
     branches: [ "main", "experimental" ]
 
@@ -24,6 +27,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+    # Skip the `latest-draft` tag to prevent recursive runs
+    if: github.ref_name != 'latest-draft'
     env:
       EM_VERSION: 5.0.1
       EM_CACHE_FOLDER: 'emsdk-cache'
@@ -60,6 +65,15 @@ jobs:
         with:
           python-version: '3.13'
           cache: 'pip'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Check sys bindings match exports
+        run: |
+          python tools/check_sys_exports.py
 
       - name: Configure CMake
         run: >

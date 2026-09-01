@@ -5,6 +5,7 @@
 #include <common/crdt_sequence_item.h>
 
 #include "advanced/text.h"
+#include "advanced/text_scale.h"
 
 std::string formatTextItem(const TextItem &textItem) {
     if (textItem.value.has_value()) {
@@ -141,13 +142,57 @@ int ParagraphStyleNew::tabbed() const {
     return 0; // Not tabbed
 }
 
-float ParagraphStyleNew::getLineHeight() const {
-    return getStyleHeight(legacy);
+float ParagraphStyleNew::styleHeight(const ParagraphStyle against) const {
+    return getStyleHeight(against, getStyle());
+}
+
+float ParagraphStyleNew::styleMargin() const {
+    return getStyleMargin(getStyle());
+}
+
+float ParagraphStyleNew::fontSize() const {
+    return getFontSize(getStyle());
 }
 
 float ParagraphStyleNew::getTabOffset() const {
-    constexpr float TAB_LENGTH = 10.0; // TODO: create a practical or dynamic tab length
+    // TODO: Might include to include additional tab offset for some styles
+    // These styles might account for check marks since they use a graphic
+    // The dotted and numbered styles can be integrated with special glyph adding code
     return TAB_LENGTH * tabbed();
+}
+
+std::string ParagraphStyleNew::styleLabel() const {
+    switch (getStyle()) {
+        case MISSING:
+            return "MISSING";
+        case BASIC:
+            return "BASIC";
+        case PlainText:
+            return "PlainText";
+        case Title:
+            return "Title";
+        case Sub:
+            return "Sub";
+        case Bullet:
+            return "Bullet";
+        case BulletTab:
+            return "BulletTab";
+        case CheckBox:
+            return "CheckBox";
+        case CheckBoxChecked:
+            return "CheckBoxChecked";
+        case CheckBoxTab:
+            return "CheckBoxTab";
+        case CheckBoxTabChecked:
+            return "CheckBoxTabChecked";
+        case Numbered:
+            return "Numbered";
+        case NumberedTab:
+            return "NumberedTab";
+        default:
+            return "UNKNOWN";
+    }
+    return "UNKNOWN";
 }
 
 std::string Color::repr() const {
@@ -266,16 +311,37 @@ json ParagraphStyleNew::toJson() const {
     return {
         {"legacyStyle", legacy},
         {"baseStyle", baseStyle},
-        {"styleProperties", styleProperties}
+        {"styleProperties", styleProperties},
+        {"isLegacy", isLegacy},
+        {"tabbed", tabbed()},
+        {"tabOffset", getTabOffset()},
+        {"_styleLabel", styleLabel()},
+
+        {"_styleHeight", styleHeight()},
+        {"_fontSize", fontSize()},
     };
+}
+
+FontType ParagraphStyleNew::getFont() const {
+    switch (getStyle()) {
+        case Title:
+            return Serif;
+        default:
+            return Sans;
+    }
+    return Sans;
+}
+
+ParagraphStyle ParagraphStyleNew::getStyle() const {
+    // TODO: Support Header style sub style (which uses serif)
+    // T (T) T t . . .
+    // ^ Style marker on tablet ^
+    return legacy;
 }
 
 template<>
 json LwwItem<ParagraphStyleNew>::valueToJson() const {
-    return {
-        {"characterId", timestamp.toJson()},
-        {"style", value.toJson()},
-    };
+    return value.toJson();
 }
 
 template<>

@@ -3,6 +3,7 @@
 
 #include "scene_tree.h"
 #include "scene_tree_export.h"
+#include "advanced/text.h"
 
 class LineBuilder;
 class TextBuilder;
@@ -35,12 +36,15 @@ public:
         return addImageInfo(filename, generateUUID());
     }
 
+    void setRootTextWidth(TextColumnWidth width);
+
     CrdtId addImage(const std::string &uuid, std::vector<AdvancedMath::Rect> vertices);
 
     CrdtId addImage(const std::string &uuid, const std::vector<AdvancedMath::Vector> &vertices);
 
     friend class LineBuilder;
-    TextBuilder *text;
+    friend class TextBuilder;
+    std::unique_ptr<TextBuilder> text;
 
 private:
     CrdtId currentLayer = ROOT_TEXT_NODE;
@@ -155,8 +159,70 @@ private:
 
 class TextBuilder {
 public:
-    explicit TextBuilder(Text *text);
+    explicit TextBuilder(const std::shared_ptr<Text> &_text, SceneTreeEditor *editor);
+
+    void addText(const std::string &text);
+
+    void setParagraphStyle(ParagraphStyle style);
 
 private:
-    Text *text;
+    ParagraphStyleNew *getParagraphStyle(const CrdtId id) {
+        return &text->styles[styleMap[id]].second.value;
+    }
+
+    CrdtId addNewParagraphStyle(const ParagraphStyleNew style) {
+        CrdtId id = editor->ids++;
+        text->styles.push_back({
+            endLastParagraph,
+            LwwItem(id, style)
+        });
+        styleMap[id] = text->styles.size() - 1;
+        currentStyleNode = id;
+        return id;
+    }
+
+    void addCharacters(const std::string &characters) {
+        // First strip the last line character if at the end
+        const bool hasNewline = !characters.empty() && characters.back() == '\n';
+
+        const CrdtId id = editor->ids++; // First ID
+        editor->ids += characters.size() - 1;
+        const CrdtId idEnd = editor->ids;
+        text->items.add(TextItem(id, leftId, END_MARKER, 0, characters));
+        leftId = editor->ids - 1; // Last ID
+        updateRight(id);
+        rightId = id;
+
+        // Flush current styles
+        if (currentStyleNode == NULL_MARKER)
+            addNewParagraphStyle(currentStyle);
+        if (hasNewline) {
+            currentStyleNode = NULL_MARKER; // Reset current styles if we have a newline
+            endLastParagraph = idEnd; // Update the last paragraph end ID
+            rightIdIsEnd = true; // End the paragraph with 0:0
+        } else {
+            rightIdIsEnd = false; // Not the end of the paragraph
+        }
+    }
+
+    void updateRight() const {
+        updateRight(leftId);
+    }
+
+    void updateRight(const CrdtId currentId) const {
+        if (!rightIdIsEnd && rightId != END_MARKER)
+            text->items[rightId].rightId = currentId;
+    }
+
+    SceneTreeEditor *editor;
+    std::shared_ptr<Text> text;
+    std::unordered_map<CrdtId, int> styleMap;
+
+    // Keeping track of state
+    ParagraphStyleNew currentStyle = ParagraphStyleNew(Title);
+    CrdtId currentStyleNode = NULL_MARKER;
+    CrdtId leftId = END_MARKER;
+    CrdtId rightId = END_MARKER;
+    CrdtId endLastParagraph = END_MARKER;
+    bool rightIdIsEnd = false;
 };

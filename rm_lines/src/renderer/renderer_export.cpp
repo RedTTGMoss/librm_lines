@@ -67,7 +67,7 @@ EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bo
 EXPORT int destroyRenderer(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return -1;
     }
     if (removeRenderer(rendererId)) {
@@ -81,7 +81,7 @@ EXPORT int destroyRenderer(const char *rendererId) {
 EXPORT const char *getParagraphs(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return "";
     }
     const json j = renderer->getParagraphs();
@@ -95,7 +95,7 @@ EXPORT const char *getParagraphs(const char *rendererId) {
 const char *getAnchors(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return "";
     }
     const json j = renderer->getAnchors();
@@ -109,7 +109,7 @@ const char *getAnchors(const char *rendererId) {
 const char *getLayers(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return "";
     }
     const json j = renderer->getLayers();
@@ -120,10 +120,25 @@ const char *getLayers(const char *rendererId) {
     return result.c_str();
 }
 
+const char *getLayerFull(const char *rendererId, const char *stringLayerId) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid rendererId provided");
+        return "";
+    }
+    const CrdtId layerCrdtId(stringLayerId);
+    const json j = renderer->getLayerFull(layerCrdtId);
+
+    thread_local std::string result;
+    result = j.dump();
+
+    return result.c_str();
+}
+
 bool textToMdFile(const char *rendererId, const char *outputFile) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return false;
     }
 
@@ -140,7 +155,7 @@ bool textToMdFile(const char *rendererId, const char *outputFile) {
 const char *textToMd(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return "";
     }
 
@@ -156,7 +171,7 @@ const char *textToMd(const char *rendererId) {
 bool textToTxtFile(const char *rendererId, const char *outputFile) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return false;
     }
 
@@ -173,7 +188,7 @@ bool textToTxtFile(const char *rendererId, const char *outputFile) {
 const char *textToTxt(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return "";
     }
 
@@ -189,7 +204,7 @@ const char *textToTxt(const char *rendererId) {
 bool textToHtmlFile(const char *rendererId, const char *outputFile) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return false;
     }
 
@@ -206,7 +221,7 @@ bool textToHtmlFile(const char *rendererId, const char *outputFile) {
 const char *textToHtml(const char *rendererId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return "";
     }
 
@@ -226,7 +241,7 @@ void getFrame(
     const int width, const int height, const bool antialias) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return;
     }
     renderer->getFrame(
@@ -238,23 +253,32 @@ void getFrame(
     );
 }
 
+RendererConfig *getConfig(const char *rendererId) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid rendererId provided");
+        return nullptr;
+    }
+    return &renderer->config;
+}
+
 void setTemplate(
     const char *rendererId, const char *templateName) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return;
     }
     renderer->setTemplate(templateName);
 }
 
-const char *getSizeTracker(const char *rendererId, const char *stringlayerId) {
+const char *getSizeTracker(const char *rendererId, const char *stringLayerId) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return "";
     }
-    const CrdtId layerId(stringlayerId);
+    const CrdtId layerId(stringLayerId);
     const json j = renderer->getSizeTracker(layerId)->toJson();
 
     thread_local std::string result;
@@ -266,8 +290,18 @@ const char *getSizeTracker(const char *rendererId, const char *stringlayerId) {
 void addImage(const char *rendererId, const char *uuid, const char *path) {
     const auto renderer = getRenderer(rendererId);
     if (!renderer) {
-        logError("Invalid treeId provided");
+        logError("Invalid rendererId provided");
         return;
     }
     renderer->addImage(uuid, path);
+}
+
+void setBackdrop(const char *rendererId, const uint8_t *data, size_t size, uint32_t width, uint32_t height,
+                 uint32_t stride) {
+    const auto renderer = getRenderer(rendererId);
+    if (!renderer) {
+        logError("Invalid rendererId provided");
+        return;
+    }
+    renderer->setBackdrop(data, size, width, height, stride);
 }

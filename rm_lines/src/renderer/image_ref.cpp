@@ -1,6 +1,12 @@
 #include "renderer/image_ref.h"
 #include "../../headers/stb/stb_image.h"
 
+ImageRef ImageRef::blank() {
+    static ImageRef imageRef;
+    imageRef.isBlank = true;
+    return imageRef;
+}
+
 ImageRef ImageRef::load(const char *fileName) {
     ImageRef imageRef;
     imageRef.data = std::shared_ptr<unsigned char>(

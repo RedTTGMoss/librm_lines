@@ -7,10 +7,12 @@
 #include <scene_tree/scene_tree.h>
 #include "advanced/layers.h"
 #include "advanced/text.h"
+#include "advanced/text_scale.h"
 #include <unordered_map>
 
 #include "image_ref.h"
-#define TEXT_TOP_Y (180)
+#include "image_renderer.h"
+#include "text/text_renderer.h"
 
 class Renderer;
 using ImageBuffer = RMLinesRenderer::ImageBuffer;
@@ -25,15 +27,35 @@ static constexpr CrdtId TEXT_LAYER{7, 1};
 
 typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 
+struct RendererConfig {
+    uint8_t configVersion = 2;
+    int8_t penWhitelist[20] = {};
+    int8_t penBlacklist[20] = {};
+    bool useWhitelist = false;
+    CrdtId disabledLayers[10] = {};
+    bool enableText = true;
+    bool enableImages = true;
+    bool enableGlyphHighlights = true;
+    bool enableBackdrop = true;
+
+    RendererConfig() {
+        std::ranges::fill(penWhitelist, -1);
+        std::ranges::fill(penBlacklist, -1);
+        std::ranges::fill(disabledLayers, END_MARKER);
+    }
+};
+
 class Renderer {
 public:
     TextDocument textDocument = TextDocument();
     std::unordered_map<CrdtId, uint32_t> anchors;
     std::vector<Layer> layers;
     IntPair paperSize;
+    RendererConfig config;
     bool landscape;
     PageType pageType;
     TemplateOperationFunction *templateFunction = nullptr;
+    TextRenderer *textRenderer;
     std::string templateName = "Blank";
 
     explicit Renderer(SceneTree *sceneTree, PageType pageType, bool landscape);
@@ -60,6 +82,8 @@ public:
 
     json getLayers() const;
 
+    json getLayerFull(CrdtId layerId) const;
+
     float getTextMargin() const;
 
     float getTextWidth() const;
@@ -67,13 +91,13 @@ public:
     // Exports
     void toMd(std::ostream &stream) const;
 
-    void toRM(std::ostream &stream) const;
+    void toRM(std::ostream &stream);
 
     void toTxt(std::ostream &stream) const;
 
     void toHtml(std::ostream &stream);
 
-    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector frameSize, Vector bufferSize,
+    void getFrame(uint32_t *data, size_t dataSize, Vector position, Vector renderSize, Vector bufferSize,
                   bool antialias);
 
     void setTemplate(const std::string &templateName);
@@ -90,13 +114,42 @@ public:
         return addImage(uuid.c_str(), path.c_str());
     }
 
+    void setBackdrop(const uint8_t *data, size_t size, uint32_t width, uint32_t height, uint32_t stride);
+
     friend class TaggedBlockWriter;
+    friend class TextRenderer;
 
 private:
     SceneTree *sceneTree;
     Vector frameSize;
+    Backdrop backdrop;
     std::unordered_map<std::string, std::shared_ptr<ImageRef> > imageRefMap;
     std::unordered_map<CrdtId, DocumentSizeTracker> sizeTrackers;
     RMLinesRenderer::Stroker<RMLinesRenderer::ClippedRaster<RMLinesRenderer::LerpRaster<rMPenFill> >,
         VaryingGeneratorLengthWidth> stroker;
+
+    auto filtered_layers() const {
+        return std::views::filter(layers, [this](const Layer &layer) -> bool {
+            return std::ranges::find(
+                       config.disabledLayers,
+                       layer.groupId
+                   ) == std::ranges::end(config.disabledLayers);
+        });
+    }
+
+    auto filtered_lines(const Layer &layer) const {
+        return std::views::filter(layer.lines, [this](const LayerInfo::LineInfo &line) -> bool {
+            if (config.useWhitelist) {
+                return std::ranges::find(
+                           config.penWhitelist,
+                           static_cast<int>(line.line.tool)
+                       ) != std::ranges::end(config.penWhitelist);
+            }
+
+            return std::ranges::find(
+                       config.penBlacklist,
+                       static_cast<int>(line.line.tool)
+                   ) == std::ranges::end(config.penBlacklist);
+        });
+    }
 };

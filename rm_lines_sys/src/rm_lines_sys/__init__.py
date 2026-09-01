@@ -3,6 +3,7 @@ import os
 import sys
 from logging import Logger
 from typing import Optional, Annotated
+from .types import C_CrdtId, C_RendererConfig
 
 logger = Logger("rm_lines_sys")
 MODULE_FOLDER = os.path.dirname(os.path.abspath(__file__))
@@ -12,70 +13,101 @@ MODULE_FOLDER = os.path.dirname(os.path.abspath(__file__))
 class LibAnnotations(ctypes.Structure):
     # Tree stuff
     def buildTree(self, file: bytes) -> bytes:
+        """Build the document tree from a file and return a tree ID."""
         pass
 
     def destroyTree(self, tree_id: bytes) -> int:
+        """Destroy the document tree and free any associated resources."""
         pass
 
     def convertToJsonFile(self, tree_id: bytes, json_file: bytes) -> bool:
+        """Convert the document tree to JSON and save it to a file."""
         pass
 
     def convertToJson(self, tree_id: bytes) -> bytes:
+        """Convert the document tree to JSON bytes."""
         pass
 
     def getSceneInfo(self, tree_id: bytes) -> bytes:
+        """Get the scene information, including paper size and other metadata."""
         pass
 
     def getImageInfo(self, tree_id: bytes) -> bytes:
+        """Get the list of images with basic information, including image UUIDs and paths."""
         pass
 
     # Renderer stuff
     def makeRenderer(self, tree_id: bytes, page_type: int, landscape: bool) -> bytes:
+        """Create a renderer for the given tree ID, page type, and orientation."""
         pass
 
     def destroyRenderer(self, renderer_id: bytes) -> int:
+        """Destroy the renderer and free any associated resources."""
         pass
 
     def getParagraphs(self, renderer_id: bytes) -> bytes:
+        """Get the list of paragraphs with full information, including text content and formatting."""
         pass
 
     def getAnchors(self, renderer_id: bytes) -> bytes:
+        """Get the list of anchors with basic information"""
         pass
 
     def getLayers(self, renderer_id: bytes) -> bytes:
+        """Get the list of layers with basic information"""
+        pass
+
+    def getLayerFull(self, renderer_id: bytes, layer_id: bytes) -> bytes:
+        """Get the full layer information and items for a specific layer ID."""
         pass
 
     def textToMdFile(self, renderer_id: bytes, md_file: bytes) -> bool:
+        """Export the text content of the document as markdown bytes to a file."""
         pass
 
     def textToMd(self, renderer_id: bytes) -> bytes:
+        """Export the text content of the document as markdown bytes."""
         pass
 
-    def textToTxtFile(self, renderer_id: bytes, md_file: bytes) -> bool:
+    def textToTxtFile(self, renderer_id: bytes, txt_file: bytes) -> bool:
+        """Export the text content of the document as plain text bytes to a file."""
         pass
 
     def textToTxt(self, renderer_id: bytes) -> bytes:
+        """Export the text content of the document as plain text bytes."""
         pass
 
     def textToHtmlFile(self, renderer_id: bytes, html_file: bytes) -> bool:
+        """Export the text content of the document as HTML bytes to a file."""
         pass
 
     def textToHtml(self, renderer_id: bytes) -> bytes:
+        """Export the text content of the document as HTML bytes."""
         pass
 
     def getFrame(self, renderer_id: bytes, data_buffer, data_size, x: int, y: int, frame_width: int, frame_height: int,
                  width: int, height: int, antialias: bool):
+        """Get the rendered frame for the given size and position, and store it in the provided data buffer."""
+        pass
+
+    def getConfig(self, renderer_id: bytes) -> C_RendererConfig:
+        """Get a pointer to the internal renderer configuration structure."""
         pass
 
     def setTemplate(self, renderer_id: bytes, template: bytes):
+        """Set the name of the template to apply to the rendered frame"""
         pass
 
     def getSizeTracker(self, renderer_id: bytes, layer_id: bytes) -> bytes:
-        """Get the size tracker for the library."""
+        """Get the size tracker information for a specific layer ID."""
         pass
 
     def addImage(self, renderer_id: bytes, image_uuid: bytes, image_path: bytes):
         """Include an image file for an image UUID"""
+        pass
+
+    def setBackdrop(self, renderer_id: bytes, data_buffer, data_size, width: int, height: int, stride: int):
+        """Set the backdrop image for the renderer."""
         pass
 
     # Library control functions
@@ -157,6 +189,10 @@ def load_lib() -> Optional[ctypes.CDLL]:
     _lib.getLayers.argtypes = [ctypes.c_char_p]
     _lib.getLayers.restype = ctypes.c_char_p
 
+    # Function getLayerFull(str, str) -> str
+    _lib.getLayerFull.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
+    _lib.getLayerFull.restype = ctypes.c_char_p
+
     # Function textToMdFile(str, str) -> bool
     _lib.textToMdFile.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
     _lib.textToMdFile.restype = ctypes.c_bool
@@ -185,6 +221,10 @@ def load_lib() -> Optional[ctypes.CDLL]:
     _lib.getFrame.argtypes = [ctypes.c_char_p, ctypes.POINTER(ctypes.c_uint32), ctypes.c_size_t, ctypes.c_int,
                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_bool]
 
+    # Function getConfig(str) -> C_RendererConfig
+    _lib.getConfig.argtypes = [ctypes.c_char_p]
+    _lib.getConfig.restype = ctypes.POINTER(C_RendererConfig)
+
     # Function setTemplate(str, str)
     _lib.setTemplate.argtypes = [ctypes.c_char_p, ctypes.c_char_p]
 
@@ -194,12 +234,24 @@ def load_lib() -> Optional[ctypes.CDLL]:
 
     # Function addImage(str, str, str)
     _lib.addImage.argtypes = [ctypes.c_char_p, ctypes.c_char_p, ctypes.c_char_p]
+    _lib.addImage.restype = None
+
+    # Function setBackdrop(void*, size_t, uint32_t, uint32_t, uint32_t)
+    _lib.setBackdrop.argtypes = [
+        ctypes.c_char_p,
+        ctypes.c_void_p,
+        ctypes.c_size_t,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+        ctypes.c_uint32,
+    ]
+    _lib.setBackdrop.restype = None
 
     # Function setDebugMode(bool)
     _lib.setDebugMode.argtypes = [ctypes.c_bool]
 
     # Function getDebugMode() -> bool
-    _lib.setDebugMode.restype = ctypes.c_bool
+    _lib.getDebugMode.restype = ctypes.c_bool
 
     return _lib
 
