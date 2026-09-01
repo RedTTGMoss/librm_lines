@@ -78,7 +78,7 @@ bool processFile(const std::string &filename, const std::string &path) {
     auto textCopy = tree->getText();
     std::optional<Renderer> renderer;
     try {
-        renderer = Renderer(tree.get(), NOTEBOOK, false);
+        renderer.emplace(tree.get(), NOTEBOOK, false);
     } catch (const std::exception &e) {
         logError(std::format("Failed to create renderer for file {}: {}", filename, e.what()));
         destroyTree(treeId);
@@ -318,6 +318,8 @@ int main(const int argc, char *argv[]) {
         setDebugMode(true);
         singleFile = true;
     }
+
+    setDebugMode(true);
 
     runColorAssertTest();
 
