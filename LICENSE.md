@@ -35,7 +35,7 @@ must provide clear attribution to the original project.
 The attribution must contain the following:
 
 ```
-rMLines
+LIB rMLines
 https://github.com/RedTTGMoss/librm_lines
 ```
 
