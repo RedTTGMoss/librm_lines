@@ -105,6 +105,56 @@ jobs:
           tag: latest-draft
           force_push_tag: true
 
+  verify-npm-arch:
+    name: Verify NPM package on ${{ matrix.arch }}
+    needs: build-sys
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - runner: ubuntu-latest
+            arch: x64
+          - runner: ubuntu-24.04-arm
+            arch: arm64
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download all the dists
+        uses: actions/download-artifact@v6
+        with:
+          path: artifacts/
+
+      - name: Assemble sys package
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          SYS_DIR="rm_lines_wasm_sys"
+          mkdir -p "$SYS_DIR"
+
+          find artifacts -type f \( \
+            -name "rm_lines_wasm.js" -o \
+            -name "rm_lines_wasm.wasm" -o \
+            -name "rm_lines_wasm.wasm.map" \
+          \) -exec cp {} "$SYS_DIR/" \;
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          package-manager-cache: false
+
+      - name: Validate NPM pack output
+        shell: bash
+        working-directory: rm_lines_wasm_sys
+        run: |
+          set -euo pipefail
+          npm pkg get name
+          npm pkg get version
+          npm pack --dry-run
+
   create-draft-release:
     name: Create Draft Release
     needs: build-sys
@@ -133,6 +183,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/')  # only publish to NPM on tag pushes
     needs:
       - build-sys
+      - verify-npm-arch
     runs-on: ubuntu-latest
     environment:
       name: npm
