@@ -26,6 +26,8 @@ jobs:
     runs-on: ${{ matrix.runner }}
     permissions:
       contents: write
+    env:
+      SCCACHE_GHA_ENABLED: 'true'
 
     strategy:
       fail-fast: true
@@ -106,41 +108,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set up compiler cache
-        id: compiler-cache
-        shell: bash
-        run: |
-          if [ "${{ runner.os }}" = "Windows" ]; then
-            echo "tool=clcache" >> $GITHUB_OUTPUT
-            echo "path=~/AppData/Local/clcache" >> $GITHUB_OUTPUT
-            echo "install=pip install clcache" >> $GITHUB_OUTPUT
-          else
-            echo "tool=ccache" >> $GITHUB_OUTPUT
-            echo "path=~/.cache/ccache" >> $GITHUB_OUTPUT
-            if [ "${{ runner.os }}" = "Linux" ]; then
-              echo "install=sudo apt-get update && sudo apt-get install -y ccache" >> $GITHUB_OUTPUT
-            else
-              echo "install=brew install ccache" >> $GITHUB_OUTPUT
-            fi
-          fi
-
-      - name: Install ${{ steps.compiler-cache.outputs.tool }}
-        shell: bash
-        run: |
-          if command -v ${{ steps.compiler-cache.outputs.tool }} &> /dev/null; then
-            echo "${{ steps.compiler-cache.outputs.tool }} already installed"
-          else
-            ${{ steps.compiler-cache.outputs.install }}
-          fi
-
-      - name: Cache compiler cache
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.compiler-cache.outputs.path }}
-          key: ${{ runner.os }}-${{ matrix.target }}-ccache-${{ github.ref_name }}-${{ github.run_id }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.target }}-ccache-${{ github.ref_name }}-
-            ${{ runner.os }}-${{ matrix.target }}-ccache-
+      - name: Set up sccache
+        uses: mozilla-actions/sccache-action@v0.0.11
 
       - name: Cache CMake dependencies (FetchContent)
         uses: actions/cache@v6
@@ -162,23 +131,32 @@ jobs:
       - name: Configure CMake
         shell: bash
         run: |
-          CMAKE_CMD="cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DFETCHCONTENT_BASE_DIR=${{ github.workspace }}/.cache/cmake"
-          
+          BUILD_DIR="${{ steps.strings.outputs.build-output-dir }}"
+          SOURCE_DIR="${{ github.workspace }}"
+          FETCHCONTENT_DIR="${{ github.workspace }}/.cache/cmake"
+
+          BUILD_DIR="${BUILD_DIR//\\//}"
+          SOURCE_DIR="${SOURCE_DIR//\\//}"
+          FETCHCONTENT_DIR="${FETCHCONTENT_DIR//\\//}"
+
+          CMAKE_CMD=(cmake -B "$BUILD_DIR" -DCMAKE_BUILD_TYPE="${{ matrix.build_type }}" -DFETCHCONTENT_BASE_DIR="$FETCHCONTENT_DIR")
+
           if [ "${{ runner.os }}" = "Windows" ]; then
-            CMAKE_CMD="$CMAKE_CMD -A ${{ matrix.cmake_platform }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }} -DCMAKE_C_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }}"
+            CMAKE_CMD+=(-A "${{ matrix.cmake_platform }}" -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_C_COMPILER_LAUNCHER=sccache)
           else
-            CMAKE_CMD="$CMAKE_CMD -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }} -DCMAKE_C_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }}"
+            CMAKE_CMD+=(-DCMAKE_CXX_COMPILER="${{ matrix.cpp_compiler }}" -DCMAKE_C_COMPILER="${{ matrix.c_compiler }}" -DCMAKE_CXX_COMPILER_LAUNCHER=sccache -DCMAKE_C_COMPILER_LAUNCHER=sccache)
           fi
           
-          $CMAKE_CMD -S ${{ github.workspace }}
+          "${CMAKE_CMD[@]}" -S "$SOURCE_DIR"
 
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rm_lines
 
-      - name: Show compiler cache statistics
+      - name: Show sccache statistics
         shell: bash
-        run: ${{ steps.compiler-cache.outputs.tool }} -s
+        run: |
+          "${SCCACHE_PATH}" --show-stats
 
       - name: Update version
         shell: bash
