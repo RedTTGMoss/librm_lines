@@ -106,34 +106,79 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Set up compiler cache
+        id: compiler-cache
+        shell: bash
+        run: |
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            echo "tool=clcache" >> $GITHUB_OUTPUT
+            echo "path=~/AppData/Local/clcache" >> $GITHUB_OUTPUT
+            echo "install=pip install clcache" >> $GITHUB_OUTPUT
+          else
+            echo "tool=ccache" >> $GITHUB_OUTPUT
+            echo "path=~/.cache/ccache" >> $GITHUB_OUTPUT
+            if [ "${{ runner.os }}" = "Linux" ]; then
+              echo "install=sudo apt-get update && sudo apt-get install -y ccache" >> $GITHUB_OUTPUT
+            else
+              echo "install=brew install ccache" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Install ${{ steps.compiler-cache.outputs.tool }}
+        shell: bash
+        run: |
+          if command -v ${{ steps.compiler-cache.outputs.tool }} &> /dev/null; then
+            echo "${{ steps.compiler-cache.outputs.tool }} already installed"
+          else
+            ${{ steps.compiler-cache.outputs.install }}
+          fi
+
+      - name: Cache compiler cache
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.compiler-cache.outputs.path }}
+          key: ${{ runner.os }}-${{ matrix.target }}-ccache-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-ccache-${{ github.ref_name }}-
+            ${{ runner.os }}-${{ matrix.target }}-ccache-
+
+      - name: Cache CMake dependencies (FetchContent)
+        uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}/.cache/cmake
+          key: ${{ runner.os }}-${{ matrix.target }}-cmake-deps-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-cmake-deps-
+
       - name: Cache CMake build files
         uses: actions/cache@v6
         with:
           path: ${{ steps.strings.outputs.build-output-dir }}
-          key: ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-${{ hashFiles('**/CMakeLists.txt') }}
+          key: ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-${{ github.ref_name }}-${{ hashFiles('**/CMakeLists.txt', 'rm_lines/**') }}
           restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-${{ github.ref_name }}-
             ${{ runner.os }}-${{ matrix.target }}-cmake-${{ matrix.cpp_compiler || matrix.cmake_platform }}-${{ matrix.c_compiler || matrix.cmake_platform }}-
 
-      - name: Configure CMake (Windows)
-        if: runner.os == 'Windows'
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -A ${{ matrix.cmake_platform }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -S ${{ github.workspace }}
-
-      - name: Configure CMake (Unix)
-        if: runner.os != 'Windows'
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
-          -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-          -S ${{ github.workspace }}
+      - name: Configure CMake
+        shell: bash
+        run: |
+          CMAKE_CMD="cmake -B ${{ steps.strings.outputs.build-output-dir }} -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DFETCHCONTENT_BASE_DIR=${{ github.workspace }}/.cache/cmake"
+          
+          if [ "${{ runner.os }}" = "Windows" ]; then
+            CMAKE_CMD="$CMAKE_CMD -A ${{ matrix.cmake_platform }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }} -DCMAKE_C_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }}"
+          else
+            CMAKE_CMD="$CMAKE_CMD -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} -DCMAKE_CXX_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }} -DCMAKE_C_COMPILER_LAUNCHER=${{ steps.compiler-cache.outputs.tool }}"
+          fi
+          
+          $CMAKE_CMD -S ${{ github.workspace }}
 
       - name: Build
         # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --target rm_lines
+
+      - name: Show compiler cache statistics
+        shell: bash
+        run: ${{ steps.compiler-cache.outputs.tool }} -s
 
       - name: Update version
         shell: bash
@@ -260,16 +305,42 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Cache CMake dependencies (FetchContent)
+        uses: actions/cache@v6
+        with:
+          path: ${{ github.workspace }}/.cache/cmake
+          key: linux-wasm-cmake-deps-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            linux-wasm-cmake-deps-
+
+      - name: Cache CMake build files
+        uses: actions/cache@v6
+        with:
+          path: ${{ steps.strings.outputs.build-output-dir }}
+          key: linux-wasm-emscripten-${{ github.ref_name }}-${{ hashFiles('**/CMakeLists.txt', 'rm_lines/**', 'rm_lines_wasm_sys/**') }}
+          restore-keys: |
+            linux-wasm-emscripten-${{ github.ref_name }}-
+            linux-wasm-emscripten-
+
       - name: Check sys bindings match exports
+        shell: bash
         run: |
           python tools/check_sys_exports.py
 
       - name: Configure CMake
         run: >
-          emcmake cmake -B ${{ steps.strings.outputs.build-output-dir }} -S ${{ github.workspace }}
+          emcmake cmake -B ${{ steps.strings.outputs.build-output-dir }} 
+          -DFETCHCONTENT_BASE_DIR=${{ github.workspace }}/.cache/cmake
+          -S ${{ github.workspace }}
 
       - name: Build
         run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --target rm_lines_wasm
+
+      - name: Show build cache
+        shell: bash
+        run: |
+          echo "Build directory size:"
+          du -sh "${{ steps.strings.outputs.build-output-dir }}" || true
 
       - name: Gather files into temp dir
         shell: bash
