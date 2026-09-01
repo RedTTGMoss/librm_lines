@@ -35,13 +35,13 @@ std::unique_ptr<Block> Block::lookup(const BlockInfo &info) {
         case SCENE_LINE_ITEM_BLOCK:
             block = std::make_unique<SceneLineItemBlock>();
             break;
-        // case SCENE_TEXT_ITEM_BLOCK:  // TODO
+        // case SCENE_TEXT_ITEM_BLOCK:  // DEPRACATED AND WILL NOT SUPPORT
         //     block = std::make_unique<SceneTextItemBlock>();
         //     break;
         case ROOT_TEXT_BLOCK:
             block = std::make_unique<RootTextBlock>();
             break;
-        case SCENE_TOMBSTONE_ITEM_BLOCK: // TODO
+        case SCENE_TOMBSTONE_ITEM_BLOCK:
             block = std::make_unique<SceneTombstoneItemBlock>();
             break;
         case AUTHOR_IDS_BLOCK:
@@ -60,6 +60,7 @@ std::unique_ptr<Block> Block::lookup(const BlockInfo &info) {
             block = std::make_unique<SceneImageItemBlock>();
             break;
         default:
+            logError(std::format("Unknown block type: {}", info.blockType));
             block = std::make_unique<UnreadableBlock>();
             break;
     }
