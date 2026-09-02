@@ -7,6 +7,12 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.9"
+license = "Apache-2.0"
+license-files = [
+    "LICENSE.md",
+    "THIRD-PARTY-NOTICES.md"
+]
+
 dependencies = [
 
 ]
