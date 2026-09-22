@@ -166,7 +166,7 @@ namespace {
     };
     constexpr StyleScaleList StyleLeftMargins = {
         {
-            {BASIC, 52.62994702657062},
+            {BASIC, 4.5242176055907635},
             {PlainText, 4.52421760559082},
             {Sub, 4.52421760559082},
             {Title, 4.52421760559082},

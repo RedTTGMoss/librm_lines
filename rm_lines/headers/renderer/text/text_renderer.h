@@ -6,6 +6,9 @@
 #include "font_manager.h"
 #include "hb.h"
 
+#define TEXT_BULLET '•'
+#define TEXT_SUBBULLET '◦'
+
 class Renderer;
 
 struct GlyphLayout {

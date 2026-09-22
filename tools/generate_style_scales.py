@@ -9,6 +9,7 @@ script_dir = Path(__file__).parent
 
 TEXT_TOP = 142
 MEDIUM_WIDTH_START = 234
+TABBED = 48.105729420979856
 styles = natsorted(
     [
         "PlainText",
@@ -67,7 +68,8 @@ def filter_basic_height(heights):
 
 
 def filter_basic_margins(margins):
-    print(f"constexpr float TAB_LENGTH = {margins['BulletTab'] - margins['Bullet']};")
+    tabbed_length = margins['BulletTab'] - margins['Bullet']
+    print(f"constexpr float TAB_LENGTH = {tabbed_length};")
     for style_a in styles:
         if "Tab" in style_a:
             margins.pop(style_a)
@@ -76,7 +78,9 @@ def filter_basic_margins(margins):
     for style_a in styles:
         if margins.get(style_a) == common_base:
             margins.pop(style_a)
-    margins['BASIC'] = common_base
+
+    # The margins are always
+    margins['BASIC'] = common_base - tabbed_length
 
 
 def create_output(heights, margins):
