@@ -79,7 +79,7 @@ def filter_basic_margins(margins):
         if margins.get(style_a) == common_base:
             margins.pop(style_a)
 
-    # The margins are always
+    # The common base is always the tabbed margin, so we want to subtract the tabbed length to get the basic margin
     margins['BASIC'] = common_base - tabbed_length
 
 
