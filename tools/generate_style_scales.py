@@ -3,7 +3,7 @@ import json
 from collections import Counter
 from pathlib import Path
 from natsort import natsorted
-import os
+import re
 
 script_dir = Path(__file__).parent
 
@@ -110,6 +110,55 @@ def create_output(heights, margins):
         if len(items) + 1 < 12:
             f.write(",\n\t\tEndOfStyleList")
         f.write("\n\t}\n};\n")
+
+    with open(file, 'r') as f:
+        content = f.read().replace('\t', '    ')
+
+    target = script_dir / '../rm_lines/src/advanced/text_scales.cpp'
+
+    with open(target, 'r') as f:
+        source = f.read()
+
+    pattern = re.compile(
+        r'(?ms)'
+        r'^(?P<indent>[ \t]*)/\*\s*'
+        r'\n[ \t]*\*[ \t]*ALL BELOW[ \t]*'
+        r'\n[ \t]*\*[ \t]*IS GENERATED[ \t]*'
+        r'\n[ \t]*\*/'
+        r'.*?'
+        r'^\s*/\*\s*'
+        r'\n[ \t]*\*[ \t]*ALL ABOVE[ \t]*'
+        r'\n[ \t]*\*[ \t]*IS GENERATED[ \t]*'
+        r'\n[ \t]*\*/'
+    )
+
+    def replace(match):
+        indent = match.group('indent')
+
+        generated = '\n'.join(
+            indent + line if line.strip() else ''
+            for line in content.splitlines()
+        )
+
+        return (
+            f"{indent}/*\n"
+            f"{indent} * ALL BELOW\n"
+            f"{indent} * IS GENERATED\n"
+            f"{indent} */\n\n"
+            f"{generated}\n\n\n"
+            f"{indent}/*\n"
+            f"{indent} * ALL ABOVE\n"
+            f"{indent} * IS GENERATED\n"
+            f"{indent} */"
+        )
+
+    source, count = pattern.subn(replace, source, count=1)
+
+    if count != 1:
+        raise ValueError("Generated section not found")
+
+    with open(target, 'w') as f:
+        f.write(source)
 
 
 def gen_style_pairs():
