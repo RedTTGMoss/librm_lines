@@ -320,6 +320,20 @@ enum ParagraphStyle {
     Numbered = 10,
     NumberedTab = 11,
 
+    // Additional extras for checkbox, only recognized by librm_lines
+    CheckBoxDashed = 856 + 12,
+    CheckBoxTabDashed = 856 + 13,
+    CheckBoxTabTab = 856 + 14,
+    CheckBoxTabTabChecked = 856 + 15,
+    // CheckBoxTabTabDashed = 856 + 16, DOESN'T EXIST, IMPOSSIBLE
+
+    CheckBoxTabHalfChecked = 856 + 19,
+    CheckBoxTabTabHalfChecked = 856 + 20,
+
+    // Additional extras for double tab, only recognized by librm_lines
+    BulletTabTab = 856 + 17,
+    NumberedTabTab = 856 + 18,
+
     // COUNT
     PARAGRAPH_STYLES_COUNT
 };
@@ -341,14 +355,11 @@ struct ParagraphStyleNew {
         setStyle(legacy);
     }
 
-    void setStyle(const ParagraphStyle _legacy) {
-        baseStyle = 2;
-        legacy = _legacy;
-        styleProperties = _legacy;
-        isLegacy = true;
-    }
+    void setStyle(const ParagraphStyle _legacy);
 
     int tabbed() const;
+
+    int extra() const;
 
     float styleHeight(ParagraphStyle against = TextTop) const;
 

@@ -125,21 +125,91 @@ json Color::toJson() const {
     return {alpha, red, green, blue};
 }
 
+void ParagraphStyleNew::setStyle(const ParagraphStyle _legacy) {
+    // Default to new styles
+    baseStyle = 3;
+    isLegacy = false;
+    switch (_legacy) {
+        case CheckBoxTab:
+            styleProperties = 17;
+            legacy = CheckBoxTab;
+            break;
+        case CheckBoxTabTab:
+            styleProperties = 18;
+            legacy = CheckBoxTab;
+            break;
+        case CheckBoxTabChecked:
+            styleProperties = 785;
+            legacy = CheckBoxTabChecked;
+            break;
+        case CheckBoxTabTabChecked:
+            styleProperties = 786;
+            legacy = CheckBoxTabChecked;
+            break;
+        case CheckBoxTabHalfChecked:
+            styleProperties = 273;
+            legacy = CheckBoxTabChecked;
+            break;
+        case CheckBoxTabTabHalfChecked:
+            styleProperties = 274;
+            legacy = CheckBoxTabChecked;
+            break;
+        case CheckBoxDashed:
+            styleProperties = 528;
+            legacy = CheckBox;
+            break;
+        case CheckBoxTabDashed:
+            styleProperties = 529;
+            legacy = CheckBoxTab;
+            break;
+        case BulletTab:
+            styleProperties = 1;
+            legacy = BulletTab;
+            break;
+        case BulletTabTab:
+            styleProperties = 2;
+            legacy = BulletTab;
+            break;
+        case NumberedTab:
+            styleProperties = 33;
+            legacy = NumberedTab;
+            break;
+        case NumberedTabTab:
+            styleProperties = 34;
+            legacy = NumberedTab;
+            break;
+        default:
+            baseStyle = 2;
+            legacy = _legacy;
+            isLegacy = true;
+            styleProperties = _legacy;
+            break;
+    }
+}
+
 int ParagraphStyleNew::tabbed() const {
     if (baseStyle == 3) {
+        auto lower = static_cast<uint8_t>(styleProperties & 0xFF);
         switch (legacy) {
             case BulletTab:
-                return styleProperties;
+                return lower;
             case CheckBoxTab:
             case CheckBoxTabChecked:
-                return styleProperties - 16;
+                return lower - 16;
             case NumberedTab:
-                return styleProperties - 32;
+                return lower - 32;
             default:
                 return 0; // Not tabbed
         }
     }
     return 0; // Not tabbed
+}
+
+int ParagraphStyleNew::extra() const {
+    if (baseStyle == 3) {
+        return static_cast<uint8_t>((styleProperties >> 8) & 0xFF);
+    }
+    return 0; // Not extra
 }
 
 float ParagraphStyleNew::styleHeight(const ParagraphStyle against) const {
@@ -189,6 +259,22 @@ std::string ParagraphStyleNew::styleLabel() const {
             return "Numbered";
         case NumberedTab:
             return "NumberedTab";
+        case CheckBoxDashed:
+            return "CheckBoxDashed";
+        case CheckBoxTabDashed:
+            return "CheckBoxTabDashed";
+        case CheckBoxTabTab:
+            return "CheckBoxTabTab";
+        case CheckBoxTabTabChecked:
+            return "CheckBoxTabTabChecked";
+        case CheckBoxTabHalfChecked:
+            return "CheckBoxTabHalfChecked";
+        case CheckBoxTabTabHalfChecked:
+            return "CheckBoxTabTabHalfChecked";
+        case BulletTabTab:
+            return "BulletTabTab";
+        case NumberedTabTab:
+            return "NumberedTabTab";
         default:
             return "UNKNOWN";
     }
@@ -318,6 +404,7 @@ json ParagraphStyleNew::toJson() const {
         {"styleProperties", styleProperties},
         {"isLegacy", isLegacy},
         {"tabbed", tabbed()},
+        {"extra", extra()},
         {"tabOffset", getTabOffset()},
         {"_styleLabel", styleLabel()},
 
@@ -337,10 +424,43 @@ FontType ParagraphStyleNew::getFont() const {
 }
 
 ParagraphStyle ParagraphStyleNew::getStyle() const {
-    // TODO: Support Header style sub style (which uses serif)
-    // T (T) T t . . .
-    // ^ Style marker on tablet ^
-    return legacy;
+    if (baseStyle == 2 || isLegacy) {
+        return legacy;
+    }
+    switch (styleProperties) {
+        case 0:
+            return Bullet;
+        case 1:
+            return BulletTab;
+        case 2:
+            return BulletTabTab;
+        case 16:
+            return CheckBox;
+        case 17:
+            return CheckBoxTab;
+        case 18:
+            return CheckBoxTabTab;
+        case 32:
+            return Numbered;
+        case 33:
+            return NumberedTab;
+        case 34:
+            return NumberedTabTab;
+        case 273:
+            return CheckBoxTabHalfChecked;
+        case 274:
+            return CheckBoxTabTabHalfChecked;
+        case 528:
+            return CheckBoxDashed;
+        case 529:
+            return CheckBoxTabDashed;
+        case 785:
+            return CheckBoxTabChecked;
+        case 786:
+            return CheckBoxTabTabChecked;
+        default:
+            return MISSING; // Unknown style
+    }
 }
 
 template<>

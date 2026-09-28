@@ -12,13 +12,15 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     fontSize = paragraph->style.value.fontSize();
 
     styleHeight = paragraph->style.value.styleHeight(prevStyle);
-    styleMargin = paragraph->style.value.styleMargin() + paragraph->style.value.getTabOffset();
+    styleMargin = paragraph->style.value.styleMargin();
 
     scaledStyleHeight = styleHeight * scale.y;
     scaledStyleMargin = styleMargin * scale.x;
     scaledFontSize = fontSize * scale.y;
 
-    startPosX = boundStart + scaledStyleMargin;
+    const auto tabOffsetScaled = paragraph->style.value.getTabOffset() * scale.x;
+
+    startPosX = boundStart + scaledStyleMargin + tabOffsetScaled;
     posX = startPosX;
     posY += scaledStyleHeight;
 
