@@ -174,7 +174,7 @@ void TextRenderer::getGlyphs(std::string text, std::vector<GlyphLayout> &glyphs,
         }
 
         glyph.x = posX + FT_TO_F(glyphPos[i].x_offset);
-        glyph.y = posY + glyph.yOffset;
+        glyph.y = posY + FT_TO_F(glyphPos[i].y_offset);
 
         posX += glyph.advance;
 
@@ -183,10 +183,10 @@ void TextRenderer::getGlyphs(std::string text, std::vector<GlyphLayout> &glyphs,
             const auto charId = indexToCharId[charIndex];
 
             (*textRects.value())[charId].x =
-                    std::min((*textRects.value())[charId].x, glyph.x);
+                    std::min((*textRects.value())[charId].x, glyph.x + glyph.xOffset);
 
             (*textRects.value())[charId].y =
-                    std::min((*textRects.value())[charId].y, glyph.y);
+                    std::min((*textRects.value())[charId].y, glyph.y + glyph.yOffset);
 
             (*textRects.value())[charId].width =
                     std::max((*textRects.value())[charId].width, glyph.width);
@@ -318,11 +318,15 @@ void TextRenderer::renderGlyphHighlights(const Vector *position, Vector scale, c
     }
 }
 
-void TextRenderer::renderGlyph(const GlyphLayout &glyph, const Vector *position, Vector scale) {
+void TextRenderer::renderGlyph(
+    const GlyphLayout &glyph,
+    const Vector *position,
+    Vector scale
+) {
     FT_Load_Glyph(
         font->face,
         glyph.glyphIndex,
-        FT_LOAD_DEFAULT
+        FT_LOAD_NO_HINTING | FT_LOAD_NO_BITMAP
     );
 
     FT_Render_Glyph(
@@ -330,10 +334,16 @@ void TextRenderer::renderGlyph(const GlyphLayout &glyph, const Vector *position,
         FT_RENDER_MODE_NORMAL
     );
 
-    drawBitmap(glyph.x, glyph.y, font->face->glyph->bitmap);
+    const auto &slot = font->face->glyph;
+
+    drawBitmap(
+        glyph.x + slot->bitmap_left,
+        glyph.y - slot->bitmap_top,
+        slot->bitmap
+    );
 }
 
-void TextRenderer::drawBitmap(float x, float y, const FT_Bitmap &bitmap) {
+void TextRenderer::drawBitmap(StyleScaleValue x, StyleScaleValue y, const FT_Bitmap &bitmap) {
     const auto buf = &renderer->stroker.raster.raster.fill.buffer;
     if (x >= buf->width || y >= buf->height || x + bitmap.width < 0 || y + bitmap.rows < 0)
         return;

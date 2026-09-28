@@ -109,7 +109,7 @@ private:
     // Rendering
     void renderGlyph(const GlyphLayout &glyph, const Vector *position, Vector scale);
 
-    void drawBitmap(float x, float y, const FT_Bitmap &bitmap);
+    void drawBitmap(StyleScaleValue x, StyleScaleValue y, const FT_Bitmap &bitmap);
 
     Renderer *renderer = nullptr;
 };
