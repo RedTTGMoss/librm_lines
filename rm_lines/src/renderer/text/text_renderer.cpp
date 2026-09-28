@@ -65,13 +65,19 @@ void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayo
             break;
         default:
             numberingCounter.reset();
-            posX += BULLET_START * scale.y;
             return; // TODO: Add special numbered cases (checkboxes will not be included here, as they are icons
     }
-    posX += BULLET_START * scale.y;
-    getGlyphs(markerText, glyphs);
-    // posX = lastPosX;
-    posX += BULLET_SPACE * scale.y; // Add space after the bullet glyphs
+    posX += BULLET_START * scale.x;
+    const auto beginX = posX;
+    std::vector<GlyphLayout> tempGlyphs;
+    getGlyphs(markerText, tempGlyphs);
+    auto offset = posX - beginX + BULLET_SPACE;
+    for (const auto &glyph: tempGlyphs) {
+        GlyphLayout adjustedGlyph = glyph;
+        adjustedGlyph.x -= offset; // Adjust the x position of the glyphs to align with the bullet start
+        glyphs.push_back(adjustedGlyph);
+    }
+    posX = beginX;
 }
 
 void TextRenderer::getGlyphs(std::string text, std::vector<GlyphLayout> &glyphs,
@@ -229,7 +235,7 @@ void TextRenderer::getAnchors() {
         }
         auto finalPos = posY - paragraph->style.value.styleHeight(prevStyle);
         renderer->anchors[paragraph->startId] = finalPos;
-        renderer->anchors[ANCHOR_ID_END] = std::max<float>(renderer->anchors[ANCHOR_ID_END], finalPos);
+        renderer->anchors[ANCHOR_ID_END] = std::max<float>(renderer->anchors[ANCHOR_ID_END], posY);
         for (const auto &formattedText: paragraph->contents) {
             for (const auto &characterId: formattedText.characterIDs) {
                 renderer->anchors[characterId] = finalPos;

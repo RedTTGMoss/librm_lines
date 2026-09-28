@@ -20,8 +20,8 @@
 constexpr StyleScaleValue TEXT_TOP_Y = 140;
 constexpr StyleScaleValue TEXT_WIDTH_ALIGN = 0; // Deprecated in use of margins
 constexpr StyleScaleValue TAB_LENGTH = 48.105729420979856; // AUTO CALCULATED BY THE GENERATE STYLES SCALES TOOL
-constexpr StyleScaleValue BULLET_START = 20.044053925408264; // Taken by subtracting the text x from the bullet x
-constexpr StyleScaleValue BULLET_SPACE = 28.061675495571535; // Taken by subtracting the bullet x from the
+constexpr StyleScaleValue BULLET_START = 48.1057294209798;
+constexpr StyleScaleValue BULLET_SPACE = 20.044053925408264;
 
 constexpr StyleScaleEntry EndOfStyleList = {END_STYLE_LIST, 0};
 constexpr StyleNestedScaleEntry EndOfNestedStyleList = {END_STYLE_LIST, nullptr};
