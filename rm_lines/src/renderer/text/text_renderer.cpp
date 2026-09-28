@@ -22,7 +22,7 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
 
     startPosX = boundStart + scaledStyleMargin + tabOffsetScaled;
     posX = startPosX;
-    posY += scaledStyleHeight;
+    posY += styleHeight;
 
     prevStyle = next->style.value.getLegacyStyle();
 }
@@ -170,7 +170,7 @@ void TextRenderer::getGlyphs(std::string text, std::vector<GlyphLayout> &glyphs,
             logDebug(std::format("Line break at posX: {}, glyph advance: {}, boundEnd: {}", posX, glyph.advance,
                                  boundEnd));
             posX = startPosX;
-            posY += scaledFontSize;
+            posY += fontSize;
         }
 
         glyph.x = posX + FT_TO_F(glyphPos[i].x_offset);
@@ -215,12 +215,38 @@ void TextRenderer::getAllPageGlyphs(std::vector<GlyphLayout> &glyphs) {
     }
 }
 
+void TextRenderer::getAnchors() {
+    std::vector<GlyphLayout> glyphs;
+    static const Vector position{0, 0};
+    static const Vector scale{1, 1};
+    prepareBounds(&position, scale);
+    for (const auto &next: renderer->textDocument.paragraphs) {
+        newParagraph(&next, scale);
+        getMarkerGlyphs(paragraph->style.value, glyphs, scale);
+        for (const auto &formattedText: paragraph->contents) {
+            newText(&formattedText);
+            getGlyphs(formattedText, glyphs, tempTextRects);
+        }
+        auto finalPos = posY - paragraph->style.value.styleHeight(prevStyle);
+        renderer->anchors[paragraph->startId] = finalPos;
+        renderer->anchors[ANCHOR_ID_END] = std::max<float>(renderer->anchors[ANCHOR_ID_END], finalPos);
+        for (const auto &formattedText: paragraph->contents) {
+            for (const auto &characterId: formattedText.characterIDs) {
+                renderer->anchors[characterId] = finalPos;
+                // logDebug(std::format("- Anchor for character {}", characterId.repr()));
+            }
+        }
+        // ReSharper disable once CppNoDiscardExpression
+        renderer->trackY(TEXT_LAYER, finalPos);
+    }
+}
+
 void TextRenderer::prepareBounds(const Vector *position, const Vector scale) {
     // Currently we only adjust here for the column and Y
     // In the future it might be a good idea to limit the frame bounds too
     boundStart = (position->x + textMargin) * scale.x;
     boundEnd = (position->x + renderer->paperSize.first - textMargin) * scale.x;
-    posY = (position->y + TEXT_TOP_Y) * scale.y;
+    posY = (position->y + TEXT_TOP_Y);
     prevStyle = TextTop;
 }
 
@@ -339,7 +365,7 @@ void TextRenderer::renderGlyph(
 
     drawBitmap(
         glyph.x + slot->bitmap_left,
-        glyph.y - slot->bitmap_top,
+        glyph.y * scale.y - slot->bitmap_top,
         slot->bitmap
     );
 }

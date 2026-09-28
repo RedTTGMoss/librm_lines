@@ -72,6 +72,8 @@ public:
 
     void getAllPageGlyphs(std::vector<GlyphLayout> &glyphs);
 
+    void getAnchors();
+
 private:
     NumberingCounter numberingCounter;
 

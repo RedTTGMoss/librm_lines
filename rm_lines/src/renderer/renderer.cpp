@@ -32,9 +32,10 @@ Renderer::Renderer(SceneTree *sceneTree, const PageType pageType, const bool lan
     layers = layersFromSceneTree(sceneTree);
 
     prepareTextDocument();
-    calculateAnchors();
 
     this->textRenderer = new TextRenderer(this);
+
+    calculateAnchors();
 
     for (auto &layer: layers) {
         initSizeTracker(layer.groupId);
@@ -64,11 +65,11 @@ DocumentSizeTracker *Renderer::initSizeTracker(CrdtId layerId) {
     return &it->second;
 }
 
-auto Renderer::trackX(const CrdtId &layerId, const float posX) {
+StyleScaleValue Renderer::trackX(const CrdtId &layerId, const StyleScaleValue posX) {
     return getSizeTracker(layerId)->trackX(posX);
 }
 
-auto Renderer::trackY(const CrdtId &layerId, const float posY) {
+StyleScaleValue Renderer::trackY(const CrdtId &layerId, const StyleScaleValue posY) {
     return getSizeTracker(layerId)->trackY(posY);
 }
 
@@ -89,30 +90,31 @@ void Renderer::calculateAnchors() {
     int posY = 0;
 
     // Calculate the anchors
-    ParagraphStyle prevStyle = TextTop;
-    for (const auto &paragraph: textDocument.paragraphs) {
-        // Get the height for this paragraph style
-        const auto styleHeight = paragraph.style.value.styleHeight(prevStyle);
-        prevStyle = paragraph.style.value.getLegacyStyle();
-        yOffset += styleHeight;
-
-        // Save the anchor for this paragraph
-        anchors[paragraph.startId] = posY; // The start ID is the `\n` which counts to the last posY
-
-        posY = yOffset;
-
-        anchors[ANCHOR_ID_END] = std::max<float>(anchors[ANCHOR_ID_END], posY);
-        // logDebug(std::format("Anchor for paragraph {}: {} (height added: {})", paragraph.startId.repr(), posY,
-        //                      styleHeight));
-        for (const auto &formattedText: paragraph.contents) {
-            for (const auto &characterId: formattedText.characterIDs) {
-                anchors[characterId] = posY;
-                // logDebug(std::format("- Anchor for character {}", characterId.repr()));
-            }
-        }
-        // ReSharper disable once CppNoDiscardExpression
-        trackY(TEXT_LAYER, posY);
-    }
+    // ParagraphStyle prevStyle = TextTop;
+    textRenderer->getAnchors();
+    // for (const auto &paragraph: textDocument.paragraphs) {
+    //     // Get the height for this paragraph style
+    //     const auto styleHeight = paragraph.style.value.styleHeight(prevStyle);
+    //     prevStyle = paragraph.style.value.getLegacyStyle();
+    //     yOffset += styleHeight;
+    //
+    //     // Save the anchor for this paragraph
+    //     anchors[paragraph.startId] = posY; // The start ID is the `\n` which counts to the last posY
+    //
+    //     posY = yOffset;
+    //
+    //     anchors[ANCHOR_ID_END] = std::max<float>(anchors[ANCHOR_ID_END], posY);
+    //     // logDebug(std::format("Anchor for paragraph {}: {} (height added: {})", paragraph.startId.repr(), posY,
+    //     //                      styleHeight));
+    //     for (const auto &formattedText: paragraph.contents) {
+    //         for (const auto &characterId: formattedText.characterIDs) {
+    //             anchors[characterId] = posY;
+    //             // logDebug(std::format("- Anchor for character {}", characterId.repr()));
+    //         }
+    //     }
+    //     // ReSharper disable once CppNoDiscardExpression
+    //     trackY(TEXT_LAYER, posY);
+    // }
 }
 
 void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId groupId, int offsetX, int offsetY) {

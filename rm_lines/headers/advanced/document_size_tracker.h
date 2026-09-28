@@ -1,4 +1,5 @@
 #pragma once
+#include "renderer/text/anchor_typedef.h"
 using namespace AdvancedMath;
 #include "advanced/math.h"
 #include <nlohmann/json.hpp>
@@ -25,7 +26,7 @@ public:
         //                      track.getLeft(), track.getRight(), track.getTop(), track.getBottom(), landscape));
     }
 
-    DocumentSizeTracker(const float frameWidth, const float frameHeight, const PageType pageType,
+    DocumentSizeTracker(const StyleScaleValue frameWidth, const StyleScaleValue frameHeight, const PageType pageType,
                         const bool landscape) : DocumentSizeTracker(
         Vector(frameWidth, frameHeight), pageType, landscape) {
     }
@@ -36,8 +37,8 @@ public:
 
     ~DocumentSizeTracker() = default;
 
-    float trackX(const float x) {
-        const float alignedX = x + getFrameWidth() / 2;
+    StyleScaleValue trackX(const StyleScaleValue x) {
+        const StyleScaleValue alignedX = x + getFrameWidth() / 2;
         if (alignedX > track.getRight()) {
             track.setRight(alignedX);
         }
@@ -47,7 +48,7 @@ public:
         return x;
     }
 
-    float trackY(const float y) {
+    StyleScaleValue trackY(const StyleScaleValue y) {
         if (y > track.getBottom()) {
             track.setBottom(y);
         }
@@ -57,28 +58,28 @@ public:
         return y;
     }
 
-    [[nodiscard]] float getFrameWidth() const {
+    [[nodiscard]] StyleScaleValue getFrameWidth() const {
         return frameSize.x;
     }
 
-    [[nodiscard]] float getFrameHeight() const {
+    [[nodiscard]] StyleScaleValue getFrameHeight() const {
         // This really isn't used anywhere since the horizontal coordinates are more important
         return frameSize.y;
     }
 
-    [[nodiscard]] float getTop() const {
+    [[nodiscard]] StyleScaleValue getTop() const {
         return track.getTop() + offset.y;
     }
 
-    [[nodiscard]] float getBottom() const {
+    [[nodiscard]] StyleScaleValue getBottom() const {
         return track.getBottom() + offset.y;
     }
 
-    [[nodiscard]] float getLeft() const {
+    [[nodiscard]] StyleScaleValue getLeft() const {
         return track.getLeft() + offset.x;
     }
 
-    [[nodiscard]] float getRight() const {
+    [[nodiscard]] StyleScaleValue getRight() const {
         return track.getRight() + offset.x;
     }
 

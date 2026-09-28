@@ -30,7 +30,7 @@ typedef void TemplateOperationFunction(rMPenFill *fill, Renderer *renderer);
 class Renderer {
 public:
     TextDocument textDocument = TextDocument();
-    std::unordered_map<CrdtId, uint32_t> anchors;
+    std::unordered_map<CrdtId, StyleScaleValue> anchors;
     std::vector<Layer> layers;
     IntPair paperSize;
     RendererConfig config;
@@ -50,9 +50,9 @@ public:
 
     DocumentSizeTracker *initSizeTracker(CrdtId layerId);
 
-    auto trackX(const CrdtId &layerId, float posX);
+    StyleScaleValue trackX(const CrdtId &layerId, StyleScaleValue posX);
 
-    auto trackY(const CrdtId &layerId, float posY);
+    StyleScaleValue trackY(const CrdtId &layerId, StyleScaleValue posY);
 
     void calculateAnchors();
 
