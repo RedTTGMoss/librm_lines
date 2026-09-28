@@ -10,6 +10,7 @@
 
 #define TEXT_BULLET "•"
 #define TEXT_SUBBULLET "◦"
+#define TEXT_SUBSUBBULLET "-"
 
 class Renderer;
 

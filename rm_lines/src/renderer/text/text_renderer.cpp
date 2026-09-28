@@ -43,7 +43,16 @@ void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayo
             markerText = TEXT_BULLET;
             break;
         case BulletTab:
-            markerText = TEXT_SUBBULLET;
+            switch (para.tabbed()) {
+                case 1:
+                    markerText = TEXT_SUBBULLET;
+                    break;
+                case 2:
+                    markerText = TEXT_SUBSUBBULLET;
+                    break;
+                default:
+                    break;
+            }
             break;
         case Numbered:
             numberingCounter.numPlus();
