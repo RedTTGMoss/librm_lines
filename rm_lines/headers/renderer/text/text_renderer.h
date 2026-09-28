@@ -5,6 +5,7 @@
 #include "../rm_lines_stroker/raster/clipped.h"
 #include "font_manager.h"
 #include "hb.h"
+#include "numbering_counter.h"
 #include "advanced/text_scale.h"
 
 #define TEXT_BULLET "•"
@@ -72,6 +73,8 @@ public:
     void getAllPageGlyphs(std::vector<GlyphLayout> &glyphs);
 
 private:
+    NumberingCounter numberingCounter;
+
     float textMargin = 0;
 
     // Positioning

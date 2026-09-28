@@ -45,10 +45,29 @@ void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayo
         case BulletTab:
             markerText = TEXT_SUBBULLET;
             break;
+        case Numbered:
+            numberingCounter.numPlus();
+            markerText = numberingCounter.getNum();
+            break;
+        case NumberedTab:
+            switch (para.tabbed()) {
+                case 1:
+                    numberingCounter.numTabPlus();
+                    markerText = numberingCounter.getNumTab();
+                    break;
+                case 2:
+                    numberingCounter.numTabTabPlus();
+                    markerText = numberingCounter.getNumTabTab();
+                    break;
+                default:
+                    break;
+            }
+            break;
         default:
+            numberingCounter.reset();
+            posX += BULLET_START * scale.y;
             return; // TODO: Add special numbered cases (checkboxes will not be included here, as they are icons
     }
-    const auto lastPosX = posX;
     posX += BULLET_START * scale.y;
     getGlyphs(markerText, glyphs);
     // posX = lastPosX;
