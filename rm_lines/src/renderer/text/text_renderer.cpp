@@ -207,6 +207,7 @@ void TextRenderer::getAllPageGlyphs(std::vector<GlyphLayout> &glyphs) {
     prepareBounds(&position, scale);
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale);
+        getMarkerGlyphs(paragraph->style.value, glyphs, scale);
         for (const auto &formattedText: paragraph->contents) {
             newText(&formattedText);
             getGlyphs(formattedText, glyphs, tempTextRects);
