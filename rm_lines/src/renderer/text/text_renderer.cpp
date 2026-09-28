@@ -24,7 +24,7 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     posX = startPosX;
     posY += scaledStyleHeight;
 
-    prevStyle = next->style.value.getStyle();
+    prevStyle = next->style.value.getLegacyStyle();
 }
 
 void TextRenderer::newText(const FormattedText *next) {
@@ -36,17 +36,34 @@ void TextRenderer::newText(const FormattedText *next) {
     hbFont = font->getHb();
 }
 
-void TextRenderer::getGlyphs(
-    const FormattedText &text,
-    std::vector<GlyphLayout> &glyphs,
-    std::unordered_map<CrdtId, TextRect> &textRects
-) {
+void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayout> &glyphs, Vector scale) {
+    std::string markerText;
+    switch (para.getLegacyStyle()) {
+        case Bullet:
+            markerText = TEXT_BULLET;
+            break;
+        case BulletTab:
+            markerText = TEXT_SUBBULLET;
+            break;
+        default:
+            return; // TODO: Add special numbered cases (checkboxes will not be included here, as they are icons
+    }
+    const auto lastPosX = posX;
+    posX += BULLET_START * scale.y;
+    getGlyphs(markerText, glyphs);
+    // posX = lastPosX;
+    posX += BULLET_SPACE * scale.y; // Add space after the bullet glyphs
+}
+
+void TextRenderer::getGlyphs(std::string text, std::vector<GlyphLayout> &glyphs,
+                             std::optional<std::unordered_map<CrdtId, TextRect> *> textRects,
+                             std::optional<const std::vector<CrdtId> *> characterIDs) {
     hb_buffer_t *buffer = hb_buffer_create();
 
     hb_buffer_add_utf8(
         buffer,
-        text.text.c_str(),
-        text.text.length(),
+        text.c_str(),
+        text.length(),
         0,
         -1
     );
@@ -67,35 +84,43 @@ void TextRenderer::getGlyphs(
     const hb_glyph_position_t *glyphPos =
             hb_buffer_get_glyph_positions(buffer, &glyphCount);
 
-    std::vector<size_t> byteToCharacter(text.text.size() + 1);
+    std::vector<size_t> byteToCharacter(text.size() + 1);
     std::unordered_map<size_t, CrdtId> indexToCharId;
 
     size_t characterIndex = 0;
 
-    for (size_t i = 0; i < text.text.size();) {
+    for (size_t i = 0; i < text.size();) {
         byteToCharacter[i] = characterIndex++;
 
-        const unsigned char c = text.text[i];
+        const unsigned char c = text[i];
 
         size_t length =
                 c < 0x80 ? 1 : c < 0xE0 ? 2 : c < 0xF0 ? 3 : 4;
 
-        for (size_t j = 1; j < length && i + j < text.text.size(); ++j)
+        for (size_t j = 1; j < length && i + j < text.size(); ++j)
             byteToCharacter[i + j] = characterIndex - 1;
 
         i += length;
     }
 
-    int glyphIndex = 0;
-    for (auto &charId: text.characterIDs) {
-        // Index the characterId positions
-        indexToCharId[glyphIndex++] = charId;
 
-        // Reset the text rect for this character ID to default values
-        textRects[charId] = {
-            std::numeric_limits<float>::max(), std::numeric_limits<float>::max(), 0, 0,
-            fontSize, scaledFontSize, posY
-        };
+    if (textRects.has_value() && characterIDs.has_value()) {
+        int glyphIndex = 0;
+        for (auto &charId: *characterIDs.value()) {
+            // Index the characterId positions
+            indexToCharId[glyphIndex++] = charId;
+
+            // Reset the text rect for this character ID to default values
+            (*textRects.value())[charId] = {
+                std::numeric_limits<float>::max(),
+                std::numeric_limits<float>::max(),
+                0,
+                0,
+                fontSize,
+                scaledFontSize,
+                posY
+            };
+        }
     }
 
     for (unsigned int i = 0; i < glyphCount; i++) {
@@ -123,6 +148,8 @@ void TextRenderer::getGlyphs(
 
 
         if (posX + glyph.advance >= boundEnd) {
+            logDebug(std::format("Line break at posX: {}, glyph advance: {}, boundEnd: {}", posX, glyph.advance,
+                                 boundEnd));
             posX = startPosX;
             posY += scaledFontSize;
         }
@@ -132,13 +159,22 @@ void TextRenderer::getGlyphs(
 
         posX += glyph.advance;
 
-        const auto charIndex = byteToCharacter[glyphInfo[i].cluster];
-        const auto charId = indexToCharId[charIndex];
+        if (textRects.has_value() && characterIDs.has_value()) {
+            const auto charIndex = byteToCharacter[glyphInfo[i].cluster];
+            const auto charId = indexToCharId[charIndex];
 
-        textRects[charId].x = std::min(textRects[charId].x, glyph.x);
-        textRects[charId].y = std::min(textRects[charId].y, glyph.y);
-        textRects[charId].width = std::max(textRects[charId].width, glyph.width);
-        textRects[charId].height = std::max(textRects[charId].height, glyph.height);
+            (*textRects.value())[charId].x =
+                    std::min((*textRects.value())[charId].x, glyph.x);
+
+            (*textRects.value())[charId].y =
+                    std::min((*textRects.value())[charId].y, glyph.y);
+
+            (*textRects.value())[charId].width =
+                    std::max((*textRects.value())[charId].width, glyph.width);
+
+            (*textRects.value())[charId].height =
+                    std::max((*textRects.value())[charId].height, glyph.height);
+        }
 
         glyphs.push_back(glyph);
     }
@@ -197,7 +233,11 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
     renderer->stroker.raster.raster.fill.debugTool(2.0f);
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale);
-
+        std::vector<GlyphLayout> glyphs;
+        getMarkerGlyphs(paragraph->style.value, glyphs, scale);
+        for (const auto &glyph: glyphs) {
+            renderGlyph(glyph, position, scale);
+        }
 
         for (const auto &formattedText: paragraph->contents) {
             newText(&formattedText);

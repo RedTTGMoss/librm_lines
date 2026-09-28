@@ -189,7 +189,7 @@ void ParagraphStyleNew::setStyle(const ParagraphStyle _legacy) {
 
 int ParagraphStyleNew::tabbed() const {
     if (baseStyle == 3) {
-        auto lower = static_cast<uint8_t>(styleProperties & 0xFF);
+        const auto lower = static_cast<uint8_t>(styleProperties & 0xFF);
         switch (legacy) {
             case BulletTab:
                 return lower;
@@ -213,15 +213,15 @@ int ParagraphStyleNew::extra() const {
 }
 
 float ParagraphStyleNew::styleHeight(const ParagraphStyle against) const {
-    return getStyleHeight(against, getStyle());
+    return getStyleHeight(against, getLegacyStyle());
 }
 
 float ParagraphStyleNew::styleMargin() const {
-    return getStyleMargin(getStyle());
+    return getStyleMargin(getLegacyStyle());
 }
 
 float ParagraphStyleNew::fontSize() const {
-    return getFontSize(getStyle());
+    return getFontSize(getLegacyStyle());
 }
 
 float ParagraphStyleNew::getTabOffset() const {
@@ -231,8 +231,8 @@ float ParagraphStyleNew::getTabOffset() const {
     return TAB_LENGTH * tabbed();
 }
 
-std::string ParagraphStyleNew::styleLabel() const {
-    switch (getStyle()) {
+std::string ParagraphStyleNew::styleLabel(ParagraphStyle style) const {
+    switch (style) {
         case MISSING:
             return "MISSING";
         case BASIC:
@@ -279,6 +279,14 @@ std::string ParagraphStyleNew::styleLabel() const {
             return "UNKNOWN";
     }
     return "UNKNOWN";
+}
+
+std::string ParagraphStyleNew::styleLabel() const {
+    return styleLabel(getStyle());
+}
+
+std::string ParagraphStyleNew::styleLegacyLabel() const {
+    return styleLabel(getLegacyStyle());
 }
 
 std::string Color::repr() const {
@@ -407,6 +415,7 @@ json ParagraphStyleNew::toJson() const {
         {"extra", extra()},
         {"tabOffset", getTabOffset()},
         {"_styleLabel", styleLabel()},
+        {"_styleLegacyLabel", styleLegacyLabel()},
 
         {"_styleHeight", styleHeight()},
         {"_fontSize", fontSize()},
@@ -460,6 +469,29 @@ ParagraphStyle ParagraphStyleNew::getStyle() const {
             return CheckBoxTabTabChecked;
         default:
             return MISSING; // Unknown style
+    }
+}
+
+ParagraphStyle ParagraphStyleNew::getLegacyStyle() const {
+    const auto style = getStyle();
+    switch (style) {
+        case CheckBoxTab:
+        case CheckBoxTabTab:
+            return CheckBoxTab;
+        case CheckBoxDashed:
+            return CheckBoxChecked;
+        case CheckBoxTabHalfChecked:
+        case CheckBoxTabTabHalfChecked:
+        case CheckBoxTabChecked:
+        case CheckBoxTabTabChecked:
+        case CheckBoxTabDashed:
+            return CheckBoxTabChecked;
+        case NumberedTabTab:
+            return NumberedTab;
+        case BulletTabTab:
+            return BulletTab;
+        default:
+            return style; // Return the style as is for other cases
     }
 }
 

@@ -10,6 +10,8 @@ typedef std::array<StyleNestedScaleEntry, PARAGRAPH_STYLES_COUNT> NestedStyleSca
 extern const StyleScaleValue TEXT_TOP_Y;
 extern const StyleScaleValue TEXT_WIDTH_ALIGN;
 extern const StyleScaleValue TAB_LENGTH;
+extern const StyleScaleValue BULLET_START;
+extern const StyleScaleValue BULLET_SPACE;
 
 struct TextAreaInfo {
     // Old style text area using coordinates

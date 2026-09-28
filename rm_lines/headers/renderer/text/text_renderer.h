@@ -5,9 +5,10 @@
 #include "../rm_lines_stroker/raster/clipped.h"
 #include "font_manager.h"
 #include "hb.h"
+#include "advanced/text_scale.h"
 
-#define TEXT_BULLET '•'
-#define TEXT_SUBBULLET '◦'
+#define TEXT_BULLET "•"
+#define TEXT_SUBBULLET "◦"
 
 class Renderer;
 
@@ -15,26 +16,26 @@ struct GlyphLayout {
     uint32_t codepoint;
     FT_UInt glyphIndex;
 
-    float x;
-    float y;
+    StyleScaleValue x;
+    StyleScaleValue y;
 
-    float width;
-    float height;
+    StyleScaleValue width;
+    StyleScaleValue height;
 
-    float xOffset;
-    float yOffset;
+    StyleScaleValue xOffset;
+    StyleScaleValue yOffset;
 
-    float advance;
+    StyleScaleValue advance;
 };
 
 struct TextRect {
-    float x;
-    float y;
-    float width;
-    float height;
-    float fontSize;
-    float fontSizeScaled;
-    float baseLine;
+    StyleScaleValue x;
+    StyleScaleValue y;
+    StyleScaleValue width;
+    StyleScaleValue height;
+    StyleScaleValue fontSize;
+    StyleScaleValue fontSizeScaled;
+    StyleScaleValue baseLine;
 };
 
 class TextRenderer {
@@ -55,8 +56,18 @@ public:
 
     void newText(const FormattedText *next);
 
+    void getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayout> &glyphs, Vector scale);
+
+
+    void getGlyphs(std::string text, std::vector<GlyphLayout> &glyphs,
+                   std::optional<std::unordered_map<CrdtId, TextRect> *> textRects = std::nullopt,
+                   std::optional<const std::vector<CrdtId> *> characterIDs = std::nullopt);
+
     void getGlyphs(const FormattedText &text, std::vector<GlyphLayout> &glyphs,
-                   std::unordered_map<CrdtId, TextRect> &textRects);
+                   std::unordered_map<CrdtId, TextRect> &textRects) {
+        getGlyphs(text.text, glyphs, &textRects, &text.characterIDs);
+    }
+
 
     void getAllPageGlyphs(std::vector<GlyphLayout> &glyphs);
 
@@ -64,23 +75,23 @@ private:
     float textMargin = 0;
 
     // Positioning
-    float posX = 0;
-    float startPosX = 0;
-    float posY = 0;
-    float boundStart = 0;
-    float boundEnd = 0;
+    StyleScaleValue posX = 0;
+    StyleScaleValue startPosX = 0;
+    StyleScaleValue posY = 0;
+    StyleScaleValue boundStart = 0;
+    StyleScaleValue boundEnd = 0;
     ParagraphStyle prevStyle = TextTop;
 
     // Font data
     FontInfo *font = nullptr;
     hb_font_t *hbFont = nullptr;
-    float weight = 0;
-    float fontSize = 0;
-    float styleHeight = 0;
-    float styleMargin = 0;
-    float scaledFontSize = 0;
-    float scaledStyleHeight = 0;
-    float scaledStyleMargin = 0;
+    StyleScaleValue weight = 0;
+    StyleScaleValue fontSize = 0;
+    StyleScaleValue styleHeight = 0;
+    StyleScaleValue styleMargin = 0;
+    StyleScaleValue scaledFontSize = 0;
+    StyleScaleValue scaledStyleHeight = 0;
+    StyleScaleValue scaledStyleMargin = 0;
 
     // Temporary
     FontType fontType = Serif;

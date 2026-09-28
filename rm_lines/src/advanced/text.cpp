@@ -105,7 +105,7 @@ void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
         } else {
             paragraph.startId = END_MARKER;
         }
-        logDebug(std::format("Starting new paragraph at index {} with ID {}", i, paragraph.startId.repr()));
+        // logDebug(std::format("Starting new paragraph at index {} with ID {}", i, paragraph.startId.repr()));
 
         FormattedText currentText;
         currentText.formatting = formatting;
@@ -118,7 +118,7 @@ void TextDocument::fromText(const std::shared_ptr<Text> &_text) {
             } else {
                 auto characterString = std::get<std::string>(characterItem.value.value());
                 if (characterString == "\n") {
-                    logDebug(std::format("Found newline at index {} with ID {}", i, characterIDs[i].repr()));
+                    // logDebug(std::format("Found newline at index {} with ID {}", i, characterIDs[i].repr()));
                     break; // Time for the next paragraph
                 }
                 // assert(characterString.size() <= 1); This is not ideal due to utf8 encoding multiple bytes

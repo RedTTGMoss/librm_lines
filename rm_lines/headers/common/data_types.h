@@ -369,7 +369,11 @@ struct ParagraphStyleNew {
 
     float getTabOffset() const;
 
+    std::string styleLabel(ParagraphStyle style) const;
+
     std::string styleLabel() const;
+
+    std::string styleLegacyLabel() const;
 
     [[nodiscard]] json toJson() const;
 
@@ -378,6 +382,9 @@ struct ParagraphStyleNew {
     // Aggregates OLD + New paragraph styles into one enum result
     // Please use this instead of legacy, or you will get the wrong values.
     ParagraphStyle getStyle() const;
+
+    // Still aggregates OLD + New paragraph styles into one enum result, but returns only legacy enum values
+    ParagraphStyle getLegacyStyle() const;
 };
 
 // Templates for data types
