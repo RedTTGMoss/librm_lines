@@ -36,9 +36,20 @@ void TextRenderer::newText(const FormattedText *next) {
     hbFont = font->getHb();
 }
 
+void TextRenderer::markerFont() {
+    fontType = Serif;
+    fontSize = 12;
+    weight = 400;
+    font = FontManager::instance().selectFont(fontType, false, weight);
+    font->setSize(scaledFontSize);
+
+    hbFont = font->getHb();
+}
+
 void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayout> &glyphs, Vector scale) {
     std::string markerText;
-    switch (para.getLegacyStyle()) {
+    const ParagraphStyle legacyStyle = para.getLegacyStyle();
+    switch (legacyStyle) {
         case Bullet:
             markerText = TEXT_BULLET;
             break;
@@ -75,6 +86,11 @@ void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayo
         default:
             numberingCounter.reset();
             return; // TODO: Add special numbered cases (checkboxes will not be included here, as they are icons
+    }
+    switch (legacyStyle) {
+        // TODO: Maybe use special checkbox glyphs using the icons font
+        default:
+            markerFont(); // Ensure a font is available
     }
     posX += BULLET_START * scale.x;
     const auto beginX = posX;
@@ -263,6 +279,7 @@ void TextRenderer::prepareBounds(const Vector *position, const Vector scale) {
     boundEnd = (position->x + renderer->paperSize.first - textMargin) * scale.x;
     posY = (position->y + TEXT_TOP_Y);
     prevStyle = TextTop;
+    numberingCounter.reset();
 }
 
 TextRenderer::TextRenderer() : TextRenderer(nullptr) {

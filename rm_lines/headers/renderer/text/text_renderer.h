@@ -58,6 +58,8 @@ public:
 
     void newText(const FormattedText *next);
 
+    void markerFont();
+
     void getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayout> &glyphs, Vector scale);
 
 
