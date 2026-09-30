@@ -11,6 +11,9 @@
 #define TEXT_BULLET "•"
 #define TEXT_SUBBULLET "◦"
 #define TEXT_SUBSUBBULLET "-"
+#define TEXT_CHECKBOX "\ue904"
+#define TEXT_CHECKBOX_CHECKED "\ue905"
+#define TEXT_CHECKBOX_HALF_CHECKED "\ue906"
 
 class Renderer;
 
