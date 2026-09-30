@@ -3,7 +3,7 @@
 #include "renderer/rm_lines_stroker/rm_pens/colors.h"
 
 #define MAGIC_PENCIL_SIZE (44.6f * 2.3f)
-#define K 5
+#define K 4.75 // Magic number for scaling pen width to match the original rendering MAY BE RELATED TO DPI
 
 void BasicPen(rMPenFill *fill, int x, int y, int length, Varying2D v, Varying2D dx);
 
