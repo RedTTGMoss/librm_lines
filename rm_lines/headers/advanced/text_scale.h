@@ -12,6 +12,7 @@ extern const StyleScaleValue TEXT_WIDTH_ALIGN;
 extern const StyleScaleValue TAB_LENGTH;
 extern const StyleScaleValue BULLET_START;
 extern const StyleScaleValue BULLET_SPACE;
+extern const StyleScaleValue BASIC_LINE_HEIGHT;
 
 struct TextAreaInfo {
     // Old style text area using coordinates

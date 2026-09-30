@@ -13,6 +13,7 @@
 #include "serif_700.h"
 #include "serif_italic_400.h"
 #include "serif_italic_700.h"
+#include "symbols_font.h"
 
 FontManager &FontManager::instance() {
     static FontManager manager;
@@ -39,6 +40,8 @@ FontManager::FontManager() {
 
     m_serifItalic.addFont(initFont(serif_italic_400FontData, sizeof(serif_italic_400FontData)), 400);
     m_serifItalic.addFont(initFont(serif_italic_700FontData, sizeof(serif_italic_700FontData)), 700);
+
+    m_symbols.addFont(initFont(symbolsFontData, sizeof(symbolsFontData)), 400);
 }
 
 FontManager::~FontManager() {
@@ -92,6 +95,8 @@ FontFamily *FontManager::selectFamily(const FontType font, const bool italic) {
             return italic ? &m_sansItalic : &m_sans;
         case Serif:
             return italic ? &m_serifItalic : &m_serif;
+        case Symbols:
+            return &m_symbols;
         default:
             return &m_sans;
     }

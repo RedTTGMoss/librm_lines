@@ -22,6 +22,7 @@ constexpr StyleScaleValue TEXT_WIDTH_ALIGN = 0; // Deprecated in use of margins
 constexpr StyleScaleValue TAB_LENGTH = 48.105729420979856; // AUTO CALCULATED BY THE GENERATE STYLES SCALES TOOL
 constexpr StyleScaleValue BULLET_START = 48.1057294209798;
 constexpr StyleScaleValue BULLET_SPACE = 20.044053925408264;
+constexpr StyleScaleValue BASIC_LINE_HEIGHT = 32.07;
 
 constexpr StyleScaleEntry EndOfStyleList = {END_STYLE_LIST, 0};
 constexpr StyleNestedScaleEntry EndOfNestedStyleList = {END_STYLE_LIST, nullptr};
@@ -36,7 +37,6 @@ namespace {
     // Most values are the same, we can edit them here
     constexpr StyleScaleValue TITLE_LINE_HEIGHT = 64.14;
     constexpr StyleScaleValue SUB_LINE_HEIGHT = 36.08;
-    constexpr StyleScaleValue BASIC_LINE_HEIGHT = 32.07;
 
 
     // The font size

@@ -59,9 +59,13 @@ public:
 
     void newParagraph(const Paragraph *next, Vector scale);
 
+    void paragraphFont(const Paragraph *next, Vector scale);
+
     void newText(const FormattedText *next);
 
-    void markerFont();
+    void markerFont(Vector scale, FontType _fontType = Serif);
+
+    void restoreFontBullet(Vector scale);
 
     void getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayout> &glyphs, Vector scale);
 

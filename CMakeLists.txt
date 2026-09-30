@@ -212,6 +212,12 @@ if (INCLUDE_FONTS)
     endif ()
     # We don't have the remarkable italic sans font, so we use the Noto Sans italic font instead
 
+    # Include the Symbols which are copyright free according to the file itself.
+    embed_resource(
+            "${REMARKABLE_FONT_DIR}/reMarkableSymbols.ttf"
+            "${CMAKE_CURRENT_BINARY_DIR}/generated/symbols_font.h"
+            "symbolsFontData"
+    )
 
     target_compile_definitions(rm_lines
             PRIVATE RM_LINES_INCLUDE_FONTS

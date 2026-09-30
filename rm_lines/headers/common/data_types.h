@@ -340,7 +340,8 @@ enum ParagraphStyle {
 
 enum FontType {
     Serif,
-    Sans
+    Sans,
+    Symbols
 };
 
 struct ParagraphStyleNew {

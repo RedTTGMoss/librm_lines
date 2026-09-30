@@ -120,4 +120,5 @@ private:
     FontFamily m_sansItalic{};
     FontFamily m_serif{};
     FontFamily m_serifItalic{};
+    FontFamily m_symbols{};
 };

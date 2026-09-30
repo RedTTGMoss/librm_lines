@@ -8,15 +8,11 @@
 void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     paragraph = next;
 
-    fontType = paragraph->style.value.getFont();
-    fontSize = paragraph->style.value.fontSize();
-
     styleHeight = paragraph->style.value.styleHeight(prevStyle);
     styleMargin = paragraph->style.value.styleMargin();
 
     scaledStyleHeight = styleHeight * scale.y;
     scaledStyleMargin = styleMargin * scale.x;
-    scaledFontSize = fontSize * scale.y;
 
     const auto tabOffsetScaled = paragraph->style.value.getTabOffset() * scale.x;
 
@@ -25,6 +21,12 @@ void TextRenderer::newParagraph(const Paragraph *next, const Vector scale) {
     posY += styleHeight;
 
     prevStyle = next->style.value.getLegacyStyle();
+}
+
+void TextRenderer::paragraphFont(const Paragraph *next, Vector scale) {
+    fontType = paragraph->style.value.getFont();
+    fontSize = paragraph->style.value.fontSize();
+    scaledFontSize = fontSize * scale.y;
 }
 
 void TextRenderer::newText(const FormattedText *next) {
@@ -36,11 +38,11 @@ void TextRenderer::newText(const FormattedText *next) {
     hbFont = font->getHb();
 }
 
-void TextRenderer::markerFont() {
-    fontType = Serif;
-    fontSize = 12;
+void TextRenderer::markerFont(const Vector scale, const FontType _fontType) {
+    fontSize = BASIC_LINE_HEIGHT * (_fontType == Symbols ? 0.8 : 1);
+    scaledFontSize = fontSize * scale.y;
     weight = 400;
-    font = FontManager::instance().selectFont(fontType, false, weight);
+    font = FontManager::instance().selectFont(_fontType, false, weight);
     font->setSize(scaledFontSize);
 
     hbFont = font->getHb();
@@ -48,6 +50,8 @@ void TextRenderer::markerFont() {
 
 void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayout> &glyphs, Vector scale) {
     std::string markerText;
+    const auto oldFontSize = fontSize;
+    const auto oldScaledFontSize = scaledFontSize;
     const ParagraphStyle legacyStyle = para.getLegacyStyle();
     switch (legacyStyle) {
         case Bullet:
@@ -83,14 +87,40 @@ void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayo
                     break;
             }
             break;
+        case CheckBox:
+        case CheckBoxTab:
+            markerText = TEXT_CHECKBOX;
+        case CheckBoxChecked:
+        case CheckBoxTabChecked:
+            if (para.baseStyle == 2) {
+                markerText = TEXT_CHECKBOX_CHECKED;
+            }
+            switch (para.extra()) {
+                case 0:
+                    markerText = TEXT_CHECKBOX;
+                    break;
+                case 2:
+                    markerText = TEXT_CHECKBOX_HALF_CHECKED;
+                    break;
+                default:
+                    markerText = TEXT_CHECKBOX_CHECKED;
+                    break;
+            }
+            break;
         default:
             numberingCounter.reset();
             return; // TODO: Add special numbered cases (checkboxes will not be included here, as they are icons
     }
     switch (legacyStyle) {
-        // TODO: Maybe use special checkbox glyphs using the icons font
+        case CheckBox:
+        case CheckBoxTab:
+        case CheckBoxChecked:
+        case CheckBoxTabChecked:
+            markerFont(scale, Symbols);
+            break;
         default:
-            markerFont(); // Ensure a font is available
+            markerFont(scale); // Ensure a font is available
+            break;
     }
     posX += BULLET_START * scale.x;
     const auto beginX = posX;
@@ -103,6 +133,8 @@ void TextRenderer::getMarkerGlyphs(ParagraphStyleNew para, std::vector<GlyphLayo
         glyphs.push_back(adjustedGlyph);
     }
     posX = beginX;
+    fontSize = oldFontSize;
+    scaledFontSize = oldScaledFontSize;
 }
 
 void TextRenderer::getGlyphs(std::string text, std::vector<GlyphLayout> &glyphs,
@@ -239,6 +271,7 @@ void TextRenderer::getAllPageGlyphs(std::vector<GlyphLayout> &glyphs) {
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale);
         getMarkerGlyphs(paragraph->style.value, glyphs, scale);
+        paragraphFont(&next, scale);
         for (const auto &formattedText: paragraph->contents) {
             newText(&formattedText);
             getGlyphs(formattedText, glyphs, tempTextRects);
@@ -254,6 +287,7 @@ void TextRenderer::getAnchors() {
     for (const auto &next: renderer->textDocument.paragraphs) {
         newParagraph(&next, scale);
         getMarkerGlyphs(paragraph->style.value, glyphs, scale);
+        paragraphFont(&next, scale);
         for (const auto &formattedText: paragraph->contents) {
             newText(&formattedText);
             getGlyphs(formattedText, glyphs, tempTextRects);
@@ -313,6 +347,11 @@ void TextRenderer::renderText(const Vector *position, const Vector scale) {
         newParagraph(&next, scale);
         std::vector<GlyphLayout> glyphs;
         getMarkerGlyphs(paragraph->style.value, glyphs, scale);
+        for (const auto &glyph: glyphs) {
+            renderGlyph(glyph, position, scale);
+        }
+        glyphs.clear();
+        paragraphFont(&next, scale);
         for (const auto &glyph: glyphs) {
             renderGlyph(glyph, position, scale);
         }
