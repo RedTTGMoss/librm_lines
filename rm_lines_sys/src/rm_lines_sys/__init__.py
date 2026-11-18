@@ -119,6 +119,18 @@ class LibAnnotations(ctypes.Structure):
         """Get the current debug mode status."""
         pass
 
+    def setPermissiveMode(self, mode: bool):
+        """Set permissive mode for the library."""
+        pass
+
+    def getPermissiveMode(self) -> bool:
+        """Get the current permissive mode status."""
+        pass
+
+    def getErrorMessage(self) -> bytes:
+        """Get the last error message."""
+        pass
+
 
 def load_lib() -> Optional[ctypes.CDLL]:
     lib_name = {
@@ -252,6 +264,15 @@ def load_lib() -> Optional[ctypes.CDLL]:
 
     # Function getDebugMode() -> bool
     _lib.getDebugMode.restype = ctypes.c_bool
+
+    # Function setPermissiveMode(bool)
+    _lib.setPermissiveMode.argtypes = [ctypes.c_bool]
+
+    # Function getPermissiveMode() -> bool
+    _lib.getPermissiveMode.restype = ctypes.c_bool
+
+    # Function getErrorMessage()
+    _lib.getErrorMessage.restype = ctypes.c_char_p
 
     return _lib
 

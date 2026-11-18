@@ -6,6 +6,8 @@
 #include <optional>
 #include <mutex>
 
+#include "common/errors.h"
+
 static std::mutex globalRendererMutex;
 std::unordered_map<std::string, std::shared_ptr<Renderer> > globalRendererMap;
 
@@ -44,12 +46,22 @@ EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bo
     const auto tree = getSceneTree(treeId);
 
     std::shared_ptr<Renderer> renderer;
+    thread_local char errorCode[16];
 
     try {
         renderer = std::make_shared<Renderer>(tree.get(), static_cast<PageType>(pageType), landscape);
+    } catch (const GenericError &e) {
+        logError(std::format("{}\nFailed to create renderer: {}", getStackTrace(), e.what()));
+        setErrorMessage(e.what());
+
+        std::snprintf(errorCode, sizeof(errorCode), "%d", e.getErrorCode());
+        return errorCode;
     } catch (const std::exception &e) {
         logError(std::format("{}\nFailed to create renderer: {}", getStackTrace(), e.what()));
-        return "";
+        setErrorMessage(e.what());
+
+        std::snprintf(errorCode, sizeof(errorCode), "%d", -1);
+        return errorCode;
     }
 
     thread_local std::string result;
@@ -57,7 +69,7 @@ EXPORT const char *makeRenderer(const char *treeId, const int pageType, const bo
     try {
         result = addRenderer(renderer);
     } catch (const std::exception &e) {
-        logError(std::format("{}\nFailed to add tree to tree map: {}", getStackTrace(), e.what()));
+        logError(std::format("{}\nFailed to add renderer to renderer map: {}", getStackTrace(), e.what()));
         return "";
     }
 

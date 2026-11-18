@@ -2,6 +2,7 @@
 #include <format>
 
 #include "advanced/text.h"
+#include "common/errors.h"
 #include "renderer/image_renderer.h"
 #include "renderer/rm_lines_stroker/rm_pens/pen_functions.h"
 #include "renderer/rm_lines_stroker/templates/template_functions.h"
@@ -56,8 +57,12 @@ DocumentSizeTracker *Renderer::getSizeTracker(const CrdtId layerId) {
     if (it != sizeTrackers.end()) {
         return &it->second;
     }
-    // If it doesn't exist, raise an error
-    throw std::runtime_error(std::format("Document size tracker for layer {} not found", layerId.repr()));
+    if (getPermissiveMode()) {
+        logError(std::format("Document size tracker for layer {} not found, creating new one in permissive mode",
+                             layerId.repr()));
+        return initSizeTracker(layerId);
+    }
+    throw GenericError(std::format("Document size tracker for layer {} not found", layerId.repr()));
 }
 
 DocumentSizeTracker *Renderer::initSizeTracker(CrdtId layerId) {
@@ -124,12 +129,16 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
         offsetX += group->anchorOriginX.value().value;
         if (!anchors.contains(group->anchorId.value().value)) {
             logError(std::format("need anchor id {}", group->anchorId.value().value.repr()));
-            throw std::runtime_error("fix this file first");
+            if (!getPermissiveMode()) {
+                throw TreeInstability("Missing anchor, when grouping layer items, and not in permissive mode");
+            }
+            offsetY = 0;
+        } else {
+            // logDebug(std::format("Anchor for group {}: {}: {} (originX: {})", groupId.repr(),
+            //                      group->anchorId.value().value.repr(), anchors[group->anchorId.value().value],
+            //                      group->anchorOriginX.value().value));
+            offsetY = anchors[group->anchorId.value().value];
         }
-        // logDebug(std::format("Anchor for group {}: {}: {} (originX: {})", groupId.repr(),
-        //                      group->anchorId.value().value.repr(), anchors[group->anchorId.value().value],
-        //                      group->anchorOriginX.value().value));
-        offsetY = anchors[group->anchorId.value().value];
     }
     for (const auto &node: nodes) {
         if (std::holds_alternative<CrdtSequenceItem<CrdtId> >(node)) {

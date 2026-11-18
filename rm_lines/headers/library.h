@@ -51,6 +51,19 @@ EXPORT void setDebugMode(bool debug);
 
 EXPORT bool getDebugMode();
 
+// Permissive mode
+static bool permissiveMode = false;
+EXPORT void setPermissiveMode(bool permissive);
+
+EXPORT bool getPermissiveMode();
+
+// Error message
+static std::string errorMessage = "";
+
+void setErrorMessage(std::string msg);
+
+EXPORT const char *getErrorMessage();
+
 // FNV-1a hash algorithm for compile-time string hashing
 // Produces better distribution than simple polynomial hashing
 constexpr uint32_t hashString(const char *str, const uint32_t hash = 2166136261u) {

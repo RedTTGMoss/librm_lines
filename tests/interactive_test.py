@@ -13,8 +13,9 @@ if TYPE_CHECKING:
     from rm_lines_sys.src.rm_lines_sys import LibAnnotations
 
 pe.init((0, 0))
-lib: Optional["LibAnnotations"]
+lib: "LibAnnotations"
 lib.setDebugMode(True)
+lib.setPermissiveMode(True)
 
 
 class ConfigEditor(pe.Context):

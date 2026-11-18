@@ -37,6 +37,22 @@ void setDebugMode(const bool debug) {
     debugMode = debug;
 }
 
+void setPermissiveMode(const bool permissive) {
+    permissiveMode = permissive;
+}
+
+bool getPermissiveMode() {
+    return permissiveMode;
+}
+
+void setErrorMessage(std::string msg) {
+    errorMessage = msg;
+}
+
+const char *getErrorMessage() {
+    return errorMessage.c_str();
+}
+
 bool getDebugMode() {
     return debugMode;
 }
