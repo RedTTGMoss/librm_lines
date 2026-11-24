@@ -163,8 +163,8 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
                 .line = std::move(line.value.value()),
                 .groupId = groupId,
                 .itemId = line.itemId,
-                .offsetX = trackX(layer.groupId, offsetX),
-                .offsetY = trackY(layer.groupId, offsetY),
+                .offsetX = static_cast<float>(trackX(layer.groupId, offsetX)),
+                .offsetY = static_cast<float>(trackY(layer.groupId, offsetY)),
             });
         } else if (std::holds_alternative<CrdtSequenceItem<Image> >(node)) {
             auto image = std::get<CrdtSequenceItem<Image> >(node);
@@ -180,8 +180,8 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
                 .image = std::move(image.value.value()),
                 .groupId = groupId,
                 .itemId = image.itemId,
-                .offsetX = trackX(layer.groupId, offsetX),
-                .offsetY = trackY(layer.groupId, offsetY),
+                .offsetX = static_cast<float>(trackX(layer.groupId, offsetX)),
+                .offsetY = static_cast<float>(trackY(layer.groupId, offsetY)),
             });
         } else if (std::holds_alternative<CrdtSequenceItem<GlyphRange> >(node)) {
             auto glyphRange = std::get<CrdtSequenceItem<GlyphRange> >(node);
@@ -190,8 +190,8 @@ void Renderer::groupLayerItems(Layer &layer, const CrdtId parentId, const CrdtId
                 .glyphRange = std::move(glyphRange.value.value()),
                 .groupId = groupId,
                 .itemId = glyphRange.itemId,
-                .offsetX = trackX(layer.groupId, offsetX),
-                .offsetY = trackY(layer.groupId, offsetY),
+                .offsetX = static_cast<float>(trackX(layer.groupId, offsetX)),
+                .offsetY = static_cast<float>(trackY(layer.groupId, offsetY)),
             });
         }
     }
