@@ -1,4 +1,4 @@
-# LIB rM Lines
+<h1><img src="tests/images/lines_icon.png" alt="LIB rM Lines icon" width="64" align="left" /> LIB rM Lines</h1>
 
 This project is largely been made possible by all the findings made by the community. Projects
 like [rMscene](https://github.com/ricklupton/rmscene).
@@ -16,7 +16,7 @@ This project will try to maintain compatibility as remarkable updates their file
 
 - A `.rm` lines reader
 - A real time renderer
-- ~~A `.rm` lines writer~~ *not yet*
+- A `.rm` lines writer *fully compliant, but still WIP*
 
 ## Dependencies
 
@@ -80,7 +80,7 @@ folder.
 Make sure that they are ran from inside the tests folder! You can install any missing packages, if you run into any
 other issue open it as an issue here.
 
-## Shoutouts
+## Shout-outs
 
 This project wouldn't have been possible without [rMscene](https://github.com/ricklupton/rmscene) and the open sourced
 project by reMarkable themselves [quill](https://github.com/CrimsonAS/quill) also a big shoutout to the Moss supporters
@@ -90,7 +90,7 @@ Some of the test files included are by my fellow testers! Shout out to them too!
 
 ## Usage & Releases
 
-You can find versionned releases of the shared library on this repo.
+You can find versioned releases of the shared library on this repo.
 
 The shared library exposes a few basic functions to use. *(docs coming soon)*
 
