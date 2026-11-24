@@ -228,6 +228,19 @@ jobs:
         run: |
           file=$(ls artifact/*.whl)
           new_name=$(python -c "import sys, re; print(re.sub(r'cp3\d+-cp3\d+', 'py3-none', sys.argv[1]))" "$file")
+
+          # Poetry emits linux_{arch} platform tags on Linux runners, but PyPI requires manylinux/musllinux tags.
+          if [[ "${{ matrix.os }}" == "ubuntu" ]]; then
+            case "${{ matrix.target }}" in
+              x86_64-unknown-linux-gnu)
+                new_name=$(python -c "import sys; print(sys.argv[1].replace('linux_x86_64', 'manylinux_2_17_x86_64'))" "$new_name")
+                ;;
+              aarch64-unknown-linux-gnu)
+                new_name=$(python -c "import sys; print(sys.argv[1].replace('linux_aarch64', 'manylinux_2_17_aarch64'))" "$new_name")
+                ;;
+            esac
+          fi
+
           mv "$file" "$new_name"
 
       - name: Upload Artifacts
