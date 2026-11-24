@@ -189,6 +189,7 @@ namespace {
             {Title, &Title_Rel},
             {Sub, &Sub_Rel},
             {PlainText, &PlainText_Rel},
+            {BASIC, &PlainText_Rel},
             {Bullet, &Bullet_Rel},
             {BulletTab, &BulletTab_Rel},
             {Numbered, &Numbered_Rel},
@@ -197,7 +198,7 @@ namespace {
             {CheckBoxTab, &CheckBoxTab_Rel},
             {CheckBoxChecked, &CheckBoxChecked_Rel},
             {CheckBoxTabChecked, &CheckBoxTabChecked_Rel},
-            // EndOfNestedStyleList
+            EndOfNestedStyleList
         }
     };
 }
